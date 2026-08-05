@@ -25,7 +25,16 @@ app.set("trust proxy", true);
 
 app.use(
   cors({
-    origin: config.frontendUrl,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const cleanOrigin = origin.replace(/\/+$/, "");
+      const cleanTarget = config.frontendUrl.replace(/\/+$/, "");
+      if (cleanOrigin === cleanTarget) {
+        return callback(null, true);
+      }
+      console.warn(`[cors] Rejected origin: "${origin}", expected: "${config.frontendUrl}"`);
+      callback(null, false);
+    },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "X-File-Name", "Content-Length", "Authorization"],

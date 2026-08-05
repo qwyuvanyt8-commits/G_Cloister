@@ -24,7 +24,7 @@ for (const key of required) {
 
 export const config = {
   port: Number(env.PORT || 4000),
-  frontendUrl: env.FRONTEND_URL || "http://localhost:3000",
+  frontendUrl: (env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, ""),
   databasePath: path.isAbsolute(env.DATABASE_PATH || "")
     ? env.DATABASE_PATH
     : path.resolve(root, env.DATABASE_PATH || "./data/gcloister.db"),

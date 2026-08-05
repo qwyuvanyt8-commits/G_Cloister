@@ -1,6 +1,9 @@
 import type { PublicUser, Room, RoomWithPassword } from "./types";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+const API = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000").replace(
+  /\/+$/,
+  ""
+);
 
 export const API_URL = API;
 
