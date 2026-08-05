@@ -55,7 +55,7 @@ app.get("/api/auth/google", (req, res) => {
   const isProd = process.env.NODE_ENV === "production";
   res.cookie("gcl_oauth_state", state, {
     httpOnly: true,
-    sameSite: isProd ? "none" : "lax",
+    sameSite: "lax",
     secure: isProd,
     path: "/",
     maxAge: 10 * 60 * 1000,
@@ -68,10 +68,12 @@ app.get("/api/auth/callback", async (req, res) => {
   const expected = req.cookies?.gcl_oauth_state;
   res.clearCookie("gcl_oauth_state", { path: "/" });
   if (error || !code) {
-    return res.redirect(`${config.frontendUrl}?auth=error`);
+    console.error("[auth] callback error param or missing code:", { error, hasCode: !!code });
+    return res.redirect(`${config.frontendUrl}?auth=error&reason=code`);
   }
   if (!state || !expected || state !== expected) {
-    return res.redirect(`${config.frontendUrl}?auth=error`);
+    console.error("[auth] state mismatch:", { state, expected });
+    return res.redirect(`${config.frontendUrl}?auth=error&reason=state`);
   }
   try {
     const tokens = await exchangeCode(code);
@@ -87,8 +89,8 @@ app.get("/api/auth/callback", async (req, res) => {
     });
     res.redirect(`${config.frontendUrl}/home?auth=success&token=${sessionToken}`);
   } catch (err) {
-    console.error("[auth] callback error:", err?.message);
-    res.redirect(`${config.frontendUrl}?auth=error`);
+    console.error("[auth] callback error:", err?.message || err);
+    res.redirect(`${config.frontendUrl}?auth=error&reason=exchange`);
   }
 });
 
