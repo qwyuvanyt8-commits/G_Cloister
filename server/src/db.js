@@ -20,12 +20,18 @@ export const client = isTurso
       intMode: "number",
     });
 
-function normalizeRow(row) {
+function normalizeRow(row, columns = []) {
   if (!row) return null;
   const out = {};
-  for (const key of Object.keys(row)) {
-    const val = row[key];
-    out[key] = typeof val === "bigint" ? Number(val) : val;
+  columns.forEach((col, i) => {
+    const val = row[i] !== undefined ? row[i] : row[col];
+    out[col] = typeof val === "bigint" ? Number(val) : val;
+  });
+  if (typeof row === "object" && !Array.isArray(row)) {
+    for (const key of Object.keys(row)) {
+      const val = row[key];
+      out[key] = typeof val === "bigint" ? Number(val) : val;
+    }
   }
   return out;
 }
@@ -33,11 +39,11 @@ function normalizeRow(row) {
 export const db = {
   async get(sql, args = []) {
     const res = await client.execute({ sql, args: Array.isArray(args) ? args : [args] });
-    return res.rows[0] ? normalizeRow(res.rows[0]) : null;
+    return res.rows[0] ? normalizeRow(res.rows[0], res.columns) : null;
   },
   async all(sql, args = []) {
     const res = await client.execute({ sql, args: Array.isArray(args) ? args : [args] });
-    return res.rows.map((r) => normalizeRow(r));
+    return res.rows.map((r) => normalizeRow(r, res.columns));
   },
   async run(sql, args = []) {
     return client.execute({ sql, args: Array.isArray(args) ? args : [args] });
