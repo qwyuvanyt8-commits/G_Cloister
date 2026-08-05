@@ -4,7 +4,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 import crypto from "node:crypto";
 import { config, assertConfig } from "./config.js";
-import { db } from "./db.js";
+import { db, initDb } from "./db.js";
 import {
   buildAuthUrl,
   exchangeCode,
@@ -134,6 +134,11 @@ app.use((err, req, res, next) => {
 
 const server = http.createServer(app);
 setupSocket(server);
+
+await initDb().catch((err) => {
+  console.error("[db] Initialization failed:", err);
+  process.exit(1);
+});
 
 server.listen(config.port, () => {
   console.log(`[gcloister] server ready on http://localhost:${config.port}`);

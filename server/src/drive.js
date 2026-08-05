@@ -56,10 +56,10 @@ export async function ensureRootFolder(user) {
   );
   if (list.files?.length) {
     const id = list.files[0].id;
-    db.prepare("UPDATE users SET root_folder_id = ? WHERE google_id = ?").run(
+    await db.run("UPDATE users SET root_folder_id = ? WHERE google_id = ?", [
       id,
-      user.google_id
-    );
+      user.google_id,
+    ]);
     return id;
   }
   const created = await driveJson(
@@ -75,10 +75,10 @@ export async function ensureRootFolder(user) {
       }),
     }
   );
-  db.prepare("UPDATE users SET root_folder_id = ? WHERE google_id = ?").run(
+  await db.run("UPDATE users SET root_folder_id = ? WHERE google_id = ?", [
     created.id,
-    user.google_id
-  );
+    user.google_id,
+  ]);
   return created.id;
 }
 

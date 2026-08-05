@@ -38,7 +38,7 @@ export async function handleGoogleTokens(tokens) {
   const name = payload.name || email;
   const avatar = payload.picture || null;
 
-  db.prepare(
+  await db.run(
     `INSERT INTO users (google_id, email, name, avatar, access_token, refresh_token, token_expiry, created_at)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(google_id) DO UPDATE SET
@@ -47,23 +47,24 @@ export async function handleGoogleTokens(tokens) {
        avatar=excluded.avatar,
        access_token=excluded.access_token,
        refresh_token=CASE WHEN excluded.refresh_token IS NOT NULL THEN excluded.refresh_token ELSE users.refresh_token END,
-       token_expiry=excluded.token_expiry`
-  ).run(
-    googleId,
-    email,
-    name,
-    avatar,
-    encrypt(tokens.access_token),
-    encrypt(tokens.refresh_token),
-    tokens.expiry_date || null,
-    Date.now()
+       token_expiry=excluded.token_expiry`,
+    [
+      googleId,
+      email,
+      name,
+      avatar,
+      encrypt(tokens.access_token),
+      encrypt(tokens.refresh_token),
+      tokens.expiry_date || null,
+      Date.now(),
+    ]
   );
 
   return getStoredUser(googleId);
 }
 
-export function getStoredUser(googleId) {
-  return db.prepare("SELECT * FROM users WHERE google_id = ?").get(googleId) || null;
+export async function getStoredUser(googleId) {
+  return (await db.get("SELECT * FROM users WHERE google_id = ?", [googleId])) || null;
 }
 
 export function publicUser(row) {
@@ -77,40 +78,40 @@ export function publicUser(row) {
   };
 }
 
-export function createSession(userId) {
+export async function createSession(userId) {
   const token = crypto.randomBytes(32).toString("hex");
   const now = Date.now();
-  db.prepare(
-    "INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)"
-  ).run(token, userId, now, now + config.sessionTtlMs);
+  await db.run(
+    "INSERT INTO sessions (token, user_id, created_at, expires_at) VALUES (?, ?, ?, ?)",
+    [token, userId, now, now + config.sessionTtlMs]
+  );
   return token;
 }
 
-export function destroySession(token) {
+export async function destroySession(token) {
   if (!token) return;
-  db.prepare("DELETE FROM sessions WHERE token = ?").run(token);
+  await db.run("DELETE FROM sessions WHERE token = ?", [token]);
 }
 
-export function sessionUserFromToken(token) {
+export async function sessionUserFromToken(token) {
   if (!token) return null;
-  const session = db
-    .prepare(
-      `SELECT s.user_id, s.expires_at FROM sessions s WHERE s.token = ?`
-    )
-    .get(token);
+  const session = await db.get(
+    "SELECT s.user_id, s.expires_at FROM sessions s WHERE s.token = ?",
+    [token]
+  );
   if (!session) return null;
   if (session.expires_at < Date.now()) {
-    db.prepare("DELETE FROM sessions WHERE token = ?").run(token);
+    await db.run("DELETE FROM sessions WHERE token = ?", [token]);
     return null;
   }
   return getStoredUser(session.user_id);
 }
 
-export function requireAuth(req, res, next) {
+export async function requireAuth(req, res, next) {
   const authHeader = req.headers.authorization;
   const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
   const token = bearerToken || req.cookies?.[config.cookieName];
-  const user = sessionUserFromToken(token);
+  const user = await sessionUserFromToken(token);
   if (!user) {
     return res.status(401).json({ error: "Not authenticated" });
   }

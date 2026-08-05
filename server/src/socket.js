@@ -14,7 +14,7 @@ export function setupSocket(httpServer) {
     },
   });
 
-  io.use((socket, next) => {
+  io.use(async (socket, next) => {
     const cookie = socket.handshake.headers.cookie || "";
     const match = new RegExp(`(?:^|;\\s*)${config.cookieName}=([^;]+)`).exec(
       cookie
@@ -23,7 +23,7 @@ export function setupSocket(httpServer) {
     const tokenFromAuth = socket.handshake.auth?.token;
     const tokenFromQuery = socket.handshake.query?.token;
     const token = tokenFromAuth || tokenFromQuery || tokenFromCookie;
-    const user = sessionUserFromToken(token);
+    const user = await sessionUserFromToken(token);
     if (!user) return next(new Error("unauthorized"));
     socket.data.user = user;
     socket.data.rooms = new Set();
@@ -34,14 +34,13 @@ export function setupSocket(httpServer) {
     const user = socket.data.user;
     const profile = publicUser(user);
 
-    socket.on("room:enter", ({ roomId } = {}) => {
+    socket.on("room:enter", async ({ roomId } = {}) => {
       if (typeof roomId !== "string") return;
       roomId = roomId.toLowerCase();
-      const member = db
-        .prepare(
-          "SELECT 1 FROM room_members WHERE room_id = ? AND user_id = ?"
-        )
-        .get(roomId, user.google_id);
+      const member = await db.get(
+        "SELECT 1 FROM room_members WHERE room_id = ? AND user_id = ?",
+        [roomId, user.google_id]
+      );
       if (!member) return;
 
       socket.data.rooms.add(roomId);

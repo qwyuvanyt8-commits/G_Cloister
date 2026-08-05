@@ -50,26 +50,26 @@ function formatBytes(n) {
   return `${v >= 100 ? v.toFixed(0) : v.toFixed(1)} ${units[i]}`;
 }
 
-function isMember(userId, roomId) {
-  return !!db
-    .prepare("SELECT 1 FROM room_members WHERE room_id = ? AND user_id = ?")
-    .get(roomId, userId);
+async function isMember(userId, roomId) {
+  return !!(await db.get(
+    "SELECT 1 FROM room_members WHERE room_id = ? AND user_id = ?",
+    [roomId, userId]
+  ));
 }
 
-function getRoomOrNull(roomId) {
-  return db.prepare("SELECT * FROM rooms WHERE room_id = ?").get(roomId) || null;
+async function getRoomOrNull(roomId) {
+  return (await db.get("SELECT * FROM rooms WHERE room_id = ?", [roomId])) || null;
 }
 
-function getFileRow(fileId, roomId) {
+async function getFileRow(fileId, roomId) {
   return (
-    db
-      .prepare("SELECT * FROM files WHERE id = ? AND room_id = ?")
-      .get(fileId, roomId) || null
+    (await db.get("SELECT * FROM files WHERE id = ? AND room_id = ?", [fileId, roomId])) ||
+    null
   );
 }
 
-function roomSummary(room) {
-  const host = db.prepare("SELECT * FROM users WHERE google_id = ?").get(room.host_user_id);
+async function roomSummary(room) {
+  const host = await db.get("SELECT * FROM users WHERE google_id = ?", [room.host_user_id]);
   return {
     roomId: room.room_id,
     host: publicUser(host),
@@ -84,36 +84,37 @@ function roomSummary(room) {
   };
 }
 
-function buildRoomView(room, viewerId) {
-  const members = db
-    .prepare(
-      `SELECT rm.role, u.google_id, u.email, u.name, u.avatar
-       FROM room_members rm JOIN users u ON u.google_id = rm.user_id
-       WHERE rm.room_id = ? ORDER BY rm.joined_at ASC`
-    )
-    .all(room.room_id);
+async function buildRoomView(room, viewerId) {
+  const members = await db.all(
+    `SELECT rm.role, u.google_id, u.email, u.name, u.avatar
+     FROM room_members rm JOIN users u ON u.google_id = rm.user_id
+     WHERE rm.room_id = ? ORDER BY rm.joined_at ASC`,
+    [room.room_id]
+  );
 
   const online = new Set(getOnlineUsers(room.room_id).map((u) => u.id));
 
-  const files = db
-    .prepare(
+  const files = (
+    await db.all(
       `SELECT f.*, u.google_id AS up_id, u.name AS up_name, u.avatar AS up_avatar
        FROM files f JOIN users u ON u.google_id = f.uploader_id
-       WHERE f.room_id = ? ORDER BY f.created_at DESC`
+       WHERE f.room_id = ? ORDER BY f.created_at DESC`,
+      [room.room_id]
     )
-    .all(room.room_id)
-    .map((f) => ({
-      id: f.id,
-      name: f.name,
-      mimeType: f.mime_type,
-      sizeBytes: f.size_bytes,
-      sizeFormatted: formatBytes(f.size_bytes),
-      createdAt: f.created_at,
-      uploader: { id: f.up_id, name: f.up_name, avatar: f.up_avatar },
-    }));
+  ).map((f) => ({
+    id: f.id,
+    name: f.name,
+    mimeType: f.mime_type,
+    sizeBytes: f.size_bytes,
+    sizeFormatted: formatBytes(f.size_bytes),
+    createdAt: f.created_at,
+    uploader: { id: f.up_id, name: f.up_name, avatar: f.up_avatar },
+  }));
+
+  const summary = await roomSummary(room);
 
   return {
-    ...roomSummary(room),
+    ...summary,
     isHost: room.host_user_id === viewerId,
     members: members.map((m) => ({
       id: m.google_id,
@@ -139,7 +140,7 @@ roomsRouter.post("/", requireAuth, async (req, res) => {
           "Room ID must be 3–20 characters using letters, numbers, '-' or '_'.",
       });
     }
-    if (getRoomOrNull(roomId)) {
+    if (await getRoomOrNull(roomId)) {
       return res.status(409).json({ error: "That room ID is already taken." });
     }
     if (!req.user.refresh_token && !req.user.access_token) {
@@ -154,17 +155,20 @@ roomsRouter.post("/", requireAuth, async (req, res) => {
     const hash = bcrypt.hashSync(password, 10);
     const now = Date.now();
 
-    db.prepare(
+    await db.run(
       `INSERT INTO rooms (room_id, host_user_id, password_hash, folder_id, total_bytes, created_at)
-       VALUES (?, ?, ?, ?, 0, ?)`
-    ).run(roomId, req.user.google_id, hash, folderId, now);
-    db.prepare(
-      `INSERT INTO room_members (room_id, user_id, role, joined_at) VALUES (?, ?, 'host', ?)`
-    ).run(roomId, req.user.google_id, now);
+       VALUES (?, ?, ?, ?, 0, ?)`,
+      [roomId, req.user.google_id, hash, folderId, now]
+    );
+    await db.run(
+      `INSERT INTO room_members (room_id, user_id, role, joined_at) VALUES (?, ?, 'host', ?)`,
+      [roomId, req.user.google_id, now]
+    );
 
-    const room = getRoomOrNull(roomId);
+    const room = await getRoomOrNull(roomId);
+    const summary = await roomSummary(room);
     res.status(201).json({
-      ...roomSummary(room),
+      ...summary,
       isHost: true,
       password,
     });
@@ -181,44 +185,45 @@ roomsRouter.post("/join", requireAuth, async (req, res) => {
     if (!roomId) {
       return res.status(400).json({ error: "Enter a valid room ID." });
     }
-    const room = getRoomOrNull(roomId);
+    const room = await getRoomOrNull(roomId);
     if (!room) {
       return res.status(404).json({ error: "Room not found. Check the room ID." });
     }
     if (!bcrypt.compareSync(password, room.password_hash)) {
       return res.status(401).json({ error: "Incorrect room password." });
     }
-    db.prepare(
+    await db.run(
       `INSERT INTO room_members (room_id, user_id, role, joined_at) VALUES (?, ?, 'member', ?)
-       ON CONFLICT(room_id, user_id) DO NOTHING`
-    ).run(roomId, req.user.google_id, Date.now());
+       ON CONFLICT(room_id, user_id) DO NOTHING`,
+      [roomId, req.user.google_id, Date.now()]
+    );
 
     emitToRoom(roomId, "member:joined", publicUser(req.user));
-    res.json(buildRoomView(room, req.user.google_id));
+    res.json(await buildRoomView(room, req.user.google_id));
   } catch (err) {
     handleDriveError(res, err);
   }
 });
 
 // ---- Room detail ----
-roomsRouter.get("/:roomId", requireAuth, (req, res) => {
+roomsRouter.get("/:roomId", requireAuth, async (req, res) => {
   const roomId = sanitizeRoomId(req.params.roomId);
   if (!roomId) return res.status(400).json({ error: "Invalid room ID." });
-  const room = getRoomOrNull(roomId);
+  const room = await getRoomOrNull(roomId);
   if (!room) return res.status(404).json({ error: "Room not found." });
-  if (!isMember(req.user.google_id, roomId)) {
+  if (!(await isMember(req.user.google_id, roomId))) {
     return res.status(403).json({ error: "You are not a member of this room." });
   }
-  res.json(buildRoomView(room, req.user.google_id));
+  res.json(await buildRoomView(room, req.user.google_id));
 });
 
 // ---- Upload ----
 roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
   const roomId = sanitizeRoomId(req.params.roomId);
   if (!roomId) return res.status(400).json({ error: "Invalid room ID." });
-  const room = getRoomOrNull(roomId);
+  const room = await getRoomOrNull(roomId);
   if (!room) return res.status(404).json({ error: "Room not found." });
-  if (!isMember(req.user.google_id, roomId)) {
+  if (!(await isMember(req.user.google_id, roomId))) {
     return res.status(403).json({ error: "Not a room member." });
   }
 
@@ -252,7 +257,7 @@ roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
   }
 
   try {
-    const host = db.prepare("SELECT * FROM users WHERE google_id = ?").get(room.host_user_id);
+    const host = await db.get("SELECT * FROM users WHERE google_id = ?", [room.host_user_id]);
     const token = await drive.getAccessToken(host);
     const folderId = await drive.ensureRoomFolder(host, roomId);
     const uploadUri = await drive.createResumableSession(token, folderId, name, mimeType);
@@ -266,24 +271,16 @@ roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
 
     const now = Date.now();
     const fileId = crypto.randomUUID();
-    db.prepare(
+    await db.run(
       `INSERT INTO files (id, room_id, drive_file_id, name, mime_type, size_bytes, uploader_id, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
-    ).run(
-      fileId,
-      roomId,
-      driveFile.id,
-      name,
-      mimeType,
-      size,
-      req.user.google_id,
-      now
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+      [fileId, roomId, driveFile.id, name, mimeType, size, req.user.google_id, now]
     );
 
-    db.prepare("UPDATE rooms SET total_bytes = total_bytes + ? WHERE room_id = ?").run(
+    await db.run("UPDATE rooms SET total_bytes = total_bytes + ? WHERE room_id = ?", [
       size,
-      roomId
-    );
+      roomId,
+    ]);
 
     const file = {
       id: fileId,
@@ -310,14 +307,14 @@ roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
 // ---- Download ----
 roomsRouter.get("/:roomId/files/:fileId/download", requireAuth, async (req, res) => {
   const roomId = sanitizeRoomId(req.params.roomId);
-  const file = getFileRow(req.params.fileId, roomId);
+  const file = await getFileRow(req.params.fileId, roomId);
   if (!file) return res.status(404).json({ error: "File not found." });
-  if (!isMember(req.user.google_id, roomId)) {
+  if (!(await isMember(req.user.google_id, roomId))) {
     return res.status(403).json({ error: "Not a room member." });
   }
   try {
-    const room = getRoomOrNull(roomId);
-    const host = db.prepare("SELECT * FROM users WHERE google_id = ?").get(room.host_user_id);
+    const room = await getRoomOrNull(roomId);
+    const host = await db.get("SELECT * FROM users WHERE google_id = ?", [room.host_user_id]);
     const token = await drive.getAccessToken(host);
     const dl = await drive.downloadDriveStream(token, file.drive_file_id);
     const safeName = file.name.replace(/"/g, "");
@@ -336,15 +333,15 @@ const linkCache = new Map(); // fileId -> {permissionId, expiresAt, links}
 
 roomsRouter.get("/:roomId/files/:fileId/preview", requireAuth, async (req, res) => {
   const roomId = sanitizeRoomId(req.params.roomId);
-  const file = getFileRow(req.params.fileId, roomId);
+  const file = await getFileRow(req.params.fileId, roomId);
   if (!file) return res.status(404).json({ error: "File not found." });
-  if (!isMember(req.user.google_id, roomId)) {
+  if (!(await isMember(req.user.google_id, roomId))) {
     return res.status(403).json({ error: "Not a room member." });
   }
 
   try {
-    const room = getRoomOrNull(roomId);
-    const host = db.prepare("SELECT * FROM users WHERE google_id = ?").get(room.host_user_id);
+    const room = await getRoomOrNull(roomId);
+    const host = await db.get("SELECT * FROM users WHERE google_id = ?", [room.host_user_id]);
     const token = await drive.getAccessToken(host);
 
     const cached = linkCache.get(file.drive_file_id);
@@ -376,16 +373,16 @@ roomsRouter.get("/:roomId/files/:fileId/preview", requireAuth, async (req, res) 
 // ---- Rename ----
 roomsRouter.post("/:roomId/files/:fileId/rename", requireAuth, async (req, res) => {
   const roomId = sanitizeRoomId(req.params.roomId);
-  const file = getFileRow(req.params.fileId, roomId);
+  const file = await getFileRow(req.params.fileId, roomId);
   if (!file) return res.status(404).json({ error: "File not found." });
-  if (!isMember(req.user.google_id, roomId)) {
+  if (!(await isMember(req.user.google_id, roomId))) {
     return res.status(403).json({ error: "Not a room member." });
   }
   const newName = sanitizeFileName(req.body?.name);
   if (!newName) return res.status(400).json({ error: "Invalid file name." });
   try {
-    const room = getRoomOrNull(roomId);
-    const host = db.prepare("SELECT * FROM users WHERE google_id = ?").get(room.host_user_id);
+    const room = await getRoomOrNull(roomId);
+    const host = await db.get("SELECT * FROM users WHERE google_id = ?", [room.host_user_id]);
     const token = await drive.getAccessToken(host);
     await fetch(`https://www.googleapis.com/drive/v3/files/${file.drive_file_id}`, {
       method: "PATCH",
@@ -397,7 +394,7 @@ roomsRouter.post("/:roomId/files/:fileId/rename", requireAuth, async (req, res) 
     }).then((r) => {
       if (!r.ok) throw new Error(`Drive rename ${r.status}`);
     });
-    db.prepare("UPDATE files SET name = ? WHERE id = ?").run(newName, file.id);
+    await db.run("UPDATE files SET name = ? WHERE id = ?", [newName, file.id]);
     emitToRoom(roomId, "file:updated", { id: file.id, name: newName });
     res.json({ id: file.id, name: newName });
   } catch (err) {
@@ -408,24 +405,24 @@ roomsRouter.post("/:roomId/files/:fileId/rename", requireAuth, async (req, res) 
 // ---- Delete ----
 roomsRouter.delete("/:roomId/files/:fileId", requireAuth, async (req, res) => {
   const roomId = sanitizeRoomId(req.params.roomId);
-  const file = getFileRow(req.params.fileId, roomId);
+  const file = await getFileRow(req.params.fileId, roomId);
   if (!file) return res.status(404).json({ error: "File not found." });
-  if (!isMember(req.user.google_id, roomId)) {
+  if (!(await isMember(req.user.google_id, roomId))) {
     return res.status(403).json({ error: "Not a room member." });
   }
-  const room = getRoomOrNull(roomId);
+  const room = await getRoomOrNull(roomId);
   const canDelete = room.host_user_id === req.user.google_id || file.uploader_id === req.user.google_id;
   if (!canDelete) {
     return res.status(403).json({ error: "Only the host or the uploader can delete this file." });
   }
   try {
-    const host = db.prepare("SELECT * FROM users WHERE google_id = ?").get(room.host_user_id);
+    const host = await db.get("SELECT * FROM users WHERE google_id = ?", [room.host_user_id]);
     const token = await drive.getAccessToken(host);
     await drive.deleteDriveFile(token, file.drive_file_id);
-    db.prepare("DELETE FROM files WHERE id = ?").run(file.id);
-    db.prepare("UPDATE rooms SET total_bytes = MAX(0, total_bytes - ?) WHERE room_id = ?").run(
-      file.size_bytes,
-      roomId
+    await db.run("DELETE FROM files WHERE id = ?", [file.id]);
+    await db.run(
+      "UPDATE rooms SET total_bytes = MAX(0, total_bytes - ?) WHERE room_id = ?",
+      [file.size_bytes, roomId]
     );
     emitToRoom(roomId, "file:deleted", { id: file.id });
     emitToRoom(roomId, "usage:updated", { usedBytes: room.total_bytes - file.size_bytes });
