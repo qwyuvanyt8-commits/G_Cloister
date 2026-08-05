@@ -4,14 +4,37 @@ const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export const API_URL = API;
 
+export function getStoredToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("gcl_token");
+}
+
+export function setStoredToken(token: string) {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("gcl_token", token);
+  }
+}
+
+export function removeStoredToken() {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("gcl_token");
+  }
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const token = getStoredToken();
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+    ...(options.headers as Record<string, string> || {}),
+  };
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
   const res = await fetch(`${API}${path}`, {
     ...options,
     credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.headers || {}),
-    },
+    headers,
   });
   const body = (await res.json().catch(() => ({}))) as Record<string, unknown>;
   if (!res.ok) {
@@ -43,6 +66,10 @@ export function uploadFile(opts: {
     xhr.open("POST", `${API}/api/rooms/${opts.roomId}/files`);
     xhr.setRequestHeader("X-File-Name", encodeURIComponent(opts.file.name));
     xhr.setRequestHeader("Content-Type", opts.file.type || "application/octet-stream");
+    const token = getStoredToken();
+    if (token) {
+      xhr.setRequestHeader("Authorization", `Bearer ${token}`);
+    }
     xhr.withCredentials = true;
 
     xhr.upload.onprogress = (e) => {

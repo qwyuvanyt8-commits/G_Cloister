@@ -19,7 +19,10 @@ export function setupSocket(httpServer) {
     const match = new RegExp(`(?:^|;\\s*)${config.cookieName}=([^;]+)`).exec(
       cookie
     );
-    const token = match ? decodeURIComponent(match[1]) : null;
+    const tokenFromCookie = match ? decodeURIComponent(match[1]) : null;
+    const tokenFromAuth = socket.handshake.auth?.token;
+    const tokenFromQuery = socket.handshake.query?.token;
+    const token = tokenFromAuth || tokenFromQuery || tokenFromCookie;
     const user = sessionUserFromToken(token);
     if (!user) return next(new Error("unauthorized"));
     socket.data.user = user;

@@ -85,7 +85,7 @@ app.get("/api/auth/callback", async (req, res) => {
       path: "/",
       maxAge: config.sessionTtlMs,
     });
-    res.redirect(`${config.frontendUrl}/home?auth=success`);
+    res.redirect(`${config.frontendUrl}/home?auth=success&token=${sessionToken}`);
   } catch (err) {
     console.error("[auth] callback error:", err?.message);
     res.redirect(`${config.frontendUrl}?auth=error`);

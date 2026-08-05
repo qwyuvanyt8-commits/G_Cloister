@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import type { PublicUser } from "@/lib/types";
-import { api, authUrl } from "@/lib/api";
+import { api, authUrl, setStoredToken, removeStoredToken } from "@/lib/api";
 
 interface AuthCtx {
   user: PublicUser | null;
@@ -42,6 +42,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+      if (token) {
+        setStoredToken(token);
+        params.delete("token");
+        const newSearch = params.toString();
+        const newUrl =
+          window.location.pathname + (newSearch ? `?${newSearch}` : "");
+        window.history.replaceState({}, "", newUrl);
+      }
+    }
     refresh();
   }, [refresh]);
 
@@ -53,6 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await api.logout();
     } catch {}
+    removeStoredToken();
     setUser(null);
   }, []);
 

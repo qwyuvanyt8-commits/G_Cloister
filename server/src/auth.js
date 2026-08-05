@@ -107,7 +107,9 @@ export function sessionUserFromToken(token) {
 }
 
 export function requireAuth(req, res, next) {
-  const token = req.cookies?.[config.cookieName];
+  const authHeader = req.headers.authorization;
+  const bearerToken = authHeader?.startsWith("Bearer ") ? authHeader.slice(7) : null;
+  const token = bearerToken || req.cookies?.[config.cookieName];
   const user = sessionUserFromToken(token);
   if (!user) {
     return res.status(401).json({ error: "Not authenticated" });
