@@ -28,7 +28,7 @@ app.use(
     origin: config.frontendUrl,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "X-File-Name", "Content-Length"],
+    allowedHeaders: ["Content-Type", "X-File-Name", "Content-Length", "Authorization"],
   })
 );
 app.use(cookieParser());
