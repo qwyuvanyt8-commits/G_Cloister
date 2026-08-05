@@ -87,7 +87,7 @@ app.get("/api/auth/callback", async (req, res) => {
   try {
     const tokens = await exchangeCode(code);
     const user = await handleGoogleTokens(tokens);
-    const sessionToken = createSession(user.google_id);
+    const sessionToken = await createSession(user.google_id);
     const isProd = process.env.NODE_ENV === "production";
     res.cookie(config.cookieName, sessionToken, {
       httpOnly: true,
@@ -107,8 +107,11 @@ app.get("/api/auth/me", requireAuth, (req, res) => {
   res.json({ user: publicUser(req.user) });
 });
 
-app.post("/api/auth/logout", (req, res) => {
-  destroySession(req.cookies?.[config.cookieName]);
+app.post("/api/auth/logout", async (req, res) => {
+  const token =
+    req.headers.authorization?.replace(/^Bearer\s+/i, "") ||
+    req.cookies?.[config.cookieName];
+  await destroySession(token);
   const isProd = process.env.NODE_ENV === "production";
   res.clearCookie(config.cookieName, {
     path: "/",
