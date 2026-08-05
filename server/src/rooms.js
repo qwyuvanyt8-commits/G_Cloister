@@ -358,7 +358,8 @@ roomsRouter.get("/:roomId/files/:fileId/preview", requireAuth, async (req, res) 
 
     const { permissionId, webViewLink, webContentLink, thumbnailLink } =
       await drive.ensureViewPermission(file.drive_file_id, token);
-    const links = { viewLink: webViewLink, contentLink: webContentLink, thumbnailLink };
+    const embedLink = webViewLink ? webViewLink.replace(/\/view(\?.*)?$/, "/preview") : webViewLink;
+    const links = { viewLink: embedLink, contentLink: webContentLink, thumbnailLink };
     const expiresAt = Date.now() + config.previewLinkTtlMs;
     linkCache.set(file.drive_file_id, { permissionId, expiresAt, links });
     setTimeout(() => {

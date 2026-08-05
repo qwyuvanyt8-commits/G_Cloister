@@ -4,8 +4,8 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, DownloadSimple, SpinnerGap } from "@phosphor-icons/react";
 import type { RoomFile } from "@/lib/types";
-import { api } from "@/lib/api";
-import { isImage } from "@/lib/format";
+import { api, getStoredToken } from "@/lib/api";
+import { isImage, isTextFile } from "@/lib/format";
 import { FileIcon } from "@/components/file-icon";
 
 export function PreviewModal({
@@ -18,15 +18,42 @@ export function PreviewModal({
   onClose: () => void;
 }) {
   const [link, setLink] = useState<{ viewLink: string; contentLink: string } | null>(null);
+  const [textContent, setTextContent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const img = file && isImage(file.mimeType);
+  const text = file && isTextFile(file.mimeType, file.name);
 
   useEffect(() => {
     if (!file) return;
     setLink(null);
     setError(null);
+    setTextContent(null);
     let cancelled = false;
     setLoading(true);
+
+    if (text) {
+      const token = getStoredToken();
+      fetch(api.downloadUrl(roomId, file.id), {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
+        .then((r) => {
+          if (!r.ok) throw new Error("Failed to load text file");
+          return r.text();
+        })
+        .then((t) => {
+          if (!cancelled) setTextContent(t);
+        })
+        .catch(() => {})
+        .finally(() => {
+          if (!cancelled) setLoading(false);
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
+
     api
       .preview(roomId, file.id)
       .then((r) => {
@@ -41,15 +68,13 @@ export function PreviewModal({
     return () => {
       cancelled = true;
     };
-  }, [roomId, file]);
+  }, [roomId, file, text]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
-
-  const img = file && isImage(file.mimeType);
 
   return (
     <AnimatePresence>
@@ -122,21 +147,27 @@ export function PreviewModal({
                   </a>
                 </div>
               )}
-              {link && !loading && (
-                img ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={link.contentLink}
-                    alt={file.name}
-                    className="max-h-[72dvh] max-w-full rounded-lg object-contain"
-                  />
-                ) : (
-                  <iframe
-                    src={link.viewLink}
-                    title={file.name}
-                    className="h-[72dvh] w-full rounded-lg border-0 bg-white"
-                    sandbox="allow-same-origin allow-scripts allow-popups"
-                  />
+              {!loading && textContent !== null ? (
+                <div className="h-[72dvh] w-full overflow-auto rounded-lg border border-border bg-[#0d1117] p-5 font-mono text-[13px] leading-relaxed text-[#e6edf3]">
+                  <pre className="whitespace-pre-wrap break-words">{textContent}</pre>
+                </div>
+              ) : (
+                link && !loading && (
+                  img ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={link.contentLink}
+                      alt={file.name}
+                      className="max-h-[72dvh] max-w-full rounded-lg object-contain"
+                    />
+                  ) : (
+                    <iframe
+                      src={link.viewLink}
+                      title={file.name}
+                      className="h-[72dvh] w-full rounded-lg border-0 bg-white"
+                      sandbox="allow-same-origin allow-scripts allow-popups"
+                    />
+                  )
                 )
               )}
             </div>

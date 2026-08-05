@@ -44,6 +44,18 @@ export function isImage(mime: string): boolean {
   return mime?.startsWith("image/") && !mime.includes("svg");
 }
 
+export function isTextFile(mime: string, name: string): boolean {
+  if (mime?.startsWith("text/")) return true;
+  const ext = name.split(".").pop()?.toLowerCase() || "";
+  const textExts = [
+    "txt", "md", "markdown", "json", "csv", "tsv", "log",
+    "js", "ts", "jsx", "tsx", "py", "sh", "bash", "html", "css",
+    "xml", "yaml", "yml", "env", "toml", "c", "cpp", "h", "java",
+    "rs", "go", "php", "sql"
+  ];
+  return textExts.includes(ext);
+}
+
 export function fileKind(mime: string, name: string): string {
   if (isImage(mime)) return "image";
   if (mime === "application/pdf") return "pdf";
