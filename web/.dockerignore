@@ -1,0 +1,17 @@
+node_modules
+.env
+.env.*
+.next
+out
+build
+*.log
+Dockerfile
+.dockerignore
+.git
+.gitignore
+*.md
+.vscode
+.idea
+coverage
+.nyc_output
+*.tsbuildinfo
