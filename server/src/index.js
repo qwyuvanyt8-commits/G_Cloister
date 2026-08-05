@@ -27,6 +27,8 @@ app.use(
   cors({
     origin: config.frontendUrl,
     credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "X-File-Name", "Content-Length"],
   })
 );
 app.use(cookieParser());
@@ -50,9 +52,11 @@ const rateLimit = (windowMs, max) => {
 // ---- Auth routes ----
 app.get("/api/auth/google", (req, res) => {
   const state = crypto.randomBytes(16).toString("hex");
+  const isProd = process.env.NODE_ENV === "production";
   res.cookie("gcl_oauth_state", state, {
     httpOnly: true,
-    sameSite: "lax",
+    sameSite: isProd ? "none" : "lax",
+    secure: isProd,
     path: "/",
     maxAge: 10 * 60 * 1000,
   });
@@ -73,12 +77,13 @@ app.get("/api/auth/callback", async (req, res) => {
     const tokens = await exchangeCode(code);
     const user = await handleGoogleTokens(tokens);
     const sessionToken = createSession(user.google_id);
+    const isProd = process.env.NODE_ENV === "production";
     res.cookie(config.cookieName, sessionToken, {
       httpOnly: true,
-      sameSite: "lax",
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
       path: "/",
       maxAge: config.sessionTtlMs,
-      secure: process.env.NODE_ENV === "production",
     });
     res.redirect(`${config.frontendUrl}/home?auth=success`);
   } catch (err) {
@@ -93,7 +98,12 @@ app.get("/api/auth/me", requireAuth, (req, res) => {
 
 app.post("/api/auth/logout", (req, res) => {
   destroySession(req.cookies?.[config.cookieName]);
-  res.clearCookie(config.cookieName, { path: "/" });
+  const isProd = process.env.NODE_ENV === "production";
+  res.clearCookie(config.cookieName, {
+    path: "/",
+    sameSite: isProd ? "none" : "lax",
+    secure: isProd,
+  });
   res.json({ ok: true });
 });
 

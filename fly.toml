@@ -2,13 +2,13 @@ app = "g-cloister"
 primary_region = "iad"
 
 [build]
-  [build.args]
-    NODE_VERSION = "22"
+  dockerfile = "server/Dockerfile"
 
 [env]
   NODE_ENV = "production"
   PORT = "4000"
-  FRONTEND_URL = "https://g-cloister.fly.dev"
+  # ⚠️ UPDATE THIS to your actual Vercel deployment URL (no trailing slash)
+  FRONTEND_URL = "https://g-cloister.vercel.app"
   DATABASE_PATH = "/app/data/gcloister.db"
   # Set these via `fly secrets set`:
   # GOOGLE_CLIENT_ID
