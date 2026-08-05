@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import {
   GoogleLogo,
@@ -28,7 +30,14 @@ const marqueeItems = [
 
 export default function LandingPage() {
   const { user, loading, signIn } = useAuth();
+  const router = useRouter();
   const reduce = useReducedMotion();
+
+  useEffect(() => {
+    if (!loading && user) {
+      router.replace("/home");
+    }
+  }, [loading, user, router]);
 
   return (
     <main className="relative overflow-x-clip">
