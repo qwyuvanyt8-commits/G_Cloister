@@ -100,7 +100,7 @@ export async function sessionUserFromToken(token) {
     [token]
   );
   if (!session) return null;
-  if (session.expires_at < Date.now()) {
+  if (Number(session.expires_at) < Date.now()) {
     await db.run("DELETE FROM sessions WHERE token = ?", [token]);
     return null;
   }

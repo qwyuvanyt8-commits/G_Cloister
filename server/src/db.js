@@ -13,19 +13,31 @@ export const client = isTurso
   ? createClient({
       url: process.env.TURSO_DATABASE_URL,
       authToken: process.env.TURSO_AUTH_TOKEN,
+      intMode: "number",
     })
   : createClient({
       url: `file:${config.databasePath}`,
+      intMode: "number",
     });
+
+function normalizeRow(row) {
+  if (!row) return null;
+  const out = {};
+  for (const key of Object.keys(row)) {
+    const val = row[key];
+    out[key] = typeof val === "bigint" ? Number(val) : val;
+  }
+  return out;
+}
 
 export const db = {
   async get(sql, args = []) {
     const res = await client.execute({ sql, args: Array.isArray(args) ? args : [args] });
-    return res.rows[0] ? res.rows[0] : null;
+    return res.rows[0] ? normalizeRow(res.rows[0]) : null;
   },
   async all(sql, args = []) {
     const res = await client.execute({ sql, args: Array.isArray(args) ? args : [args] });
-    return res.rows;
+    return res.rows.map((r) => normalizeRow(r));
   },
   async run(sql, args = []) {
     return client.execute({ sql, args: Array.isArray(args) ? args : [args] });
