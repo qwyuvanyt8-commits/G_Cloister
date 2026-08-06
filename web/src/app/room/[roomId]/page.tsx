@@ -13,6 +13,7 @@ import {
   XCircle,
   CheckCircle,
   SignOut,
+  CloudArrowDown,
 } from "@phosphor-icons/react";
 import { AppNav } from "@/components/app-nav";
 import { RequireAuth } from "@/components/require-auth";
@@ -185,6 +186,27 @@ function RoomInner() {
     [room, roomId, updateProgress, toast]
   );
 
+  const [togglingSync, setTogglingSync] = useState(false);
+
+  const toggleSync = async () => {
+    if (!room) return;
+    const next = !room.autoSync;
+    setTogglingSync(true);
+    try {
+      const res = await api.toggleAutoSync(roomId, next);
+      setRoom({ ...room, autoSync: res.autoSync });
+      if (res.autoSync) {
+        toast("Auto-sync enabled! Files in this room will automatically save to your Google Drive.");
+      } else {
+        toast("Auto-sync disabled.");
+      }
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Could not toggle auto-sync.", "error");
+    } finally {
+      setTogglingSync(false);
+    }
+  };
+
   const copyInvite = async () => {
     const base = `${window.location.origin}/join?room=${roomId}`;
     const url = room?.password ? `${base}&pw=${encodeURIComponent(room.password)}` : base;
@@ -330,6 +352,17 @@ function RoomInner() {
             >
               {copied ? "Copied" : "Invite"}
             </Button>
+            {!room.isHost && (
+              <Button
+                size="sm"
+                variant={room.autoSync ? "primary" : "secondary"}
+                icon={<CloudArrowDown size={16} weight={room.autoSync ? "bold" : "regular"} />}
+                loading={togglingSync}
+                onClick={toggleSync}
+              >
+                {room.autoSync ? "Saved to Drive" : "Save to Drive"}
+              </Button>
+            )}
             <Button
               size="sm"
               variant="secondary"

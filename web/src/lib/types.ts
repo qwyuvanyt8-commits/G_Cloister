@@ -48,6 +48,7 @@ export interface Room {
   members: RoomMember[];
   files: RoomFile[];
   password?: string;
+  autoSync?: boolean;
 }
 
 export interface RoomWithPassword extends Room {

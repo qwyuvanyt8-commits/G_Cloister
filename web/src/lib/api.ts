@@ -113,6 +113,11 @@ export const api = {
     }),
   leaveRoom: (roomId: string) =>
     request<{ ok: boolean }>(`/api/rooms/${roomId}/leave`, { method: "POST" }),
+  toggleAutoSync: (roomId: string, enabled: boolean) =>
+    request<{ ok: boolean; autoSync: boolean }>(`/api/rooms/${roomId}/sync`, {
+      method: "POST",
+      body: JSON.stringify({ enabled }),
+    }),
   getRoom: (roomId: string) => request<Room>(`/api/rooms/${roomId}`),
   myRooms: () =>
     request<{

@@ -41,6 +41,7 @@ function FileCard({
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const previewable = isPreviewable(file.mimeType);
 
   const copyLink = async () => {
@@ -58,6 +59,7 @@ function FileCard({
     } catch (err) {
       toast(err instanceof Error ? err.message : "Could not delete the file.", "error");
       setDeleting(false);
+      setConfirmDelete(false);
     }
   };
 
@@ -70,6 +72,37 @@ function FileCard({
       transition={{ type: "spring", stiffness: 260, damping: 26 }}
       className="group relative flex flex-col rounded-2xl border border-border bg-surface p-4 transition-colors duration-200 hover:border-accent-border"
     >
+      <AnimatePresence>
+        {confirmDelete && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl bg-surface/95 p-4 text-center backdrop-blur-sm border border-danger/30"
+          >
+            <TrashSimple size={24} className="text-danger" />
+            <p className="mt-2 text-[13px] font-semibold text-ink">Delete this file?</p>
+            <p className="mt-0.5 max-w-[90%] truncate text-[11.5px] text-muted">{file.name}</p>
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                onClick={() => setConfirmDelete(false)}
+                disabled={deleting}
+                className="h-7 rounded-lg border border-border bg-surface-2 px-2.5 text-[12px] font-medium text-muted transition-colors hover:text-ink disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={del}
+                disabled={deleting}
+                className="h-7 rounded-lg bg-danger px-3 text-[12px] font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {deleting ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex items-start justify-between">
         <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-2">
           <FileIcon name={file.name} mimeType={file.mimeType} size={22} />
@@ -92,8 +125,8 @@ function FileCard({
             {copied ? <Check size={17} className="text-accent" /> : <Copy size={17} />}
           </IconButton>
           {canDelete && (
-            <IconButton aria-label="Delete" onClick={del} disabled={deleting}>
-              <TrashSimple size={17} className={deleting ? "opacity-50" : ""} />
+            <IconButton aria-label="Delete" onClick={() => setConfirmDelete(true)}>
+              <TrashSimple size={17} className="text-muted hover:text-danger" />
             </IconButton>
           )}
         </div>

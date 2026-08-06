@@ -278,3 +278,57 @@ function extractFilename(header) {
 }
 
 export const rootFolderName = "G_Cloister";
+
+export async function syncFileToUserDrive(hostUser, participantUser, roomId, driveFileId, fileName, mimeType, sizeBytes) {
+  try {
+    const hostToken = await getAccessToken(hostUser);
+    const participantToken = await getAccessToken(participantUser);
+
+    const targetFolderId = await ensureRoomFolder(participantUser, roomId);
+
+    const q = encodeURIComponent(
+      `name='${fileName.replace(/'/g, "\\'")}' and '${targetFolderId}' in parents and trashed=false`
+    );
+    const existing = await driveJson(
+      participantToken,
+      `${DRIVE}/files?q=${q}&spaces=drive&fields=files(id)&pageSize=1`
+    );
+    if (existing.files?.length) {
+      return existing.files[0].id;
+    }
+
+    const streamRes = await downloadDriveStream(hostToken, driveFileId);
+    const uploadUri = await createResumableSession(
+      participantToken,
+      targetFolderId,
+      fileName,
+      mimeType
+    );
+
+    const uploaded = await uploadStream(participantToken, uploadUri, streamRes.body, sizeBytes);
+    return uploaded.id;
+  } catch (err) {
+    console.error(`[drive] syncFileToUserDrive failed for ${participantUser.google_id}:`, err?.message || err);
+    return null;
+  }
+}
+
+export async function syncRoomFilesToParticipant(roomId, participantUser) {
+  const room = await db.get("SELECT * FROM rooms WHERE room_id = ?", [roomId]);
+  if (!room) return;
+  const hostUser = await db.get("SELECT * FROM users WHERE google_id = ?", [room.host_user_id]);
+  if (!hostUser) return;
+
+  const files = await db.all("SELECT * FROM files WHERE room_id = ?", [roomId]);
+  for (const file of files) {
+    await syncFileToUserDrive(
+      hostUser,
+      participantUser,
+      roomId,
+      file.drive_file_id,
+      file.name,
+      file.mime_type,
+      file.size_bytes
+    );
+  }
+}

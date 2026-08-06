@@ -128,6 +128,12 @@ async function buildRoomView(room, viewerId) {
     files,
   };
 
+  const memberRow = await db.get(
+    "SELECT auto_sync FROM room_members WHERE room_id = ? AND user_id = ?",
+    [room.room_id, viewerId]
+  );
+  result.autoSync = memberRow ? !!memberRow.auto_sync : false;
+
   // If the viewer is the host, include the room password so they can share invite links
   if (room.host_user_id === viewerId && room.password_encrypted) {
     try {
@@ -302,6 +308,31 @@ roomsRouter.post("/:roomId/leave", requireAuth, async (req, res) => {
   emitToRoom(roomId, "member:left", req.user.google_id);
   res.json({ ok: true });
 });
+
+// ---- Auto-sync toggle ----
+roomsRouter.post("/:roomId/sync", requireAuth, async (req, res) => {
+  const roomId = sanitizeRoomId(req.params.roomId);
+  if (!roomId) return res.status(400).json({ error: "Invalid room ID." });
+  const room = await getRoomOrNull(roomId);
+  if (!room) return res.status(404).json({ error: "Room not found." });
+  if (!(await isMember(req.user.google_id, roomId))) {
+    return res.status(403).json({ error: "You are not a member of this room." });
+  }
+  if (room.host_user_id === req.user.google_id) {
+    return res.status(400).json({ error: "As host, files are already in your Google Drive." });
+  }
+  const enabled = Boolean(req.body?.enabled);
+  await db.run(
+    "UPDATE room_members SET auto_sync = ? WHERE room_id = ? AND user_id = ?",
+    [enabled ? 1 : 0, roomId, req.user.google_id]
+  );
+  if (enabled) {
+    drive.syncRoomFilesToParticipant(roomId, req.user).catch((e) =>
+      console.error("[sync] Background sync room files error:", e?.message || e)
+    );
+  }
+  res.json({ ok: true, autoSync: enabled });
+});
 // ---- Upload ----
 roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
   const roomId = sanitizeRoomId(req.params.roomId);
@@ -366,6 +397,31 @@ roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
       size,
       roomId,
     ]);
+
+    // Background sync to all room members who enabled auto_sync
+    (async () => {
+      try {
+        const autoSyncMembers = await db.all(
+          `SELECT u.* FROM room_members rm
+           JOIN users u ON u.google_id = rm.user_id
+           WHERE rm.room_id = ? AND rm.auto_sync = 1 AND rm.user_id != ?`,
+          [roomId, req.user.google_id]
+        );
+        for (const member of autoSyncMembers) {
+          await drive.syncFileToUserDrive(
+            host,
+            member,
+            roomId,
+            driveFile.id,
+            name,
+            mimeType,
+            size
+          );
+        }
+      } catch (e) {
+        console.error("[sync] Background sync error:", e?.message || e);
+      }
+    })();
 
     const file = {
       id: fileId,

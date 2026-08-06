@@ -109,4 +109,9 @@ export async function initDb() {
   try {
     await db.run("ALTER TABLE rooms ADD COLUMN password_encrypted TEXT");
   } catch { /* column already exists */ }
+
+  // Migration: add auto_sync column to room_members if it doesn't exist
+  try {
+    await db.run("ALTER TABLE room_members ADD COLUMN auto_sync INTEGER NOT NULL DEFAULT 0");
+  } catch { /* column already exists */ }
 }
