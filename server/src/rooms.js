@@ -94,7 +94,6 @@ async function buildRoomView(room, viewerId) {
   );
 
   const online = new Set(getOnlineUsers(room.room_id).map((u) => u.id));
-  if (viewerId) online.add(viewerId);
 
   const files = (
     await db.all(
