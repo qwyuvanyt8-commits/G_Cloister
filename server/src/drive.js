@@ -364,14 +364,15 @@ export async function syncFileToUserDrive(hostUser, participantUser, roomId, dri
 export async function syncRoomFilesToParticipant(roomId, participantUser) {
   console.log(`[sync] Starting room sync for room ${roomId} to user ${participantUser.google_id}...`);
   const room = await db.get("SELECT * FROM rooms WHERE room_id = ?", [roomId]);
-  if (!room) return;
+  if (!room) return 0;
   const hostUser = await db.get("SELECT * FROM users WHERE google_id = ?", [room.host_user_id]);
-  if (!hostUser) return;
+  if (!hostUser) return 0;
 
   const files = await db.all("SELECT * FROM files WHERE room_id = ?", [roomId]);
   console.log(`[sync] Found ${files.length} files to sync for room ${roomId}`);
+  let count = 0;
   for (const file of files) {
-    await syncFileToUserDrive(
+    const res = await syncFileToUserDrive(
       hostUser,
       participantUser,
       roomId,
@@ -380,5 +381,52 @@ export async function syncRoomFilesToParticipant(roomId, participantUser) {
       file.mime_type,
       file.size_bytes
     );
+    if (res) count++;
+  }
+  return count;
+}
+
+export async function deleteSyncedFileFromAllMembers(roomId, fileName) {
+  try {
+    const members = await db.all(
+      `SELECT u.* FROM room_members rm
+       JOIN users u ON u.google_id = rm.user_id
+       WHERE rm.room_id = ?`,
+      [roomId]
+    );
+
+    for (const member of members) {
+      try {
+        const token = await getAccessToken(member);
+        const rootId = await ensureRootFolder(member);
+        const qFolder = encodeURIComponent(
+          `name='${roomId}' and '${rootId}' in parents and trashed=false`
+        );
+        const folderList = await driveJson(
+          token,
+          `${DRIVE}/files?q=${qFolder}&spaces=drive&fields=files(id)&pageSize=1`
+        );
+        if (!folderList.files?.length) continue;
+        const folderId = folderList.files[0].id;
+
+        const safeName = fileName.replace(/'/g, "\\'");
+        const qFile = encodeURIComponent(
+          `name='${safeName}' and '${folderId}' in parents and trashed=false`
+        );
+        const fileList = await driveJson(
+          token,
+          `${DRIVE}/files?q=${qFile}&spaces=drive&fields=files(id)&pageSize=10`
+        );
+        if (fileList.files?.length) {
+          for (const f of fileList.files) {
+            await deleteDriveFile(token, f.id).catch(() => {});
+          }
+        }
+      } catch (memErr) {
+        console.error(`[drive] deleteSyncedFileFromAllMembers error for user ${member.google_id}:`, memErr?.message || memErr);
+      }
+    }
+  } catch (err) {
+    console.error("[drive] deleteSyncedFileFromAllMembers failed:", err?.message || err);
   }
 }

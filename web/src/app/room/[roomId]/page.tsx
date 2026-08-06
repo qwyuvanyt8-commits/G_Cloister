@@ -186,24 +186,25 @@ function RoomInner() {
     [room, roomId, updateProgress, toast]
   );
 
-  const [togglingSync, setTogglingSync] = useState(false);
+  const [savingToDrive, setSavingToDrive] = useState(false);
+  const [savedSuccess, setSavedSuccess] = useState(false);
 
-  const toggleSync = async () => {
-    if (!room) return;
-    const next = !room.autoSync;
-    setTogglingSync(true);
+  const handleSaveToDrive = async () => {
+    if (!room || savingToDrive) return;
+    setSavingToDrive(true);
     try {
-      const res = await api.toggleAutoSync(roomId, next);
-      setRoom({ ...room, autoSync: res.autoSync });
-      if (res.autoSync) {
-        toast("Auto-sync enabled! Files in this room will automatically save to your Google Drive.");
-      } else {
-        toast("Auto-sync disabled.");
-      }
+      const res = await api.syncToDrive(roomId);
+      setSavedSuccess(true);
+      toast(
+        res.syncedCount > 0
+          ? `Saved ${res.syncedCount} file${res.syncedCount > 1 ? "s" : ""} to your Google Drive under G_Cloister / ${roomId}.`
+          : `All room files are already saved in your Google Drive!`
+      );
+      setTimeout(() => setSavedSuccess(false), 2500);
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Could not toggle auto-sync.", "error");
+      toast(err instanceof Error ? err.message : "Could not save to Drive.", "error");
     } finally {
-      setTogglingSync(false);
+      setSavingToDrive(false);
     }
   };
 
@@ -355,12 +356,18 @@ function RoomInner() {
             {!room.isHost && (
               <Button
                 size="sm"
-                variant={room.autoSync ? "primary" : "secondary"}
-                icon={<CloudArrowDown size={16} weight={room.autoSync ? "bold" : "regular"} />}
-                loading={togglingSync}
-                onClick={toggleSync}
+                variant={savedSuccess ? "primary" : "secondary"}
+                icon={
+                  savedSuccess ? (
+                    <Check size={16} weight="bold" />
+                  ) : (
+                    <CloudArrowDown size={16} weight="regular" />
+                  )
+                }
+                loading={savingToDrive}
+                onClick={handleSaveToDrive}
               >
-                {room.autoSync ? "Saved to Drive" : "Save to Drive"}
+                {savingToDrive ? "Saving to Drive…" : savedSuccess ? "Saved to Drive" : "Save to Drive"}
               </Button>
             )}
             <Button

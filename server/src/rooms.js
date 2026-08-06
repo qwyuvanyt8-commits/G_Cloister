@@ -321,17 +321,12 @@ roomsRouter.post("/:roomId/sync", requireAuth, async (req, res) => {
   if (room.host_user_id === req.user.google_id) {
     return res.status(400).json({ error: "As host, files are already in your Google Drive." });
   }
-  const enabled = Boolean(req.body?.enabled);
-  await db.run(
-    "UPDATE room_members SET auto_sync = ? WHERE room_id = ? AND user_id = ?",
-    [enabled ? 1 : 0, roomId, req.user.google_id]
-  );
-  if (enabled) {
-    drive.syncRoomFilesToParticipant(roomId, req.user).catch((e) =>
-      console.error("[sync] Background sync room files error:", e?.message || e)
-    );
+  try {
+    const syncedCount = await drive.syncRoomFilesToParticipant(roomId, req.user);
+    res.json({ ok: true, syncedCount });
+  } catch (err) {
+    handleDriveError(res, err);
   }
-  res.json({ ok: true, autoSync: enabled });
 });
 // ---- Upload ----
 roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
@@ -560,6 +555,9 @@ roomsRouter.delete("/:roomId/files/:fileId", requireAuth, async (req, res) => {
     const host = await db.get("SELECT * FROM users WHERE google_id = ?", [room.host_user_id]);
     const token = await drive.getAccessToken(host);
     await drive.deleteDriveFile(token, file.drive_file_id);
+    drive.deleteSyncedFileFromAllMembers(roomId, file.name).catch((e) =>
+      console.error("[delete] deleteSyncedFileFromAllMembers error:", e?.message || e)
+    );
     await db.run("DELETE FROM files WHERE id = ?", [file.id]);
     await db.run(
       "UPDATE rooms SET total_bytes = MAX(0, total_bytes - ?) WHERE room_id = ?",
