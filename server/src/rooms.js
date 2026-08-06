@@ -303,6 +303,7 @@ roomsRouter.get("/:roomId", requireAuth, async (req, res) => {
         "UPDATE room_members SET left = 0, joined_at = ? WHERE room_id = ? AND user_id = ?",
         [Date.now(), roomId, req.user.google_id]
       );
+      emitToRoom(roomId, "member:joined", publicUser(req.user));
     }
   } else if (room.host_user_id === req.user.google_id) {
     await db.run(
