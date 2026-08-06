@@ -322,6 +322,35 @@ roomsRouter.post("/:roomId/leave", requireAuth, async (req, res) => {
   res.json({ ok: true });
 });
 
+// ---- Delete entire room (host only) ----
+roomsRouter.delete("/:roomId", requireAuth, async (req, res) => {
+  const roomId = sanitizeRoomId(req.params.roomId);
+  if (!roomId) return res.status(400).json({ error: "Invalid room ID." });
+  const room = await getRoomOrNull(roomId);
+  if (!room) return res.status(404).json({ error: "Room not found." });
+  if (room.host_user_id !== req.user.google_id) {
+    return res.status(403).json({ error: "Only the host can delete this room." });
+  }
+
+  await db.run("DELETE FROM rooms WHERE room_id = ?", [roomId]);
+  await db.run("DELETE FROM room_members WHERE room_id = ?", [roomId]);
+  await db.run("DELETE FROM files WHERE room_id = ?", [roomId]);
+
+  emitToRoom(roomId, "room:deleted", { roomId });
+  res.json({ ok: true, roomId });
+});
+
+// ---- Forget room (participant removes room card from list) ----
+roomsRouter.delete("/:roomId/forget", requireAuth, async (req, res) => {
+  const roomId = sanitizeRoomId(req.params.roomId);
+  if (!roomId) return res.status(400).json({ error: "Invalid room ID." });
+  await db.run(
+    "DELETE FROM room_members WHERE room_id = ? AND user_id = ?",
+    [roomId, req.user.google_id]
+  );
+  res.json({ ok: true, roomId });
+});
+
 // ---- Auto-sync toggle ----
 roomsRouter.post("/:roomId/sync", requireAuth, async (req, res) => {
   const roomId = sanitizeRoomId(req.params.roomId);

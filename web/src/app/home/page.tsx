@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
   PlusCircle,
   SignIn,
@@ -12,6 +12,7 @@ import {
   Users,
   HardDrive,
   FolderOpen,
+  TrashSimple,
 } from "@phosphor-icons/react";
 import { AppNav } from "@/components/app-nav";
 import { RequireAuth } from "@/components/require-auth";
@@ -48,35 +49,117 @@ function RoomCardItem({
   room,
   isHosted,
   delay,
+  onDeleted,
 }: {
   room: RoomCard;
   isHosted: boolean;
   delay: number;
+  onDeleted: (roomId: string, isHosted: boolean) => void;
 }) {
   const router = useRouter();
+  const { toast } = useToast();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeleting(true);
+    try {
+      if (isHosted) {
+        await api.deleteRoom(room.roomId);
+        toast(`Room /${room.roomId} deleted.`);
+      } else {
+        await api.forgetRoom(room.roomId);
+        toast(`Room /${room.roomId} removed from your list.`);
+      }
+      onDeleted(room.roomId, isHosted);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Could not remove room.", "error");
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
+  };
 
   return (
-    <motion.button
+    <motion.div
+      layout
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
       onClick={() => router.push(`/room/${room.roomId}`)}
-      className="group relative flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-accent-border hover:shadow-lg hover:shadow-accent/5 active:scale-[0.99]"
+      className="group relative flex cursor-pointer flex-col gap-3 rounded-2xl border border-border bg-surface p-5 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-accent-border hover:shadow-lg hover:shadow-accent/5 active:scale-[0.99]"
     >
+      <AnimatePresence>
+        {confirmDelete && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            onClick={(e) => e.stopPropagation()}
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl bg-surface/95 p-4 text-center backdrop-blur-sm border border-danger/30"
+          >
+            <TrashSimple size={24} className="text-danger" />
+            <p className="mt-2 text-[13.5px] font-semibold text-ink">
+              {isHosted ? `Delete /${room.roomId}?` : `Remove /${room.roomId}?`}
+            </p>
+            <p className="mt-0.5 max-w-[90%] text-[11.5px] text-muted leading-tight">
+              {isHosted
+                ? "This permanently deletes the room for all members."
+                : "Remove this room from your joined list."}
+            </p>
+            <div className="mt-3 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setConfirmDelete(false);
+                }}
+                disabled={deleting}
+                className="h-7 rounded-lg border border-border bg-surface-2 px-2.5 text-[12px] font-medium text-muted transition-colors hover:text-ink disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="h-7 rounded-lg bg-danger px-3 text-[12px] font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+              >
+                {deleting ? "Deleting…" : isHosted ? "Delete Room" : "Remove"}
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="flex items-center justify-between">
         <span className="font-mono text-[15px] font-semibold tracking-tight text-ink">
           /{room.roomId}
         </span>
-        {isHosted ? (
-          <span className="flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent">
-            <Crown size={11} weight="fill" />
-            {room.isMember === false ? "Host (Left)" : "Host"}
-          </span>
-        ) : room.isMember === false ? (
-          <span className="flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-muted">
-            Left
-          </span>
-        ) : null}
+        <div className="flex items-center gap-2">
+          {isHosted ? (
+            <span className="flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent">
+              <Crown size={11} weight="fill" />
+              {room.isMember === false ? "Host (Left)" : "Host"}
+            </span>
+          ) : room.isMember === false ? (
+            <span className="flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-muted">
+              Left
+            </span>
+          ) : null}
+          <button
+            type="button"
+            aria-label="Delete room"
+            onClick={(e) => {
+              e.stopPropagation();
+              setConfirmDelete(true);
+            }}
+            className="flex h-7 w-7 items-center justify-center rounded-lg text-faint opacity-0 transition-all hover:bg-danger-soft hover:text-danger focus-within:opacity-100 group-hover:opacity-100"
+          >
+            <TrashSimple size={15} />
+          </button>
+        </div>
       </div>
 
       {!isHosted && room.hostName && (
@@ -96,7 +179,7 @@ function RoomCardItem({
       </div>
 
       <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-accent/0 transition-all duration-300 group-hover:ring-accent/20" />
-    </motion.button>
+    </motion.div>
   );
 }
 
@@ -147,6 +230,22 @@ function HomeInner() {
       /* silently fail */
     } finally {
       setLoading(false);
+    }
+  }, []);
+
+  const handleRoomDeleted = useCallback((roomId: string, isHosted: boolean) => {
+    if (isHosted) {
+      setHosted((prev) => {
+        const next = prev.filter((r) => r.roomId !== roomId);
+        try { localStorage.setItem("gcl_my_hosted", JSON.stringify(next)); } catch {}
+        return next;
+      });
+    } else {
+      setJoined((prev) => {
+        const next = prev.filter((r) => r.roomId !== roomId);
+        try { localStorage.setItem("gcl_my_joined", JSON.stringify(next)); } catch {}
+        return next;
+      });
     }
   }, []);
 
@@ -253,7 +352,13 @@ function HomeInner() {
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {hosted.map((r, i) => (
-                <RoomCardItem key={r.roomId} room={r} isHosted delay={i * 0.04} />
+                <RoomCardItem
+                  key={r.roomId}
+                  room={r}
+                  isHosted
+                  delay={i * 0.04}
+                  onDeleted={handleRoomDeleted}
+                />
               ))}
             </div>
           </motion.section>
@@ -278,7 +383,13 @@ function HomeInner() {
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {joined.map((r, i) => (
-                <RoomCardItem key={r.roomId} room={r} isHosted={false} delay={i * 0.04} />
+                <RoomCardItem
+                  key={r.roomId}
+                  room={r}
+                  isHosted={false}
+                  delay={i * 0.04}
+                  onDeleted={handleRoomDeleted}
+                />
               ))}
             </div>
           </motion.section>

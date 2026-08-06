@@ -113,6 +113,10 @@ export const api = {
     }),
   leaveRoom: (roomId: string) =>
     request<{ ok: boolean }>(`/api/rooms/${roomId}/leave`, { method: "POST" }),
+  deleteRoom: (roomId: string) =>
+    request<{ ok: boolean }>(`/api/rooms/${roomId}`, { method: "DELETE" }),
+  forgetRoom: (roomId: string) =>
+    request<{ ok: boolean }>(`/api/rooms/${roomId}/forget`, { method: "DELETE" }),
   syncToDrive: (roomId: string) =>
     request<{ ok: boolean; syncedCount: number }>(`/api/rooms/${roomId}/sync`, {
       method: "POST",
