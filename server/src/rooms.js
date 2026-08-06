@@ -222,9 +222,9 @@ roomsRouter.get("/my", requireAuth, async (req, res) => {
 
   const hosted = await db.all(
     `SELECT r.room_id, r.created_at, r.total_bytes,
-            (SELECT COUNT(*) FROM room_members rm2 WHERE rm2.room_id = r.room_id) AS member_count
+            (SELECT COUNT(*) FROM room_members rm2 WHERE rm2.room_id = r.room_id) AS member_count,
+            EXISTS(SELECT 1 FROM room_members rm3 WHERE rm3.room_id = r.room_id AND rm3.user_id = ?) AS is_member
      FROM rooms r
-     JOIN room_members rm ON rm.room_id = r.room_id AND rm.user_id = ?
      WHERE r.host_user_id = ?
      ORDER BY r.created_at DESC`,
     [userId, userId]
@@ -250,6 +250,7 @@ roomsRouter.get("/my", requireAuth, async (req, res) => {
       usedFormatted: formatBytes(r.total_bytes),
       limitFormatted: formatBytes(config.roomStorageBytes),
       memberCount: r.member_count,
+      isMember: !!r.is_member,
     })),
     joined: joined.map((r) => ({
       roomId: r.room_id,
@@ -270,9 +271,18 @@ roomsRouter.get("/:roomId", requireAuth, async (req, res) => {
   if (!roomId) return res.status(400).json({ error: "Invalid room ID." });
   const room = await getRoomOrNull(roomId);
   if (!room) return res.status(404).json({ error: "Room not found." });
-  if (!(await isMember(req.user.google_id, roomId))) {
+
+  // Auto-rejoin host if they visit their own room after leaving
+  if (room.host_user_id === req.user.google_id && !(await isMember(req.user.google_id, roomId))) {
+    await db.run(
+      `INSERT INTO room_members (room_id, user_id, role, joined_at) VALUES (?, ?, 'host', ?)
+       ON CONFLICT(room_id, user_id) DO NOTHING`,
+      [roomId, req.user.google_id, Date.now()]
+    );
+  } else if (!(await isMember(req.user.google_id, roomId))) {
     return res.status(403).json({ error: "You are not a member of this room." });
   }
+
   res.json(await buildRoomView(room, req.user.google_id));
 });
 

@@ -29,6 +29,7 @@ interface RoomCard {
   memberCount: number;
   hostName?: string;
   hostAvatar?: string | null;
+  isMember?: boolean;
 }
 
 function timeAgo(ts: number): string {
@@ -69,7 +70,7 @@ function RoomCardItem({
         {isHosted && (
           <span className="flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent">
             <Crown size={11} weight="fill" />
-            Host
+            {room.isMember === false ? "Host (Left)" : "Host"}
           </span>
         )}
       </div>

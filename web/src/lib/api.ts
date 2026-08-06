@@ -123,6 +123,7 @@ export const api = {
         usedFormatted: string;
         limitFormatted: string;
         memberCount: number;
+        isMember?: boolean;
       }>;
       joined: Array<{
         roomId: string;
