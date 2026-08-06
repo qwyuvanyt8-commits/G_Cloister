@@ -1,4 +1,4 @@
-import type { PublicUser, Room, RoomWithPassword } from "./types";
+import type { PublicUser, Room, RoomFile, RoomWithPassword } from "./types";
 
 const API = (process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000").replace(
   /\/+$/,
@@ -63,7 +63,7 @@ export function uploadFile(opts: {
   roomId: string;
   file: File;
   onProgress?: (p: UploadProgress) => void;
-}): Promise<{ id: string; name: string }> {
+}): Promise<RoomFile> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("POST", `${API}/api/rooms/${opts.roomId}/files`);
@@ -86,7 +86,7 @@ export function uploadFile(opts: {
         body = JSON.parse(xhr.responseText) as Record<string, unknown>;
       } catch {}
       if (xhr.status >= 200 && xhr.status < 300) {
-        resolve({ id: String(body.id ?? ""), name: String(body.name ?? opts.file.name) });
+        resolve(body as unknown as RoomFile);
       } else {
         const err = new Error((body?.error as string) || "Upload failed") as Error & {
           status?: number;
@@ -117,6 +117,16 @@ export const api = {
     request<{ ok: boolean }>(`/api/rooms/${roomId}`, { method: "DELETE" }),
   forgetRoom: (roomId: string) =>
     request<{ ok: boolean }>(`/api/rooms/${roomId}/forget`, { method: "DELETE" }),
+  kickMember: (roomId: string, targetUserId: string) =>
+    request<{ ok: boolean }>(`/api/rooms/${roomId}/kick`, {
+      method: "POST",
+      body: JSON.stringify({ targetUserId }),
+    }),
+  unkickMember: (roomId: string, targetUserId: string) =>
+    request<{ ok: boolean }>(`/api/rooms/${roomId}/unkick`, {
+      method: "POST",
+      body: JSON.stringify({ targetUserId }),
+    }),
   syncToDrive: (roomId: string) =>
     request<{ ok: boolean; syncedCount: number }>(`/api/rooms/${roomId}/sync`, {
       method: "POST",

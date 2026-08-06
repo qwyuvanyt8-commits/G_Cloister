@@ -482,3 +482,27 @@ export async function deleteSyncedFileFromAllMembers(roomId, fileName) {
     console.error("[drive] deleteSyncedFileFromAllMembers failed:", err?.message || err);
   }
 }
+
+export async function deleteUserRoomFolder(user, roomId) {
+  try {
+    console.log(`[drive] Purging Google Drive room folder "${roomId}" for kicked user ${user.google_id || user.email}...`);
+    const token = await getAccessToken(user);
+    const rootId = await ensureRootFolder(user);
+
+    const q = encodeURIComponent(
+      `name='${roomId}' and '${rootId}' in parents and trashed=false`
+    );
+    const list = await driveJson(
+      token,
+      `${DRIVE}/files?q=${q}&spaces=drive&fields=files(id)&pageSize=10`
+    );
+    if (list.files?.length) {
+      for (const folder of list.files) {
+        await deleteDriveFile(token, folder.id).catch((e) => console.warn(`[drive] Delete folder ${folder.id} warning:`, e.message));
+      }
+      console.log(`[drive] Room folder "${roomId}" purged for user ${user.google_id}`);
+    }
+  } catch (err) {
+    console.error(`[drive] deleteUserRoomFolder failed for ${user.google_id}:`, err?.message || err);
+  }
+}

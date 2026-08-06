@@ -211,6 +211,13 @@ roomsRouter.post("/join", requireAuth, async (req, res) => {
     if (!bcrypt.compareSync(password, room.password_hash)) {
       return res.status(401).json({ error: "Incorrect room password." });
     }
+    const existingMember = await db.get(
+      "SELECT kicked FROM room_members WHERE room_id = ? AND user_id = ?",
+      [roomId, req.user.google_id]
+    );
+    if (existingMember?.kicked === 1) {
+      return res.status(403).json({ error: "You have been kicked from this room by the host." });
+    }
     await db.run(
       `INSERT INTO room_members (room_id, user_id, role, joined_at, left) VALUES (?, ?, 'member', ?, 0)
        ON CONFLICT(room_id, user_id) DO UPDATE SET left = 0, joined_at = ?`,
@@ -283,11 +290,14 @@ roomsRouter.get("/:roomId", requireAuth, async (req, res) => {
   if (!room) return res.status(404).json({ error: "Room not found." });
 
   const memberRow = await db.get(
-    "SELECT role, left FROM room_members WHERE room_id = ? AND user_id = ?",
+    "SELECT role, left, kicked FROM room_members WHERE room_id = ? AND user_id = ?",
     [roomId, req.user.google_id]
   );
 
   if (memberRow) {
+    if (memberRow.kicked === 1) {
+      return res.status(403).json({ error: "You have been kicked from this room by the host." });
+    }
     if (memberRow.left === 1) {
       await db.run(
         "UPDATE room_members SET left = 0, joined_at = ? WHERE room_id = ? AND user_id = ?",
@@ -296,7 +306,7 @@ roomsRouter.get("/:roomId", requireAuth, async (req, res) => {
     }
   } else if (room.host_user_id === req.user.google_id) {
     await db.run(
-      `INSERT INTO room_members (room_id, user_id, role, joined_at, left) VALUES (?, ?, 'host', ?, 0)
+      `INSERT INTO room_members (room_id, user_id, role, joined_at, left, kicked) VALUES (?, ?, 'host', ?, 0, 0)
        ON CONFLICT(room_id, user_id) DO UPDATE SET left = 0`,
       [roomId, req.user.google_id, Date.now()]
     );
@@ -322,6 +332,60 @@ roomsRouter.post("/:roomId/leave", requireAuth, async (req, res) => {
   );
   emitToRoom(roomId, "member:left", req.user.google_id);
   res.json({ ok: true });
+});
+
+// ---- Kick member (host only) ----
+roomsRouter.post("/:roomId/kick", requireAuth, async (req, res) => {
+  const roomId = sanitizeRoomId(req.params.roomId);
+  const targetUserId = typeof req.body?.targetUserId === "string" ? req.body.targetUserId : "";
+  if (!roomId || !targetUserId) {
+    return res.status(400).json({ error: "Room ID and target user ID are required." });
+  }
+  const room = await getRoomOrNull(roomId);
+  if (!room) return res.status(404).json({ error: "Room not found." });
+  if (room.host_user_id !== req.user.google_id) {
+    return res.status(403).json({ error: "Only the room host can kick members." });
+  }
+  if (targetUserId === req.user.google_id) {
+    return res.status(400).json({ error: "Host cannot kick themselves." });
+  }
+
+  await db.run(
+    "UPDATE room_members SET kicked = 1, left = 1 WHERE room_id = ? AND user_id = ?",
+    [roomId, targetUserId]
+  );
+
+  const targetUser = await db.get("SELECT * FROM users WHERE google_id = ?", [targetUserId]);
+  if (targetUser) {
+    drive.deleteUserRoomFolder(targetUser, roomId).catch((err) =>
+      console.error("[kick] drive purge error:", err.message)
+    );
+  }
+
+  emitToRoom(roomId, "member:kicked", { userId: targetUserId, roomId });
+  res.json({ ok: true, targetUserId });
+});
+
+// ---- Unkick member (host only) ----
+roomsRouter.post("/:roomId/unkick", requireAuth, async (req, res) => {
+  const roomId = sanitizeRoomId(req.params.roomId);
+  const targetUserId = typeof req.body?.targetUserId === "string" ? req.body.targetUserId : "";
+  if (!roomId || !targetUserId) {
+    return res.status(400).json({ error: "Room ID and target user ID are required." });
+  }
+  const room = await getRoomOrNull(roomId);
+  if (!room) return res.status(404).json({ error: "Room not found." });
+  if (room.host_user_id !== req.user.google_id) {
+    return res.status(403).json({ error: "Only the room host can unkick members." });
+  }
+
+  await db.run(
+    "UPDATE room_members SET kicked = 0 WHERE room_id = ? AND user_id = ?",
+    [roomId, targetUserId]
+  );
+
+  emitToRoom(roomId, "member:unkicked", { userId: targetUserId, roomId });
+  res.json({ ok: true, targetUserId });
 });
 
 // ---- Delete entire room (host only) ----

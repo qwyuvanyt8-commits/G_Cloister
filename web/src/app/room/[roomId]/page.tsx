@@ -14,6 +14,10 @@ import {
   CheckCircle,
   SignOut,
   CloudArrowDown,
+  House,
+  LockKey,
+  FolderOpen,
+  Crown,
 } from "@phosphor-icons/react";
 import { AppNav } from "@/components/app-nav";
 import { RequireAuth } from "@/components/require-auth";
@@ -118,6 +122,17 @@ function RoomInner() {
       if (m.id !== user?.id) toast(`${m.name} joined the room.`, "info");
     };
     const onMemberLeft = (userId: string) => removeMember(userId);
+    const onMemberKicked = ({ userId }: { userId: string }) => {
+      if (userId === user?.id) {
+        toast("You have been kicked from this room by the host.", "error");
+        router.push("/home");
+      } else {
+        upsertMember({ id: userId, kicked: true, left: true, online: false } as unknown as RoomMember);
+      }
+    };
+    const onMemberUnkicked = ({ userId }: { userId: string }) => {
+      upsertMember({ id: userId, kicked: false } as unknown as RoomMember);
+    };
     const onFileAdded = (f: RoomFile) => {
       addFile(f);
       if (f.uploader?.id !== user?.id) toast(`"${f.name}" was added by ${f.uploader?.name?.split(" ")[0] || "someone"}.`, "info");
@@ -132,6 +147,8 @@ function RoomInner() {
     socket.on("members:list", onMembers);
     socket.on("member:joined", onMemberJoined);
     socket.on("member:left", onMemberLeft);
+    socket.on("member:kicked", onMemberKicked);
+    socket.on("member:unkicked", onMemberUnkicked);
     socket.on("file:added", onFileAdded);
     socket.on("file:updated", onFileUpdated);
     socket.on("file:deleted", onFileDeleted);
@@ -146,56 +163,59 @@ function RoomInner() {
       socket.off("members:list", onMembers);
       socket.off("member:joined", onMemberJoined);
       socket.off("member:left", onMemberLeft);
+      socket.off("member:kicked", onMemberKicked);
+      socket.off("member:unkicked", onMemberUnkicked);
       socket.off("file:added", onFileAdded);
       socket.off("file:updated", onFileUpdated);
       socket.off("file:deleted", onFileDeleted);
       socket.off("usage:updated", onUsage);
     };
-  }, [loadState, roomId, setMemberPresence, setMembers, upsertMember, removeMember, addFile, updateFile, removeFile, patchUsage, setConnected, user?.id, toast]);
+  }, [loadState, roomId, router, setMemberPresence, setMembers, upsertMember, removeMember, addFile, updateFile, removeFile, patchUsage, setConnected, user?.id, toast]);
 
   const updateProgress = useCallback((key: string, patch: Partial<UploadItem>) => {
     setUploads((prev) => prev.map((u) => (u.key === key ? { ...u, ...patch } : u)));
   }, []);
 
   const handleFiles = useCallback(
-    (files: File[]) => {
-      if (!room) return;
-      const quotaLeft = room.usage.limitBytes - room.usage.usedBytes;
-      for (const f of files) {
-        if (f.size > quotaLeft) {
-          toast(`"${f.name}" is too big for the room's remaining space.`, "error");
-          continue;
-        }
-        const key = crypto.randomUUID();
+    async (files: File[]) => {
+      if (!room || files.length === 0) return;
+
+      const totalSize = files.reduce((acc, f) => acc + f.size, 0);
+      if (room.usage.usedBytes + totalSize > room.usage.limitBytes) {
+        toast("Upload exceeds the room storage limit.", "error");
+        return;
+      }
+
+      for (const file of files) {
+        const key = `${file.name}-${Date.now()}-${Math.random()}`;
         setUploads((prev) => [
+          { key, name: file.name, size: file.size, progress: 0, status: "uploading" },
           ...prev,
-          { key, name: f.name, size: f.size, progress: 0, status: "uploading" },
         ]);
-        uploadFile({
-          roomId,
-          file: f,
-          onProgress: (p: UploadProgress) =>
-            updateProgress(key, {
-              progress: p.total ? Math.round((p.loaded / p.total) * 100) : 0,
-            }),
-        })
-          .then(() => {
-            updateProgress(key, { status: "done", progress: 100 });
-            setTimeout(() => {
-              setUploads((prev) => prev.filter((u) => u.key !== key));
-            }, 1400);
-          })
-          .catch((err: unknown) => {
-            const message = err instanceof Error ? err.message : "Upload failed.";
-            updateProgress(key, { status: "error", error: message });
-            toast(message, "error");
-            setTimeout(() => {
-              setUploads((prev) => prev.filter((u) => u.key !== key));
-            }, 4200);
+
+        try {
+          const res = await uploadFile({
+            roomId,
+            file,
+            onProgress: (p: UploadProgress) =>
+              updateProgress(key, {
+                progress: p.total ? Math.round((p.loaded / p.total) * 100) : 0,
+              }),
           });
+          updateProgress(key, { progress: 100, status: "done" });
+          addFile(res);
+          toast(`"${file.name}" uploaded successfully.`);
+          setTimeout(() => {
+            setUploads((prev) => prev.filter((u) => u.key !== key));
+          }, 2500);
+        } catch (err: unknown) {
+          const msg = err instanceof Error ? err.message : "Upload failed";
+          updateProgress(key, { status: "error", error: msg });
+          toast(`Failed to upload "${file.name}": ${msg}`, "error");
+        }
       }
     },
-    [room, roomId, updateProgress, toast]
+    [room, roomId, updateProgress, toast, addFile]
   );
 
   const [savingToDrive, setSavingToDrive] = useState(false);
@@ -226,7 +246,7 @@ function RoomInner() {
     await navigator.clipboard.writeText(url);
     setCopied(true);
     toast(room?.password ? "Invite link with password copied!" : "Invite link copied — share the room password separately.");
-    setTimeout(() => setCopied(false), 1600);
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const leaveRoom = async () => {
@@ -235,107 +255,124 @@ function RoomInner() {
       toast("You left the room.");
       router.push("/home");
     } catch (err) {
-      toast(err instanceof Error ? err.message : "Could not leave the room.", "error");
-    }
-  };
-
-  const joinRoom = async () => {
-    setJoining(true);
-    try {
-      await api.joinRoom(roomId, joinPw);
-      toast("Welcome to the room.");
-      loadRoom();
-    } catch (err) {
-      toast(err instanceof Error ? err.message : "Could not join.", "error");
-    } finally {
-      setJoining(false);
+      toast(err instanceof Error ? err.message : "Failed to leave room.", "error");
     }
   };
 
   if (loadState === "loading") {
     return (
-      <div className="flex min-h-[60dvh] items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-muted">
-          <SpinnerGap size={26} className="animate-spin" />
-          <span className="font-mono text-[13px] tracking-widest">{roomId}</span>
-        </div>
+      <div className="flex min-h-[70vh] flex-col items-center justify-center gap-3">
+        <SpinnerGap size={32} className="animate-spin text-accent" />
+        <p className="font-mono text-[13px] text-faint">Entering room /{roomId}…</p>
       </div>
     );
   }
 
   if (loadState === "notfound") {
     return (
-      <div className="mx-auto flex max-w-md flex-col items-center px-5 py-24 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-2">
-          <WarningCircle size={26} weight="duotone" className="text-faint" />
-        </span>
-        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-ink">Room not found</h1>
-        <p className="mt-2 text-[14px] text-muted">{loadError}</p>
-        <Button className="mt-6" variant="secondary" onClick={() => router.push("/home")} icon={<ArrowUUpLeft size={17} />}>
-          Back to home
-        </Button>
+      <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center p-6 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-2 text-faint">
+          <House size={28} />
+        </div>
+        <h1 className="mt-4 text-xl font-semibold tracking-tight text-ink">Room not found</h1>
+        <p className="mt-2 text-sm text-muted">
+          We couldn&apos;t find room <span className="font-mono text-ink">/{roomId}</span>. Double-check the room ID or create a new room.
+        </p>
+        <div className="mt-6 flex items-center gap-3">
+          <Button variant="secondary" onClick={() => router.push("/home")}>
+            Go to home
+          </Button>
+          <Button onClick={() => router.push("/host")}>Host a room</Button>
+        </div>
       </div>
     );
   }
 
   if (loadState === "member") {
     return (
-      <div className="mx-auto flex max-w-md flex-col items-center px-5 py-24 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft">
-          <LinkSimple size={26} weight="duotone" className="text-accent" />
-        </span>
-        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-ink">This room is locked</h1>
-        <p className="mt-2 text-[14px] text-muted">Enter the password a host shared with you to step inside.</p>
-        <div className="mt-6 w-full max-w-xs">
+      <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center p-6 text-center">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+          <LockKey size={28} weight="bold" />
+        </div>
+        <h1 className="mt-4 text-xl font-semibold tracking-tight text-ink">Enter password for /{roomId}</h1>
+        <p className="mt-2 text-sm text-muted">
+          You are not currently inside this room. Enter the password set by the host to join.
+        </p>
+        <form
+          className="mt-6 w-full space-y-3"
+          onSubmit={async (e) => {
+            e.preventDefault();
+            setJoining(true);
+            try {
+              const res = await api.joinRoom(roomId, joinPw);
+              setRoom(res);
+              setLoadState("ready");
+              toast(`Welcome to /${roomId}!`);
+            } catch (err: unknown) {
+              toast(err instanceof Error ? err.message : "Could not join room.", "error");
+            } finally {
+              setJoining(false);
+            }
+          }}
+        >
           <input
             type="password"
+            placeholder="Room password"
             value={joinPw}
             onChange={(e) => setJoinPw(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && joinRoom()}
-            placeholder="Room password"
+            className="w-full rounded-xl border border-border bg-surface-2 px-4 py-2.5 text-sm text-ink placeholder:text-faint focus:border-accent focus:outline-none"
             autoFocus
-            className="h-12 w-full rounded-xl border border-border bg-surface-2 px-4 text-center font-mono tracking-widest text-ink placeholder:text-faint focus:border-accent-border focus:outline-none focus:ring-2 focus:ring-accent/40"
           />
-          <Button className="mt-3 w-full" loading={joining} onClick={joinRoom} icon={!joining && <CaretRight size={17} />}>
-            Enter the room
+          <Button type="submit" loading={joining} className="w-full">
+            Join Room
           </Button>
-        </div>
+        </form>
       </div>
     );
   }
 
   if (loadState === "error" || !room) {
     return (
-      <div className="mx-auto flex max-w-md flex-col items-center px-5 py-24 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-danger-soft">
-          <WarningCircle size={26} weight="duotone" className="text-danger" />
-        </span>
-        <h1 className="mt-6 text-2xl font-semibold tracking-tight text-ink">Something went wrong</h1>
-        <p className="mt-2 text-[14px] text-muted">{loadError}</p>
-        <Button className="mt-6" variant="secondary" onClick={loadRoom}>Try again</Button>
+      <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center p-6 text-center">
+        <h1 className="text-xl font-semibold tracking-tight text-ink">Something went wrong</h1>
+        <p className="mt-2 text-sm text-danger">{loadError || "Unable to load room."}</p>
+        <Button variant="secondary" className="mt-6" onClick={() => router.push("/home")}>
+          Return to home
+        </Button>
       </div>
     );
   }
 
   return (
-    <main className="min-h-[calc(100dvh-4rem)]">      <div className="mx-auto max-w-[1400px] px-5 pb-24 pt-6 lg:px-8">
-        {/* Room header */}
+    <main className="min-h-[calc(100dvh-4rem)]">
+      <div className="aurora pointer-events-none fixed inset-x-0 top-0 h-[60vh]" aria-hidden />
+
+      <div className="relative mx-auto max-w-[1400px] px-5 pb-24 pt-8 lg:px-8">
+        {/* Top header bar */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-wrap items-center justify-between gap-4"
+          className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-6"
         >
-          <div className="flex items-center gap-3.5">
-            <div className="flex flex-col">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent-soft text-accent ring-1 ring-accent-border">
+              <FolderOpen size={22} weight="bold" />
+            </div>
+            <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-2xl font-semibold tracking-tight text-ink">G_Cloister</h1>
-                <MonoChip className="px-2 py-0.5 text-[13px]">/{room.roomId}</MonoChip>
+                <h1 className="font-mono text-2xl font-bold tracking-tight text-ink">/{room.roomId}</h1>
+                {room.isHost && (
+                  <span className="flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent">
+                    <Crown size={11} weight="fill" />
+                    Host
+                  </span>
+                )}
               </div>
-              <div className="mt-1 flex items-center gap-2">
+              <div className="mt-0.5 flex items-center gap-2">
                 <span
                   className={cn(
-                    "flex items-center gap-1.5 text-[12px] font-medium",
+                    "flex items-center gap-1.5 font-mono text-[11.5px] font-medium",
                     connected ? "text-accent" : "text-faint"
                   )}
                 >
@@ -348,7 +385,7 @@ function RoomInner() {
                   {connected ? "Live" : "Reconnecting…"}
                 </span>
                 <span className="text-faint">·</span>
-                <span className="text-[12px] text-muted">
+                <span className="text-[11.5px] text-muted">
                   hosted by {room.host?.name?.split(" ")[0] || "someone"}
                 </span>
               </div>
@@ -356,7 +393,7 @@ function RoomInner() {
           </div>
 
           <div className="flex items-center gap-3">
-            <MembersStack members={room.members} />
+            <MembersStack members={room.members} isHost={room.isHost} roomId={room.roomId} />
             <Button
               size="sm"
               variant="secondary"

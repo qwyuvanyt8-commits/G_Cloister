@@ -30,6 +30,7 @@ export interface RoomMember {
   role: "host" | "member";
   online: boolean;
   left?: boolean;
+  kicked?: boolean;
 }
 
 export interface RoomUsage {
