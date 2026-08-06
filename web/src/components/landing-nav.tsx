@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { motion } from "motion/react";
 import { GoogleLogo, ArrowRight, Sun, Moon } from "@phosphor-icons/react";
 import { Logo, Button, IconButton } from "@/components/ui";
 import { useAuth } from "@/components/auth-provider";
