@@ -477,7 +477,7 @@ function RoomInner() {
 export default function RoomPage() {
   return (
     <RequireAuth>
-      <AppNav />
+      <AppNav backTo="/home" />
       <RoomInner />
     </RequireAuth>
   );

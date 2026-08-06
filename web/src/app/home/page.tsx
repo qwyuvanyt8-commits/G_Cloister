@@ -122,10 +122,7 @@ function HomeInner() {
     }
   });
 
-  const [loading, setLoading] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return !localStorage.getItem("gcl_my_hosted");
-  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const auth = params.get("auth");

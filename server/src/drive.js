@@ -279,19 +279,37 @@ function extractFilename(header) {
 
 export const rootFolderName = "G_Cloister";
 
-export async function uploadBuffer(token, uploadUri, buffer) {
-  const res = await fetch(uploadUri, {
-    method: "PUT",
+export async function uploadBufferMultipart(token, folderId, name, mimeType, buffer) {
+  const boundary = "-------314159265358979323846";
+  const delimiter = "\r\n--" + boundary + "\r\n";
+  const closeDelim = "\r\n--" + boundary + "--";
+
+  const metadata = {
+    name,
+    parents: [folderId],
+    mimeType: mimeType || "application/octet-stream",
+  };
+
+  const multipartResponseBody = Buffer.concat([
+    Buffer.from(delimiter + "Content-Type: application/json; charset=UTF-8\r\n\r\n" + JSON.stringify(metadata)),
+    Buffer.from("\r\n--" + boundary + "\r\n" + "Content-Type: " + (mimeType || "application/octet-stream") + "\r\n\r\n"),
+    buffer,
+    Buffer.from(closeDelim),
+  ]);
+
+  const res = await fetch("https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart", {
+    method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
-      "Content-Type": "application/octet-stream",
-      "Content-Length": String(buffer.length),
+      "Content-Type": `multipart/related; boundary=${boundary}`,
+      "Content-Length": String(multipartResponseBody.length),
     },
-    body: buffer,
+    body: multipartResponseBody,
   });
+
   if (!res.ok) {
     const body = await res.text();
-    const err = new Error(`Drive upload ${res.status}: ${body}`);
+    const err = new Error(`Drive multipart upload ${res.status}: ${body}`);
     err.status = res.status;
     throw err;
   }
@@ -324,7 +342,7 @@ export async function syncFileToUserDrive(hostUser, participantUser, roomId, dri
       await ensureViewPermission(driveFileId, hostToken);
       const copied = await driveJson(
         participantToken,
-        `${DRIVE}/files/${driveFileId}/copy`,
+        `${DRIVE}/files/${driveFileId}/copy?supportsAllDrives=true`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -337,23 +355,23 @@ export async function syncFileToUserDrive(hostUser, participantUser, roomId, dri
       console.log(`[sync] Native Drive copy successful for "${fileName}": ${copied.id}`);
       return copied.id;
     } catch (copyErr) {
-      console.warn(`[sync] Native Drive copy failed (${copyErr.message}), falling back to buffer stream...`);
+      console.warn(`[sync] Native Drive copy failed (${copyErr.message}), falling back to multipart buffer upload...`);
     }
 
-    // Method 2: Download buffer from host, upload buffer to participant
+    // Method 2: Download buffer from host, upload multipart buffer to participant
     const streamRes = await downloadDriveStream(hostToken, driveFileId);
     const arrayBuf = await streamRes.arrayBuffer();
     const buffer = Buffer.from(arrayBuf);
 
-    const uploadUri = await createResumableSession(
+    const uploaded = await uploadBufferMultipart(
       participantToken,
       targetFolderId,
       fileName,
-      mimeType
+      mimeType,
+      buffer
     );
 
-    const uploaded = await uploadBuffer(participantToken, uploadUri, buffer);
-    console.log(`[sync] Buffer upload successful for "${fileName}": ${uploaded.id}`);
+    console.log(`[sync] Multipart upload successful for "${fileName}": ${uploaded.id}`);
     return uploaded.id;
   } catch (err) {
     console.error(`[drive] syncFileToUserDrive failed for ${participantUser.google_id}:`, err?.message || err);
