@@ -12,6 +12,7 @@ import {
   ArrowUUpLeft,
   XCircle,
   CheckCircle,
+  SignOut,
 } from "@phosphor-icons/react";
 import { AppNav } from "@/components/app-nav";
 import { RequireAuth } from "@/components/require-auth";
@@ -185,10 +186,22 @@ function RoomInner() {
   );
 
   const copyInvite = async () => {
-    await navigator.clipboard.writeText(`${window.location.origin}/join?room=${roomId}`);
+    const base = `${window.location.origin}/join?room=${roomId}`;
+    const url = room?.password ? `${base}&pw=${encodeURIComponent(room.password)}` : base;
+    await navigator.clipboard.writeText(url);
     setCopied(true);
-    toast("Invite link copied — share the room password separately.");
+    toast(room?.password ? "Invite link with password copied!" : "Invite link copied — share the room password separately.");
     setTimeout(() => setCopied(false), 1600);
+  };
+
+  const leaveRoom = async () => {
+    try {
+      await api.leaveRoom(roomId);
+      toast("You left the room.");
+      router.push("/home");
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Could not leave the room.", "error");
+    }
   };
 
   const joinRoom = async () => {
@@ -317,6 +330,17 @@ function RoomInner() {
             >
               {copied ? "Copied" : "Invite"}
             </Button>
+            {!room.isHost && (
+              <Button
+                size="sm"
+                variant="secondary"
+                icon={<SignOut size={15} />}
+                onClick={leaveRoom}
+                className="text-danger hover:bg-danger/10"
+              >
+                Leave
+              </Button>
+            )}
           </div>
         </motion.div>
 

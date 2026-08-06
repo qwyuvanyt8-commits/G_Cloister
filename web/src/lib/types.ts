@@ -47,6 +47,7 @@ export interface Room {
   isHost: boolean;
   members: RoomMember[];
   files: RoomFile[];
+  password?: string;
 }
 
 export interface RoomWithPassword extends Room {

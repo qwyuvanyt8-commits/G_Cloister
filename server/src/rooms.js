@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { config } from "./config.js";
 import { db } from "./db.js";
 import { requireAuth, publicUser } from "./auth.js";
+import { encrypt, decrypt } from "./crypto.js";
 import * as drive from "./drive.js";
 import { emitToRoom, getOnlineUsers } from "./socket.js";
 
@@ -113,7 +114,7 @@ async function buildRoomView(room, viewerId) {
 
   const summary = await roomSummary(room);
 
-  return {
+  const result = {
     ...summary,
     isHost: room.host_user_id === viewerId,
     members: members.map((m) => ({
@@ -126,6 +127,15 @@ async function buildRoomView(room, viewerId) {
     })),
     files,
   };
+
+  // If the viewer is the host, include the room password so they can share invite links
+  if (room.host_user_id === viewerId && room.password_encrypted) {
+    try {
+      result.password = decrypt(room.password_encrypted);
+    } catch { /* ignore decryption errors */ }
+  }
+
+  return result;
 }
 
 export const roomsRouter = Router();
@@ -153,12 +163,13 @@ roomsRouter.post("/", requireAuth, async (req, res) => {
     const folderId = await drive.ensureRoomFolder(req.user, roomId);
     const password = generatePassword();
     const hash = bcrypt.hashSync(password, 10);
+    const encryptedPw = encrypt(password);
     const now = Date.now();
 
     await db.run(
-      `INSERT INTO rooms (room_id, host_user_id, password_hash, folder_id, total_bytes, created_at)
-       VALUES (?, ?, ?, ?, 0, ?)`,
-      [roomId, req.user.google_id, hash, folderId, now]
+      `INSERT INTO rooms (room_id, host_user_id, password_hash, password_encrypted, folder_id, total_bytes, created_at)
+       VALUES (?, ?, ?, ?, ?, 0, ?)`,
+      [roomId, req.user.google_id, hash, encryptedPw, folderId, now]
     );
     await db.run(
       `INSERT INTO room_members (room_id, user_id, role, joined_at) VALUES (?, ?, 'host', ?)`,
@@ -217,6 +228,25 @@ roomsRouter.get("/:roomId", requireAuth, async (req, res) => {
   res.json(await buildRoomView(room, req.user.google_id));
 });
 
+// ---- Leave room ----
+roomsRouter.post("/:roomId/leave", requireAuth, async (req, res) => {
+  const roomId = sanitizeRoomId(req.params.roomId);
+  if (!roomId) return res.status(400).json({ error: "Invalid room ID." });
+  const room = await getRoomOrNull(roomId);
+  if (!room) return res.status(404).json({ error: "Room not found." });
+  if (!(await isMember(req.user.google_id, roomId))) {
+    return res.status(403).json({ error: "You are not a member of this room." });
+  }
+  if (room.host_user_id === req.user.google_id) {
+    return res.status(400).json({ error: "The host cannot leave their own room." });
+  }
+  await db.run(
+    "DELETE FROM room_members WHERE room_id = ? AND user_id = ?",
+    [roomId, req.user.google_id]
+  );
+  emitToRoom(roomId, "member:left", req.user.google_id);
+  res.json({ ok: true });
+});
 // ---- Upload ----
 roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
   const roomId = sanitizeRoomId(req.params.roomId);

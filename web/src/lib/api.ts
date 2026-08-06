@@ -111,6 +111,8 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ roomId, password }),
     }),
+  leaveRoom: (roomId: string) =>
+    request<{ ok: boolean }>(`/api/rooms/${roomId}/leave`, { method: "POST" }),
   getRoom: (roomId: string) => request<Room>(`/api/rooms/${roomId}`),
   deleteFile: (roomId: string, fileId: string) =>
     request<{ id: string; deleted: boolean }>(`/api/rooms/${roomId}/files/${fileId}`, {
