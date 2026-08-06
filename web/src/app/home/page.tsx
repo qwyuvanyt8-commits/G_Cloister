@@ -102,9 +102,30 @@ function HomeInner() {
   const { toast } = useToast();
   const { user } = useAuth();
 
-  const [hosted, setHosted] = useState<RoomCard[]>([]);
-  const [joined, setJoined] = useState<RoomCard[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [hosted, setHosted] = useState<RoomCard[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = localStorage.getItem("gcl_my_hosted");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [joined, setJoined] = useState<RoomCard[]>(() => {
+    if (typeof window === "undefined") return [];
+    try {
+      const raw = localStorage.getItem("gcl_my_joined");
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [loading, setLoading] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !localStorage.getItem("gcl_my_hosted");
+  });
 
   useEffect(() => {
     const auth = params.get("auth");
@@ -117,6 +138,10 @@ function HomeInner() {
       const data = await api.myRooms();
       setHosted(data.hosted);
       setJoined(data.joined);
+      try {
+        localStorage.setItem("gcl_my_hosted", JSON.stringify(data.hosted));
+        localStorage.setItem("gcl_my_joined", JSON.stringify(data.joined));
+      } catch {}
     } catch {
       /* silently fail */
     } finally {
@@ -197,12 +222,23 @@ function HomeInner() {
           </motion.button>
         </div>
 
+        {/* Skeleton while first load */}
+        {loading && hosted.length === 0 && joined.length === 0 && (
+          <div className="mt-14 space-y-6 animate-pulse">
+            <div className="h-6 w-32 rounded-lg bg-surface-2" />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="h-28 rounded-2xl bg-surface-2/60 border border-border" />
+              <div className="h-28 rounded-2xl bg-surface-2/60 border border-border" />
+            </div>
+          </div>
+        )}
+
         {/* My Hosted Rooms */}
-        {!loading && hosted.length > 0 && (
+        {hosted.length > 0 && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="mt-14"
           >
             <div className="flex items-center gap-2.5 mb-5">
@@ -216,18 +252,18 @@ function HomeInner() {
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {hosted.map((r, i) => (
-                <RoomCardItem key={r.roomId} room={r} isHosted delay={0.26 + i * 0.04} />
+                <RoomCardItem key={r.roomId} room={r} isHosted delay={i * 0.04} />
               ))}
             </div>
           </motion.section>
         )}
 
         {/* Joined Rooms */}
-        {!loading && joined.length > 0 && (
+        {joined.length > 0 && (
           <motion.section
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="mt-14"
           >
             <div className="flex items-center gap-2.5 mb-5">
@@ -241,7 +277,7 @@ function HomeInner() {
             </div>
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {joined.map((r, i) => (
-                <RoomCardItem key={r.roomId} room={r} isHosted={false} delay={0.34 + i * 0.04} />
+                <RoomCardItem key={r.roomId} room={r} isHosted={false} delay={i * 0.04} />
               ))}
             </div>
           </motion.section>
@@ -252,7 +288,7 @@ function HomeInner() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.3, duration: 0.6 }}
+            transition={{ delay: 0.1, duration: 0.6 }}
             className="mt-14 flex flex-col items-center text-center"
           >
             <FolderOpen size={32} weight="duotone" className="text-faint" />

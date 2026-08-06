@@ -102,6 +102,7 @@ export async function initDb() {
 
     CREATE INDEX IF NOT EXISTS idx_files_room ON files(room_id);
     CREATE INDEX IF NOT EXISTS idx_members_user ON room_members(user_id);
+    CREATE INDEX IF NOT EXISTS idx_rooms_host ON rooms(host_user_id);
   `);
 
   // Migration: add password_encrypted column if it doesn't exist
