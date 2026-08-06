@@ -155,7 +155,7 @@ function RoomCardItem({
               e.stopPropagation();
               setConfirmDelete(true);
             }}
-            className="flex h-7 w-7 items-center justify-center rounded-lg text-faint opacity-0 transition-all hover:bg-danger-soft hover:text-danger focus-within:opacity-100 group-hover:opacity-100"
+            className="relative z-10 flex h-7 w-7 items-center justify-center rounded-lg text-faint opacity-70 transition-all hover:bg-danger-soft hover:text-danger hover:opacity-100 group-hover:opacity-100"
           >
             <TrashSimple size={15} />
           </button>
@@ -178,7 +178,7 @@ function RoomCardItem({
         <span className="ml-auto">{timeAgo(room.createdAt)}</span>
       </div>
 
-      <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-accent/0 transition-all duration-300 group-hover:ring-accent/20" />
+      <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-accent/0 transition-all duration-300 group-hover:ring-accent/20" />
     </motion.div>
   );
 }
