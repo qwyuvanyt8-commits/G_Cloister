@@ -279,25 +279,72 @@ function extractFilename(header) {
 
 export const rootFolderName = "G_Cloister";
 
+export async function uploadBuffer(token, uploadUri, buffer) {
+  const res = await fetch(uploadUri, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/octet-stream",
+      "Content-Length": String(buffer.length),
+    },
+    body: buffer,
+  });
+  if (!res.ok) {
+    const body = await res.text();
+    const err = new Error(`Drive upload ${res.status}: ${body}`);
+    err.status = res.status;
+    throw err;
+  }
+  return res.json();
+}
+
 export async function syncFileToUserDrive(hostUser, participantUser, roomId, driveFileId, fileName, mimeType, sizeBytes) {
   try {
+    console.log(`[sync] Syncing "${fileName}" to participant ${participantUser.google_id || participantUser.email}...`);
     const hostToken = await getAccessToken(hostUser);
     const participantToken = await getAccessToken(participantUser);
 
     const targetFolderId = await ensureRoomFolder(participantUser, roomId);
 
+    const safeName = fileName.replace(/'/g, "\\'");
     const q = encodeURIComponent(
-      `name='${fileName.replace(/'/g, "\\'")}' and '${targetFolderId}' in parents and trashed=false`
+      `name='${safeName}' and '${targetFolderId}' in parents and trashed=false`
     );
     const existing = await driveJson(
       participantToken,
       `${DRIVE}/files?q=${q}&spaces=drive&fields=files(id)&pageSize=1`
     );
     if (existing.files?.length) {
+      console.log(`[sync] "${fileName}" already exists in participant Drive (${existing.files[0].id})`);
       return existing.files[0].id;
     }
 
+    // Method 1: Drive API native copy (Instant & Server-side)
+    try {
+      await ensureViewPermission(driveFileId, hostToken);
+      const copied = await driveJson(
+        participantToken,
+        `${DRIVE}/files/${driveFileId}/copy`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: fileName,
+            parents: [targetFolderId],
+          }),
+        }
+      );
+      console.log(`[sync] Native Drive copy successful for "${fileName}": ${copied.id}`);
+      return copied.id;
+    } catch (copyErr) {
+      console.warn(`[sync] Native Drive copy failed (${copyErr.message}), falling back to buffer stream...`);
+    }
+
+    // Method 2: Download buffer from host, upload buffer to participant
     const streamRes = await downloadDriveStream(hostToken, driveFileId);
+    const arrayBuf = await streamRes.arrayBuffer();
+    const buffer = Buffer.from(arrayBuf);
+
     const uploadUri = await createResumableSession(
       participantToken,
       targetFolderId,
@@ -305,7 +352,8 @@ export async function syncFileToUserDrive(hostUser, participantUser, roomId, dri
       mimeType
     );
 
-    const uploaded = await uploadStream(participantToken, uploadUri, streamRes.body, sizeBytes);
+    const uploaded = await uploadBuffer(participantToken, uploadUri, buffer);
+    console.log(`[sync] Buffer upload successful for "${fileName}": ${uploaded.id}`);
     return uploaded.id;
   } catch (err) {
     console.error(`[drive] syncFileToUserDrive failed for ${participantUser.google_id}:`, err?.message || err);
@@ -314,12 +362,14 @@ export async function syncFileToUserDrive(hostUser, participantUser, roomId, dri
 }
 
 export async function syncRoomFilesToParticipant(roomId, participantUser) {
+  console.log(`[sync] Starting room sync for room ${roomId} to user ${participantUser.google_id}...`);
   const room = await db.get("SELECT * FROM rooms WHERE room_id = ?", [roomId]);
   if (!room) return;
   const hostUser = await db.get("SELECT * FROM users WHERE google_id = ?", [room.host_user_id]);
   if (!hostUser) return;
 
   const files = await db.all("SELECT * FROM files WHERE room_id = ?", [roomId]);
+  console.log(`[sync] Found ${files.length} files to sync for room ${roomId}`);
   for (const file of files) {
     await syncFileToUserDrive(
       hostUser,
