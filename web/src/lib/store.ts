@@ -14,6 +14,7 @@ interface RoomState {
   setMembers: (members: RoomMember[]) => void;
   upsertMember: (member: RoomMember) => void;
   removeMember: (userId: string) => void;
+  setMemberPresence: (userId: string, online: boolean) => void;
   setConnected: (connected: boolean) => void;
   reset: () => void;
 }
@@ -87,6 +88,18 @@ export const useRoomStore = create<RoomState>((set) => ({
           ...s.room,
           members: s.room.members.map((m) =>
             m.id === userId ? { ...m, online: false, left: true } : m
+          ),
+        },
+      };
+    }),
+  setMemberPresence: (userId: string, online: boolean) =>
+    set((s) => {
+      if (!s.room) return {};
+      return {
+        room: {
+          ...s.room,
+          members: s.room.members.map((m) =>
+            m.id === userId ? { ...m, online } : m
           ),
         },
       };

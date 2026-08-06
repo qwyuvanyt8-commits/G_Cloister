@@ -57,6 +57,7 @@ function RoomInner() {
   const setMembers = useRoomStore((s) => s.setMembers);
   const upsertMember = useRoomStore((s) => s.upsertMember);
   const removeMember = useRoomStore((s) => s.removeMember);
+  const setMemberPresence = useRoomStore((s) => s.setMemberPresence);
   const setConnected = useRoomStore((s) => s.setConnected);
   const reset = useRoomStore((s) => s.reset);
 
@@ -75,25 +76,31 @@ function RoomInner() {
       const data: Room = await api.getRoom(roomId);
       setRoom(data);
       setLoadState("ready");
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Could not load the room.";
-      setLoadError(message);
-      const status = (err as { status?: number })?.status;
-      if (status === 404) setLoadState("notfound");
-      else if (status === 403) setLoadState("member");
-      else setLoadState("error");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to load room.";
+      if (message.toLowerCase().includes("not found")) {
+        setLoadState("notfound");
+      } else if (
+        message.toLowerCase().includes("not a member") ||
+        message.toLowerCase().includes("403")
+      ) {
+        setLoadState("member");
+      } else {
+        setLoadState("error");
+        setLoadError(message);
+      }
     }
   }, [roomId, setRoom]);
 
   useEffect(() => {
-    reset();
-    setUploads([]);
     loadRoom();
-  }, [roomId, reset, loadRoom]);
+    return () => reset();
+  }, [loadRoom, reset]);
 
   /* Socket wiring */
   useEffect(() => {
     if (loadState !== "ready") return;
+
     const socket = getSocket();
     socketRef.current = socket;
 
@@ -102,6 +109,8 @@ function RoomInner() {
       socket.emit("room:enter", { roomId });
     };
     const onDisconnect = () => setConnected(false);
+    const onMemberPresence = ({ userId, online }: { userId: string; online: boolean }) =>
+      setMemberPresence(userId, online);
     const onMembers = (members: RoomMember[]) => setMembers(members);
     const onMemberJoined = (m: RoomMember) => {
       upsertMember(m);
@@ -118,6 +127,7 @@ function RoomInner() {
 
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
+    socket.on("member:presence", onMemberPresence);
     socket.on("members:list", onMembers);
     socket.on("member:joined", onMemberJoined);
     socket.on("member:left", onMemberLeft);
@@ -131,6 +141,7 @@ function RoomInner() {
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
+      socket.off("member:presence", onMemberPresence);
       socket.off("members:list", onMembers);
       socket.off("member:joined", onMemberJoined);
       socket.off("member:left", onMemberLeft);
@@ -139,7 +150,7 @@ function RoomInner() {
       socket.off("file:deleted", onFileDeleted);
       socket.off("usage:updated", onUsage);
     };
-  }, [loadState, roomId, setMembers, upsertMember, removeMember, addFile, updateFile, removeFile, patchUsage, setConnected, user?.id, toast]);
+  }, [loadState, roomId, setMemberPresence, setMembers, upsertMember, removeMember, addFile, updateFile, removeFile, patchUsage, setConnected, user?.id, toast]);
 
   const updateProgress = useCallback((key: string, patch: Partial<UploadItem>) => {
     setUploads((prev) => prev.map((u) => (u.key === key ? { ...u, ...patch } : u)));
