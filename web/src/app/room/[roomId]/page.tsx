@@ -158,9 +158,19 @@ function RoomInner() {
     socket.on("file:deleted", onFileDeleted);
     socket.on("usage:updated", onUsage);
 
+    const handleUnload = () => {
+      socket.emit("room:leave", { roomId });
+    };
+
+    window.addEventListener("beforeunload", handleUnload);
+    window.addEventListener("pagehide", handleUnload);
+
     if (socket.connected) onConnect();
 
     return () => {
+      window.removeEventListener("beforeunload", handleUnload);
+      window.removeEventListener("pagehide", handleUnload);
+      socket.emit("room:leave", { roomId });
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("member:presence", onMemberPresence);

@@ -12,6 +12,8 @@ export function setupSocket(httpServer) {
       origin: config.frontendUrl,
       credentials: true,
     },
+    pingInterval: 5000,
+    pingTimeout: 5000,
   });
 
   io.use(async (socket, next) => {
@@ -38,7 +40,7 @@ export function setupSocket(httpServer) {
       if (typeof roomId !== "string") return;
       roomId = roomId.toLowerCase();
       const member = await db.get(
-        "SELECT 1 FROM room_members WHERE room_id = ? AND user_id = ?",
+        "SELECT 1 FROM room_members WHERE room_id = ? AND user_id = ? AND (kicked IS NULL OR kicked = 0)",
         [roomId, user.google_id]
       );
       if (!member) return;
@@ -52,6 +54,21 @@ export function setupSocket(httpServer) {
       const onlineIds = [...online.get(roomId).keys()];
       socket.emit("room:presence:sync", { onlineUserIds: onlineIds });
       io.to(`room:${roomId}`).emit("member:presence", { userId: user.google_id, online: true });
+    });
+
+    socket.on("room:leave", ({ roomId } = {}) => {
+      if (typeof roomId !== "string") return;
+      roomId = roomId.toLowerCase();
+
+      socket.data.rooms.delete(roomId);
+      socket.leave(`room:${roomId}`);
+
+      const members = online.get(roomId);
+      if (members) {
+        members.delete(user.google_id);
+        if (members.size === 0) online.delete(roomId);
+        io.to(`room:${roomId}`).emit("member:presence", { userId: user.google_id, online: false });
+      }
     });
 
     socket.on("disconnect", () => {
