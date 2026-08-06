@@ -114,4 +114,9 @@ export async function initDb() {
   try {
     await db.run("ALTER TABLE room_members ADD COLUMN auto_sync INTEGER NOT NULL DEFAULT 0");
   } catch { /* column already exists */ }
+
+  // Migration: add left column to room_members if it doesn't exist
+  try {
+    await db.run("ALTER TABLE room_members ADD COLUMN left INTEGER NOT NULL DEFAULT 0");
+  } catch { /* column already exists */ }
 }

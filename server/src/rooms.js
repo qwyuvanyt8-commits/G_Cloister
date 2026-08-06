@@ -53,7 +53,7 @@ function formatBytes(n) {
 
 async function isMember(userId, roomId) {
   return !!(await db.get(
-    "SELECT 1 FROM room_members WHERE room_id = ? AND user_id = ?",
+    "SELECT 1 FROM room_members WHERE room_id = ? AND user_id = ? AND (left IS NULL OR left = 0)",
     [roomId, userId]
   ));
 }
@@ -89,7 +89,7 @@ async function buildRoomView(room, viewerId) {
   const members = await db.all(
     `SELECT rm.role, u.google_id, u.email, u.name, u.avatar
      FROM room_members rm JOIN users u ON u.google_id = rm.user_id
-     WHERE rm.room_id = ? ORDER BY rm.joined_at ASC`,
+     WHERE rm.room_id = ? AND (rm.left IS NULL OR rm.left = 0) ORDER BY rm.joined_at ASC`,
     [room.room_id]
   );
 
@@ -210,9 +210,9 @@ roomsRouter.post("/join", requireAuth, async (req, res) => {
       return res.status(401).json({ error: "Incorrect room password." });
     }
     await db.run(
-      `INSERT INTO room_members (room_id, user_id, role, joined_at) VALUES (?, ?, 'member', ?)
-       ON CONFLICT(room_id, user_id) DO NOTHING`,
-      [roomId, req.user.google_id, Date.now()]
+      `INSERT INTO room_members (room_id, user_id, role, joined_at, left) VALUES (?, ?, 'member', ?, 0)
+       ON CONFLICT(room_id, user_id) DO UPDATE SET left = 0, joined_at = ?`,
+      [roomId, req.user.google_id, Date.now(), Date.now()]
     );
 
     emitToRoom(roomId, "member:joined", publicUser(req.user));
@@ -228,8 +228,8 @@ roomsRouter.get("/my", requireAuth, async (req, res) => {
 
   const hosted = await db.all(
     `SELECT r.room_id, r.created_at, r.total_bytes,
-            (SELECT COUNT(*) FROM room_members rm2 WHERE rm2.room_id = r.room_id) AS member_count,
-            EXISTS(SELECT 1 FROM room_members rm3 WHERE rm3.room_id = r.room_id AND rm3.user_id = ?) AS is_member
+            (SELECT COUNT(*) FROM room_members rm2 WHERE rm2.room_id = r.room_id AND (rm2.left IS NULL OR rm2.left = 0)) AS member_count,
+            EXISTS(SELECT 1 FROM room_members rm3 WHERE rm3.room_id = r.room_id AND rm3.user_id = ? AND (rm3.left IS NULL OR rm3.left = 0)) AS is_member
      FROM rooms r
      WHERE r.host_user_id = ?
      ORDER BY r.created_at DESC`,
@@ -239,7 +239,8 @@ roomsRouter.get("/my", requireAuth, async (req, res) => {
   const joined = await db.all(
     `SELECT r.room_id, r.created_at, r.total_bytes,
             u.name AS host_name, u.avatar AS host_avatar,
-            (SELECT COUNT(*) FROM room_members rm2 WHERE rm2.room_id = r.room_id) AS member_count
+            (SELECT COUNT(*) FROM room_members rm2 WHERE rm2.room_id = r.room_id AND (rm2.left IS NULL OR rm2.left = 0)) AS member_count,
+            (rm.left IS NULL OR rm.left = 0) AS is_member
      FROM rooms r
      JOIN room_members rm ON rm.room_id = r.room_id AND rm.user_id = ?
      JOIN users u ON u.google_id = r.host_user_id
@@ -267,6 +268,7 @@ roomsRouter.get("/my", requireAuth, async (req, res) => {
       hostName: r.host_name,
       hostAvatar: r.host_avatar,
       memberCount: r.member_count,
+      isMember: !!r.is_member,
     })),
   });
 });
@@ -278,14 +280,25 @@ roomsRouter.get("/:roomId", requireAuth, async (req, res) => {
   const room = await getRoomOrNull(roomId);
   if (!room) return res.status(404).json({ error: "Room not found." });
 
-  // Auto-rejoin host if they visit their own room after leaving
-  if (room.host_user_id === req.user.google_id && !(await isMember(req.user.google_id, roomId))) {
+  const memberRow = await db.get(
+    "SELECT role, left FROM room_members WHERE room_id = ? AND user_id = ?",
+    [roomId, req.user.google_id]
+  );
+
+  if (memberRow) {
+    if (memberRow.left === 1) {
+      await db.run(
+        "UPDATE room_members SET left = 0, joined_at = ? WHERE room_id = ? AND user_id = ?",
+        [Date.now(), roomId, req.user.google_id]
+      );
+    }
+  } else if (room.host_user_id === req.user.google_id) {
     await db.run(
-      `INSERT INTO room_members (room_id, user_id, role, joined_at) VALUES (?, ?, 'host', ?)
-       ON CONFLICT(room_id, user_id) DO NOTHING`,
+      `INSERT INTO room_members (room_id, user_id, role, joined_at, left) VALUES (?, ?, 'host', ?, 0)
+       ON CONFLICT(room_id, user_id) DO UPDATE SET left = 0`,
       [roomId, req.user.google_id, Date.now()]
     );
-  } else if (!(await isMember(req.user.google_id, roomId))) {
+  } else {
     return res.status(403).json({ error: "You are not a member of this room." });
   }
 
@@ -299,10 +312,10 @@ roomsRouter.post("/:roomId/leave", requireAuth, async (req, res) => {
   const room = await getRoomOrNull(roomId);
   if (!room) return res.status(404).json({ error: "Room not found." });
   if (!(await isMember(req.user.google_id, roomId))) {
-    return res.status(403).json({ error: "You are not a member of this room." });
+    return res.status(403).json({ error: "You are not an active member of this room." });
   }
   await db.run(
-    "DELETE FROM room_members WHERE room_id = ? AND user_id = ?",
+    "UPDATE room_members SET left = 1 WHERE room_id = ? AND user_id = ?",
     [roomId, req.user.google_id]
   );
   emitToRoom(roomId, "member:left", req.user.google_id);

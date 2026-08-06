@@ -67,12 +67,16 @@ function RoomCardItem({
         <span className="font-mono text-[15px] font-semibold tracking-tight text-ink">
           /{room.roomId}
         </span>
-        {isHosted && (
+        {isHosted ? (
           <span className="flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent">
             <Crown size={11} weight="fill" />
             {room.isMember === false ? "Host (Left)" : "Host"}
           </span>
-        )}
+        ) : room.isMember === false ? (
+          <span className="flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-muted">
+            Left
+          </span>
+        ) : null}
       </div>
 
       {!isHosted && room.hostName && (
