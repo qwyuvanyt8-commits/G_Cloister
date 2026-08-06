@@ -114,6 +114,27 @@ export const api = {
   leaveRoom: (roomId: string) =>
     request<{ ok: boolean }>(`/api/rooms/${roomId}/leave`, { method: "POST" }),
   getRoom: (roomId: string) => request<Room>(`/api/rooms/${roomId}`),
+  myRooms: () =>
+    request<{
+      hosted: Array<{
+        roomId: string;
+        createdAt: number;
+        usedBytes: number;
+        usedFormatted: string;
+        limitFormatted: string;
+        memberCount: number;
+      }>;
+      joined: Array<{
+        roomId: string;
+        createdAt: number;
+        usedBytes: number;
+        usedFormatted: string;
+        limitFormatted: string;
+        hostName: string;
+        hostAvatar: string | null;
+        memberCount: number;
+      }>;
+    }>("/api/rooms/my"),
   deleteFile: (roomId: string, fileId: string) =>
     request<{ id: string; deleted: boolean }>(`/api/rooms/${roomId}/files/${fileId}`, {
       method: "DELETE",

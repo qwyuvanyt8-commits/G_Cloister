@@ -330,17 +330,15 @@ function RoomInner() {
             >
               {copied ? "Copied" : "Invite"}
             </Button>
-            {!room.isHost && (
-              <Button
-                size="sm"
-                variant="secondary"
-                icon={<SignOut size={15} />}
-                onClick={leaveRoom}
-                className="text-danger hover:bg-danger/10"
-              >
-                Leave
-              </Button>
-            )}
+            <Button
+              size="sm"
+              variant="secondary"
+              icon={<SignOut size={15} />}
+              onClick={leaveRoom}
+              className="text-danger hover:bg-danger/10"
+            >
+              Leave
+            </Button>
           </div>
         </motion.div>
 

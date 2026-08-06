@@ -1,14 +1,99 @@
 "use client";
 
-import { Suspense, useEffect } from "react";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "motion/react";
-import { PlusCircle, SignIn, ArrowRight, GoogleLogo } from "@phosphor-icons/react";
+import {
+  PlusCircle,
+  SignIn,
+  ArrowRight,
+  GoogleLogo,
+  Crown,
+  Users,
+  HardDrive,
+  FolderOpen,
+} from "@phosphor-icons/react";
 import { AppNav } from "@/components/app-nav";
 import { RequireAuth } from "@/components/require-auth";
 import { Button } from "@/components/ui";
 import { useAuth } from "@/components/auth-provider";
 import { useToast } from "@/components/toast";
+import { api } from "@/lib/api";
+
+interface RoomCard {
+  roomId: string;
+  createdAt: number;
+  usedBytes: number;
+  usedFormatted: string;
+  limitFormatted: string;
+  memberCount: number;
+  hostName?: string;
+  hostAvatar?: string | null;
+}
+
+function timeAgo(ts: number): string {
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return "just now";
+  if (mins < 60) return `${mins}m ago`;
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24) return `${hrs}h ago`;
+  const days = Math.floor(hrs / 24);
+  if (days < 30) return `${days}d ago`;
+  return `${Math.floor(days / 30)}mo ago`;
+}
+
+function RoomCardItem({
+  room,
+  isHosted,
+  delay,
+}: {
+  room: RoomCard;
+  isHosted: boolean;
+  delay: number;
+}) {
+  const router = useRouter();
+
+  return (
+    <motion.button
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+      onClick={() => router.push(`/room/${room.roomId}`)}
+      className="group relative flex flex-col gap-3 rounded-2xl border border-border bg-surface p-5 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-accent-border hover:shadow-lg hover:shadow-accent/5 active:scale-[0.99]"
+    >
+      <div className="flex items-center justify-between">
+        <span className="font-mono text-[15px] font-semibold tracking-tight text-ink">
+          /{room.roomId}
+        </span>
+        {isHosted && (
+          <span className="flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent">
+            <Crown size={11} weight="fill" />
+            Host
+          </span>
+        )}
+      </div>
+
+      {!isHosted && room.hostName && (
+        <p className="text-[12px] text-muted">
+          hosted by {room.hostName.split(" ")[0]}
+        </p>
+      )}
+
+      <div className="flex flex-wrap items-center gap-3 text-[12px] text-faint">
+        <span className="flex items-center gap-1">
+          <Users size={13} /> {room.memberCount}
+        </span>
+        <span className="flex items-center gap-1">
+          <HardDrive size={13} /> {room.usedFormatted} / {room.limitFormatted}
+        </span>
+        <span className="ml-auto">{timeAgo(room.createdAt)}</span>
+      </div>
+
+      <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-accent/0 transition-all duration-300 group-hover:ring-accent/20" />
+    </motion.button>
+  );
+}
 
 function HomeInner() {
   const router = useRouter();
@@ -16,11 +101,33 @@ function HomeInner() {
   const { toast } = useToast();
   const { user } = useAuth();
 
+  const [hosted, setHosted] = useState<RoomCard[]>([]);
+  const [joined, setJoined] = useState<RoomCard[]>([]);
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const auth = params.get("auth");
     if (auth === "success") toast("Signed in. Welcome back.");
     else if (auth === "error") toast("Sign-in didn't complete. Please try again.", "error");
   }, [params, toast]);
+
+  const loadRooms = useCallback(async () => {
+    try {
+      const data = await api.myRooms();
+      setHosted(data.hosted);
+      setJoined(data.joined);
+    } catch {
+      /* silently fail */
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadRooms();
+  }, [loadRooms]);
+
+  const hasRooms = hosted.length > 0 || joined.length > 0;
 
   return (
     <main className="min-h-[calc(100dvh-4rem)]">
@@ -88,6 +195,71 @@ function HomeInner() {
             </span>
           </motion.button>
         </div>
+
+        {/* My Hosted Rooms */}
+        {!loading && hosted.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-14"
+          >
+            <div className="flex items-center gap-2.5 mb-5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                <Crown size={16} weight="fill" />
+              </span>
+              <h2 className="text-lg font-semibold tracking-tight text-ink">Your Rooms</h2>
+              <span className="ml-1 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-faint">
+                {hosted.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {hosted.map((r, i) => (
+                <RoomCardItem key={r.roomId} room={r} isHosted delay={0.26 + i * 0.04} />
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        {/* Joined Rooms */}
+        {!loading && joined.length > 0 && (
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.32, ease: [0.16, 1, 0.3, 1] }}
+            className="mt-14"
+          >
+            <div className="flex items-center gap-2.5 mb-5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted">
+                <FolderOpen size={16} weight="duotone" />
+              </span>
+              <h2 className="text-lg font-semibold tracking-tight text-ink">Joined Rooms</h2>
+              <span className="ml-1 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-faint">
+                {joined.length}
+              </span>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {joined.map((r, i) => (
+                <RoomCardItem key={r.roomId} room={r} isHosted={false} delay={0.34 + i * 0.04} />
+              ))}
+            </div>
+          </motion.section>
+        )}
+
+        {/* Empty state */}
+        {!loading && !hasRooms && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.3, duration: 0.6 }}
+            className="mt-14 flex flex-col items-center text-center"
+          >
+            <FolderOpen size={32} weight="duotone" className="text-faint" />
+            <p className="mt-3 text-[14px] text-muted">
+              No rooms yet. Host one or join with a code to get started.
+            </p>
+          </motion.div>
+        )}
 
         <motion.p
           initial={{ opacity: 0 }}

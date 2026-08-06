@@ -216,6 +216,54 @@ roomsRouter.post("/join", requireAuth, async (req, res) => {
   }
 });
 
+// ---- My rooms (hosted + joined) ----
+roomsRouter.get("/my", requireAuth, async (req, res) => {
+  const userId = req.user.google_id;
+
+  const hosted = await db.all(
+    `SELECT r.room_id, r.created_at, r.total_bytes,
+            (SELECT COUNT(*) FROM room_members rm2 WHERE rm2.room_id = r.room_id) AS member_count
+     FROM rooms r
+     JOIN room_members rm ON rm.room_id = r.room_id AND rm.user_id = ?
+     WHERE r.host_user_id = ?
+     ORDER BY r.created_at DESC`,
+    [userId, userId]
+  );
+
+  const joined = await db.all(
+    `SELECT r.room_id, r.created_at, r.total_bytes,
+            u.name AS host_name, u.avatar AS host_avatar,
+            (SELECT COUNT(*) FROM room_members rm2 WHERE rm2.room_id = r.room_id) AS member_count
+     FROM rooms r
+     JOIN room_members rm ON rm.room_id = r.room_id AND rm.user_id = ?
+     JOIN users u ON u.google_id = r.host_user_id
+     WHERE r.host_user_id != ?
+     ORDER BY rm.joined_at DESC`,
+    [userId, userId]
+  );
+
+  res.json({
+    hosted: hosted.map((r) => ({
+      roomId: r.room_id,
+      createdAt: r.created_at,
+      usedBytes: r.total_bytes,
+      usedFormatted: formatBytes(r.total_bytes),
+      limitFormatted: formatBytes(config.roomStorageBytes),
+      memberCount: r.member_count,
+    })),
+    joined: joined.map((r) => ({
+      roomId: r.room_id,
+      createdAt: r.created_at,
+      usedBytes: r.total_bytes,
+      usedFormatted: formatBytes(r.total_bytes),
+      limitFormatted: formatBytes(config.roomStorageBytes),
+      hostName: r.host_name,
+      hostAvatar: r.host_avatar,
+      memberCount: r.member_count,
+    })),
+  });
+});
+
 // ---- Room detail ----
 roomsRouter.get("/:roomId", requireAuth, async (req, res) => {
   const roomId = sanitizeRoomId(req.params.roomId);
@@ -236,9 +284,6 @@ roomsRouter.post("/:roomId/leave", requireAuth, async (req, res) => {
   if (!room) return res.status(404).json({ error: "Room not found." });
   if (!(await isMember(req.user.google_id, roomId))) {
     return res.status(403).json({ error: "You are not a member of this room." });
-  }
-  if (room.host_user_id === req.user.google_id) {
-    return res.status(400).json({ error: "The host cannot leave their own room." });
   }
   await db.run(
     "DELETE FROM room_members WHERE room_id = ? AND user_id = ?",
