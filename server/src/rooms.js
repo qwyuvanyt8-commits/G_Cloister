@@ -404,8 +404,8 @@ roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
         const autoSyncMembers = await db.all(
           `SELECT u.* FROM room_members rm
            JOIN users u ON u.google_id = rm.user_id
-           WHERE rm.room_id = ? AND rm.auto_sync = 1 AND rm.user_id != ?`,
-          [roomId, req.user.google_id]
+           WHERE rm.room_id = ? AND rm.auto_sync = 1`,
+          [roomId]
         );
         for (const member of autoSyncMembers) {
           await drive.syncFileToUserDrive(
