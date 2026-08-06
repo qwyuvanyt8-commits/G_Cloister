@@ -1,6 +1,7 @@
 import { Readable } from "node:stream";
 import { db } from "./db.js";
 import { oauthClient, decryptTokens } from "./auth.js";
+import { encrypt } from "./crypto.js";
 
 const DRIVE = "https://www.googleapis.com/drive/v3";
 const UPLOAD = "https://www.googleapis.com/upload/drive/v3/files";
@@ -12,13 +13,45 @@ export async function getAccessToken(user) {
     err.code = "DRIVE_NO_TOKEN";
     throw err;
   }
-  const client = oauthClient();
-  client.setCredentials({
-    access_token: accessToken || undefined,
-    refresh_token: refreshToken || undefined,
-  });
-  const { token } = await client.getAccessToken();
-  return token;
+
+  // If token_expiry exists and is still valid (with 5 min buffer), use existing token
+  if (accessToken && user.token_expiry && Number(user.token_expiry) > Date.now() + 5 * 60 * 1000) {
+    return accessToken;
+  }
+
+  // Need to refresh
+  if (!refreshToken) {
+    // No refresh token and access token is expired/missing
+    if (accessToken) return accessToken; // try it anyway
+    const err = new Error("This account has no Google Drive access. Re-authorize.");
+    err.code = "DRIVE_NO_TOKEN";
+    throw err;
+  }
+
+  try {
+    const client = oauthClient();
+    client.setCredentials({
+      refresh_token: refreshToken,
+    });
+    const { credentials } = await client.refreshAccessToken();
+    const newAccessToken = credentials.access_token;
+    const newExpiry = credentials.expiry_date || (Date.now() + 3600 * 1000);
+
+    // Save the refreshed token back to the database
+    await db.run(
+      "UPDATE users SET access_token = ?, token_expiry = ? WHERE google_id = ?",
+      [encrypt(newAccessToken), newExpiry, user.google_id]
+    );
+
+    return newAccessToken;
+  } catch (refreshErr) {
+    console.error("[drive] Token refresh failed:", refreshErr?.message);
+    // If refresh fails but we have an access token, try it anyway
+    if (accessToken) return accessToken;
+    const err = new Error("The host's Google Drive access expired. Ask the host to sign in again.");
+    err.code = "DRIVE_NO_TOKEN";
+    throw err;
+  }
 }
 
 async function driveJson(token, url, opts = {}) {
