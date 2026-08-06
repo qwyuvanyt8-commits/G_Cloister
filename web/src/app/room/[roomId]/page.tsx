@@ -62,6 +62,7 @@ function RoomInner() {
   const upsertMember = useRoomStore((s) => s.upsertMember);
   const removeMember = useRoomStore((s) => s.removeMember);
   const setMemberPresence = useRoomStore((s) => s.setMemberPresence);
+  const syncMemberPresence = useRoomStore((s) => s.syncMemberPresence);
   const setConnected = useRoomStore((s) => s.setConnected);
   const reset = useRoomStore((s) => s.reset);
 
@@ -116,6 +117,8 @@ function RoomInner() {
     const onDisconnect = () => setConnected(false);
     const onMemberPresence = ({ userId, online }: { userId: string; online: boolean }) =>
       setMemberPresence(userId, online);
+    const onPresenceSync = ({ onlineUserIds }: { onlineUserIds: string[] }) =>
+      syncMemberPresence(onlineUserIds);
     const onMembers = (members: RoomMember[]) => setMembers(members);
     const onMemberJoined = (m: RoomMember) => {
       upsertMember(m);
@@ -144,6 +147,7 @@ function RoomInner() {
     socket.on("connect", onConnect);
     socket.on("disconnect", onDisconnect);
     socket.on("member:presence", onMemberPresence);
+    socket.on("room:presence:sync", onPresenceSync);
     socket.on("members:list", onMembers);
     socket.on("member:joined", onMemberJoined);
     socket.on("member:left", onMemberLeft);
@@ -160,6 +164,7 @@ function RoomInner() {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
       socket.off("member:presence", onMemberPresence);
+      socket.off("room:presence:sync", onPresenceSync);
       socket.off("members:list", onMembers);
       socket.off("member:joined", onMemberJoined);
       socket.off("member:left", onMemberLeft);
@@ -170,7 +175,7 @@ function RoomInner() {
       socket.off("file:deleted", onFileDeleted);
       socket.off("usage:updated", onUsage);
     };
-  }, [loadState, roomId, router, setMemberPresence, setMembers, upsertMember, removeMember, addFile, updateFile, removeFile, patchUsage, setConnected, user?.id, toast]);
+  }, [loadState, roomId, router, setMemberPresence, syncMemberPresence, setMembers, upsertMember, removeMember, addFile, updateFile, removeFile, patchUsage, setConnected, user?.id, toast]);
 
   const updateProgress = useCallback((key: string, patch: Partial<UploadItem>) => {
     setUploads((prev) => prev.map((u) => (u.key === key ? { ...u, ...patch } : u)));
