@@ -87,9 +87,9 @@ async function roomSummary(room) {
 
 async function buildRoomView(room, viewerId) {
   const members = await db.all(
-    `SELECT rm.role, u.google_id, u.email, u.name, u.avatar
+    `SELECT rm.role, rm.left, u.google_id, u.email, u.name, u.avatar
      FROM room_members rm JOIN users u ON u.google_id = rm.user_id
-     WHERE rm.room_id = ? AND (rm.left IS NULL OR rm.left = 0) ORDER BY rm.joined_at ASC`,
+     WHERE rm.room_id = ? ORDER BY rm.joined_at ASC`,
     [room.room_id]
   );
 
@@ -124,6 +124,7 @@ async function buildRoomView(room, viewerId) {
       avatar: m.avatar,
       role: m.role,
       online: online.has(m.google_id),
+      left: !!m.left,
     })),
     files,
   };

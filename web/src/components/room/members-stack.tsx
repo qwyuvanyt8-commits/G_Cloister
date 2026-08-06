@@ -55,9 +55,9 @@ export function MembersStack({ members }: { members: RoomMember[] }) {
               <ul className="flex max-h-72 flex-col gap-0.5 overflow-auto">
                 {members.map((m) => (
                   <li key={m.id} className="flex items-center gap-2.5 rounded-xl px-3 py-2 transition-colors hover:bg-surface-2">
-                    <Avatar name={m.name} src={m.avatar} size={32} online={m.online} />
+                    <Avatar name={m.name} src={m.avatar} size={32} online={m.left ? false : m.online} />
                     <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 min-w-0">
+                      <div className="flex flex-wrap items-center gap-1.5 min-w-0">
                         <p className="truncate text-[13px] font-medium text-ink">{m.name}</p>
                         {m.role === "host" ? (
                           <span className="flex shrink-0 items-center gap-0.5 rounded-full bg-accent-soft px-1.5 py-0.5 text-[10px] font-semibold text-accent">
@@ -69,6 +69,15 @@ export function MembersStack({ members }: { members: RoomMember[] }) {
                             Member
                           </span>
                         )}
+                        {m.left ? (
+                          <span className="shrink-0 rounded-full bg-danger-soft px-1.5 py-0.5 text-[10px] font-semibold text-danger">
+                            Left
+                          </span>
+                        ) : !m.online ? (
+                          <span className="shrink-0 rounded-full bg-surface-2 px-1.5 py-0.5 text-[10px] font-semibold text-faint">
+                            Offline
+                          </span>
+                        ) : null}
                       </div>
                       <p className="truncate text-[11px] text-faint">{m.email}</p>
                     </div>

@@ -74,8 +74,8 @@ export const useRoomStore = create<RoomState>((set) => ({
         room: {
           ...s.room,
           members: exists
-            ? s.room.members.map((m) => (m.id === member.id ? { ...m, online: true } : m))
-            : [...s.room.members, member],
+            ? s.room.members.map((m) => (m.id === member.id ? { ...m, ...member, online: true, left: false } : m))
+            : [...s.room.members, { ...member, online: true, left: false }],
         },
       };
     }),
@@ -86,7 +86,7 @@ export const useRoomStore = create<RoomState>((set) => ({
         room: {
           ...s.room,
           members: s.room.members.map((m) =>
-            m.id === userId ? { ...m, online: false } : m
+            m.id === userId ? { ...m, online: false, left: true } : m
           ),
         },
       };

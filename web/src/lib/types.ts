@@ -29,6 +29,7 @@ export interface RoomMember {
   avatar: string | null;
   role: "host" | "member";
   online: boolean;
+  left?: boolean;
 }
 
 export interface RoomUsage {
