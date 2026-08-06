@@ -12,6 +12,7 @@ import {
   FolderSimple,
   Cloud,
   ArrowDown,
+  ArrowRight,
 } from "@phosphor-icons/react";
 import { LandingNav } from "@/components/landing-nav";
 import { RoomPreview } from "@/components/room-preview";
@@ -32,12 +33,6 @@ export default function LandingPage() {
   const { user, loading, signIn } = useAuth();
   const router = useRouter();
   const reduce = useReducedMotion();
-
-  useEffect(() => {
-    if (!loading && user) {
-      router.replace("/home");
-    }
-  }, [loading, user, router]);
 
   return (
     <main className="relative overflow-x-clip">
@@ -88,8 +83,13 @@ export default function LandingPage() {
             transition={{ duration: 0.8, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
             className="mt-9 flex flex-wrap items-center gap-3"
           >
-            <Button size="lg" onClick={signIn} loading={loading} icon={<GoogleLogo size={19} weight="bold" />}>
-              {user ? "Open Cloister" : "Sign in with Google"}
+            <Button
+              size="lg"
+              onClick={user ? () => router.push("/home") : signIn}
+              loading={loading}
+              icon={user ? <ArrowRight size={19} weight="bold" /> : <GoogleLogo size={19} weight="bold" />}
+            >
+              {user ? "Go to rooms" : "Sign in with Google"}
             </Button>
             <Button
               size="lg"
@@ -384,8 +384,13 @@ export default function LandingPage() {
             viewport={{ once: true, amount: 0.6 }}
             className="mt-8 flex flex-col items-center gap-3"
           >
-            <Button size="lg" onClick={signIn} loading={loading} icon={<GoogleLogo size={19} weight="bold" />}>
-              {user ? "Open Cloister" : "Sign in with Google"}
+            <Button
+              size="lg"
+              onClick={user ? () => router.push("/home") : signIn}
+              loading={loading}
+              icon={user ? <ArrowRight size={19} weight="bold" /> : <GoogleLogo size={19} weight="bold" />}
+            >
+              {user ? "Go to rooms" : "Sign in with Google"}
             </Button>
             <p className="text-[13px] text-faint">Takes about ten seconds. Your Drive does the heavy lifting.</p>
           </motion.div>

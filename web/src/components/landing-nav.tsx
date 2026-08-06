@@ -1,16 +1,15 @@
 "use client";
 
-import { motion } from "motion/react";
-import { GoogleLogo } from "@phosphor-icons/react";
-import { Logo, Button } from "@/components/ui";
+import { useRouter } from "next/navigation";
+import { GoogleLogo, ArrowRight, Sun, Moon } from "@phosphor-icons/react";
+import { Logo, Button, IconButton } from "@/components/ui";
 import { useAuth } from "@/components/auth-provider";
 import { useTheme } from "@/components/theme-provider";
-import { IconButton } from "@/components/ui";
-import { Sun, Moon } from "@phosphor-icons/react";
 
 export function LandingNav() {
   const { user, loading, signIn } = useAuth();
   const { theme, toggle } = useTheme();
+  const router = useRouter();
 
   const go = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -48,11 +47,11 @@ export function LandingNav() {
           </IconButton>
           <Button
             size="sm"
-            onClick={signIn}
+            onClick={user ? () => router.push("/home") : signIn}
             loading={loading}
-            icon={!loading && <GoogleLogo size={16} weight="bold" />}
+            icon={!loading && (user ? <ArrowRight size={16} weight="bold" /> : <GoogleLogo size={16} weight="bold" />)}
           >
-            {user ? "Open Cloister" : "Sign in with Google"}
+            {user ? "Go to rooms" : "Sign in with Google"}
           </Button>
         </div>
       </div>

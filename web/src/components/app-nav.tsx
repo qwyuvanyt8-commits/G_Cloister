@@ -21,7 +21,7 @@ export function AppNav({ backTo }: { backTo?: string }) {
               <ArrowLeft size={19} weight="bold" />
             </IconButton>
           )}
-          <Link href="/home" aria-label="G_Cloister home">
+          <Link href="/" aria-label="G_Cloister home">
             <Logo size={30} />
           </Link>
         </div>
