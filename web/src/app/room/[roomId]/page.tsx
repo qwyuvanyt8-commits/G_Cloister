@@ -106,6 +106,7 @@ function RoomInner() {
 
     const onConnect = () => {
       setConnected(true);
+      if (user?.id) setMemberPresence(user.id, true);
       socket.emit("room:enter", { roomId });
     };
     const onDisconnect = () => setConnected(false);

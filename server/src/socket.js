@@ -49,7 +49,7 @@ export function setupSocket(httpServer) {
       if (!online.has(roomId)) online.set(roomId, new Map());
       online.get(roomId).set(user.google_id, profile);
 
-      socket.to(`room:${roomId}`).emit("member:presence", { userId: user.google_id, online: true });
+      io.to(`room:${roomId}`).emit("member:presence", { userId: user.google_id, online: true });
     });
 
     socket.on("disconnect", () => {
@@ -58,7 +58,7 @@ export function setupSocket(httpServer) {
         if (members) {
           members.delete(user.google_id);
           if (members.size === 0) online.delete(roomId);
-          socket.to(`room:${roomId}`).emit("member:presence", { userId: user.google_id, online: false });
+          io.to(`room:${roomId}`).emit("member:presence", { userId: user.google_id, online: false });
         }
       }
     });
