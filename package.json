@@ -12,7 +12,7 @@
     "dev": "concurrently -n server,web -c blue,magenta \"npm:dev:server\" \"npm:dev:web\"",
     "dev:server": "npm --prefix server run dev",
     "dev:web": "npm --prefix web run dev",
-    "build": "npm --prefix server run build && npm --prefix web run build",
+    "build": "npm --prefix server run build && npm --prefix web run build && node -e \"require('fs').cpSync('web/.next', '.next', {recursive: true})\"",
     "start": "concurrently -n server,web -c blue,magenta \"npm:start:server\" \"npm:start:web\"",
     "start:server": "npm --prefix server run start",
     "start:web": "npm --prefix web run start"
