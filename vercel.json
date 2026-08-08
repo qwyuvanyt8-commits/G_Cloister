@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd web && npm run build",
-  "outputDirectory": "web/.next",
-  "installCommand": "npm install --include=dev && npm --prefix web install --include=dev"
+  "framework": "nextjs",
+  "buildCommand": "npm --prefix web run build && node -e \"require('fs').cpSync('web/.next', '.next', {recursive: true}) || true\"",
+  "installCommand": "npm install --production=false"
 }
