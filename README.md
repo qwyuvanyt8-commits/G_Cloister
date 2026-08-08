@@ -78,7 +78,6 @@ G_Cloister/
 ├── .env.example              # Template environment variables
 ├── DEPLOY.md                 # Step-by-step production deployment guide (Render + Vercel)
 ├── render.yaml               # Render Blueprint deployment config
-├── vercel.json               # Vercel monorepo build configuration
 └── package.json              # Root monorepo scripts
 ```
 
