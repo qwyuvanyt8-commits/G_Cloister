@@ -36,7 +36,7 @@
                                          ▼
                         ┌─────────────────────────────────┐
                         │     Express & Socket.IO API     │
-                        │       (Fly.io / Node.js)        │
+                        │       (Render / Node.js)        │
                         └───────┬─────────────────┬───────┘
                                 │                 │
                OAuth 2.0 &      │                 │ Local SQLite / LibSQL
@@ -76,8 +76,8 @@ G_Cloister/
 │   └── package.json
 │
 ├── .env.example              # Template environment variables
-├── DEPLOY.md                 # Step-by-step production deployment guide (Fly.io + Vercel)
-├── fly.toml                  # Fly.io deployment config
+├── DEPLOY.md                 # Step-by-step production deployment guide (Render + Vercel)
+├── render.yaml               # Render Blueprint deployment config
 └── package.json              # Root monorepo scripts
 ```
 
@@ -182,7 +182,7 @@ npm run dev
 ## 📦 Production Deployment
 
 Refer to [DEPLOY.md](file:///Users/yuvi/Downloads/G_Cloister/DEPLOY.md) for detailed step-by-step instructions on deploying:
-- **Backend**: Express API on **Fly.io** with SQLite persistent volume mount.
+- **Backend**: Express API on **Render** with SQLite persistent volume disk.
 - **Frontend**: Next.js App Router on **Vercel**.
 
 ---

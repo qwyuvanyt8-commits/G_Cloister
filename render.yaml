@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: gcloister-server
+    runtime: docker
+    dockerfilePath: ./server/Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: "4000"
+      - key: NODE_ENV
+        value: "production"
+      - key: FRONTEND_URL
+        sync: false
+      - key: DATABASE_PATH
+        value: "/var/data/gcloister.db"
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_REDIRECT_URI
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: ENCRYPTION_KEY
+        generateValue: true
+    disk:
+      name: gcloister_data
+      mountPath: /var/data
+      sizeGB: 1

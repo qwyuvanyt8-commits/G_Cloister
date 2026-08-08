@@ -1,69 +1,73 @@
 # Deploying G_Cloister
 
-**Architecture**: Express API on **Fly.io** + Next.js frontend on **Vercel**
+**Architecture**: Express API on **Render** + Next.js frontend on **Vercel**
 
 ---
 
 ## Prerequisites
 
-- [Fly.io CLI](https://fly.io/docs/flyctl/install/) (`brew install flyctl`)
-- [Vercel CLI](https://vercel.com/docs/cli) (`npm i -g vercel`) — or use the Vercel dashboard
+- [Render Account](https://render.com)
+- [Vercel Account](https://vercel.com) (or Vercel CLI)
 - A Google Cloud project with OAuth configured (see `.env.example`)
 
 ---
 
-## Step 1 — Deploy the Server to Fly.io
+## Step 1 — Deploy the Server to Render
 
-### 1a. Install and sign in to Fly.io
+### Option A: Deploy via Render Blueprints (Recommended)
+
+1. Push your repository to GitHub.
+2. Go to [Render Dashboard](https://dashboard.render.com/) -> **New +** -> **Blueprint**.
+3. Connect your GitHub repository (`G_Cloister`).
+4. Render will automatically detect `render.yaml` and configure the `gcloister-server` Web Service.
+5. In the environment variables setup step, enter your secrets:
+   - `GOOGLE_CLIENT_ID`: Your Google OAuth Client ID
+   - `GOOGLE_CLIENT_SECRET`: Your Google OAuth Client Secret
+   - `GOOGLE_REDIRECT_URI`: `https://<your-render-app>.onrender.com/api/auth/callback`
+   - `FRONTEND_URL`: `https://<your-vercel-app>.vercel.app`
+6. Click **Apply**.
+
+---
+
+### Option B: Deploy via Render Dashboard (Manual)
+
+1. Go to [Render Dashboard](https://dashboard.render.com/) -> **New +** -> **Web Service**.
+2. Connect your GitHub repository (`G_Cloister`).
+3. Set the following fields:
+   - **Name**: `gcloister-server`
+   - **Environment**: `Docker`
+   - **Dockerfile Path**: `./server/Dockerfile`
+   - **Region**: Choose closest to your users
+4. Under **Environment Variables**, add:
+
+   | Key | Value |
+   |-----|-------|
+   | `PORT` | `4000` |
+   | `NODE_ENV` | `production` |
+   | `FRONTEND_URL` | `https://your-app.vercel.app` |
+   | `DATABASE_PATH` | `/var/data/gcloister.db` |
+   | `GOOGLE_CLIENT_ID` | `your_google_client_id` |
+   | `GOOGLE_CLIENT_SECRET` | `your_google_client_secret` |
+   | `GOOGLE_REDIRECT_URI` | `https://your-render-app.onrender.com/api/auth/callback` |
+   | `SESSION_SECRET` | `random_long_string` |
+   | `ENCRYPTION_KEY` | `base64_32_byte_string` |
+
+5. Under **Advanced** -> **Add Disk**:
+   - **Name**: `gcloister_data`
+   - **Mount Path**: `/var/data`
+   - **Size**: 1 GB
+6. Click **Create Web Service**.
+
+---
+
+### Verify Server Deployment
 
 ```bash
-# Install (macOS)
-brew install flyctl
-
-# Sign up / log in
-fly auth signup   # or: fly auth login
-```
-
-### 1b. Launch the app (first time only)
-
-```bash
-# From the project root
-fly launch --no-deploy
-```
-
-This creates the app and a Fly volume for SQLite. The `fly.toml` is already configured.
-
-### 1c. Create the persistent volume (for SQLite data)
-
-```bash
-fly volumes create gcloister_data --size 1 --region iad
-```
-
-### 1d. Set secrets
-
-```bash
-fly secrets set \
-  GOOGLE_CLIENT_ID="your_client_id.apps.googleusercontent.com" \
-  GOOGLE_CLIENT_SECRET="your_client_secret" \
-  GOOGLE_REDIRECT_URI="https://g-cloister.fly.dev/api/auth/callback" \
-  SESSION_SECRET="$(openssl rand -base64 32)" \
-  ENCRYPTION_KEY="$(openssl rand -base64 32)"
-```
-
-### 1e. Deploy
-
-```bash
-fly deploy
-```
-
-### 1f. Verify
-
-```bash
-curl https://g-cloister.fly.dev/api/health
+curl https://your-render-app.onrender.com/api/health
 # → {"ok":true,"service":"gcloister","time":...}
 ```
 
-Your API is now live at **`https://g-cloister.fly.dev`**.
+Your API is now live at `https://your-render-app.onrender.com`.
 
 ---
 
@@ -77,87 +81,59 @@ Your API is now live at **`https://g-cloister.fly.dev`**.
 4. Under **Environment Variables**, add:
    | Key | Value |
    |-----|-------|
-   | `NEXT_PUBLIC_API_URL` | `https://g-cloister.fly.dev` |
+   | `NEXT_PUBLIC_API_URL` | `https://your-render-app.onrender.com` |
 5. Click **Deploy**
+
+---
 
 ### 2b. Or deploy via CLI
 
 ```bash
 cd web
 vercel --prod
-# When prompted, set the root directory to ./
-# Add the env var when asked, or set it after:
-vercel env add NEXT_PUBLIC_API_URL
-# Enter: https://g-cloister.fly.dev
 ```
 
-Your frontend is now live at something like **`https://g-cloister.vercel.app`**.
+When prompted:
+- Root directory: `./`
+- Environment variable `NEXT_PUBLIC_API_URL`: `https://your-render-app.onrender.com`
+
+Your frontend is now live at `https://your-app.vercel.app`.
 
 ---
 
-## Step 3 — Connect the two services
+## Step 3 — Connect the Services & Google OAuth
 
-### 3a. Update Fly.io's FRONTEND_URL
+### 3a. Update Render's `FRONTEND_URL`
 
-The server needs to know the Vercel URL for CORS and OAuth redirects:
-
-```bash
-# Replace with your actual Vercel URL
-fly secrets set FRONTEND_URL="https://g-cloister.vercel.app"
+Ensure `FRONTEND_URL` in your Render Web Service environment settings matches your Vercel URL exactly:
+```
+https://your-app.vercel.app
 ```
 
-Or edit `fly.toml` and redeploy:
-```toml
-[env]
-  FRONTEND_URL = "https://g-cloister.vercel.app"
-```
-
-### 3b. Update Google OAuth
+### 3b. Update Google OAuth URIs
 
 Go to [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services** → **Credentials**:
 
 1. Edit your OAuth client ID
 2. Add the production callback URL to **Authorized redirect URIs**:
    ```
-   https://g-cloister.fly.dev/api/auth/callback
+   https://your-render-app.onrender.com/api/auth/callback
    ```
 3. Add your Vercel URL to **Authorized JavaScript origins**:
    ```
-   https://g-cloister.vercel.app
+   https://your-app.vercel.app
    ```
 
-### 3c. Publish the OAuth consent screen (for friends)
-
-Go to **OAuth consent screen**:
-
-- **Option A** (quick): Add each friend's email as a **Test User** (max 100 users, no review needed)
-- **Option B** (permanent): Click **Publish App** to make it available to everyone (Google may request a review since you use the `drive.file` scope)
-
 ---
 
-## Step 4 — Verify everything works
+## Step 4 — Verify End-to-End
 
-1. Open your Vercel URL in the browser
-2. Sign in with Google
-3. Create a room
-4. Share the room ID + password with a friend
-5. Have them join and upload a file
-6. Verify real-time updates work
-
----
-
-## Custom Domain (Optional)
-
-### For the frontend (Vercel)
-- Vercel Dashboard → Project → Settings → Domains → Add your domain
-
-### For the API (Fly.io)
-```bash
-fly certs create api.yourdomain.com
-# Then add a CNAME record: api.yourdomain.com → g-cloister.fly.dev
-```
-
-Update `FRONTEND_URL`, `NEXT_PUBLIC_API_URL`, and Google OAuth URIs to match.
+1. Open your Vercel URL in the browser.
+2. Sign in with Google.
+3. Create a room.
+4. Share the room ID + password with another user.
+5. Have them join and upload a file.
+6. Verify real-time updates work via WebSockets.
 
 ---
 
@@ -165,8 +141,7 @@ Update `FRONTEND_URL`, `NEXT_PUBLIC_API_URL`, and Google OAuth URIs to match.
 
 | Issue | Fix |
 |-------|-----|
-| "Not authenticated" after sign-in | Check that `FRONTEND_URL` on Fly.io matches your Vercel URL exactly (no trailing slash) |
-| Google OAuth error | Verify redirect URI in Google Console matches `https://g-cloister.fly.dev/api/auth/callback` exactly |
-| CORS errors in browser console | Ensure `FRONTEND_URL` is set correctly on Fly.io; redeploy if changed in `fly.toml` |
-| Friends can't sign in | Publish the OAuth consent screen or add them as test users |
-| WebSocket not connecting | The Socket.IO client uses `NEXT_PUBLIC_API_URL` — make sure it's set to the Fly.io URL |
+| "Not authenticated" after sign-in | Check that `FRONTEND_URL` on Render matches your Vercel URL exactly (no trailing slash) |
+| Google OAuth error | Verify redirect URI in Google Console matches `https://your-render-app.onrender.com/api/auth/callback` |
+| CORS errors in browser console | Ensure `FRONTEND_URL` is set correctly on Render |
+| WebSocket not connecting | Ensure `NEXT_PUBLIC_API_URL` on Vercel is set to your Render URL (`https://your-render-app.onrender.com`) |
