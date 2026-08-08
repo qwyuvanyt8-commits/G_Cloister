@@ -16,6 +16,7 @@ import { RequireAuth } from "@/components/require-auth";
 import { Button, Input, MonoChip } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/toast";
+import { useAuth } from "@/components/auth-provider";
 
 const WORDS = [
   "vault", "atrium", "quarry", "cipher", "haven", "loft", "obelisk", "reef",
@@ -38,6 +39,7 @@ function randomRoomId() {
 function HostInner() {
   const router = useRouter();
   const { toast } = useToast();
+  const { user, hasDrive, openDriveModal } = useAuth();
   const [roomId, setRoomId] = useState("");
   const [password, setPassword] = useState(() => randomPassword());
   const [copied, setCopied] = useState<"id" | "pw" | "all" | null>(null);
@@ -62,14 +64,29 @@ function HostInner() {
 
   const create = async () => {
     if (!validation.ok) return;
+    if (!hasDrive) {
+      openDriveModal(
+        "Google Drive Access Needed to Host",
+        "Hosting a room requires Google Drive permission so G_Cloister can create a folder for room files in your Drive."
+      );
+      return;
+    }
     setError(null);
     setCreating(true);
     try {
       const room = await api.createRoom(roomId.trim().toLowerCase());
       setCreated({ roomId: room.roomId, password: room.password });
       toast("Room created. Your vault is ready.");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Could not create the room.");
+    } catch (err: unknown) {
+      const errObj = err as { code?: string; status?: number; message?: string };
+      if (errObj?.code === "DRIVE_NO_TOKEN" || errObj?.code === "DRIVE_AUTH" || errObj?.status === 403) {
+        openDriveModal(
+          "Google Drive Access Needed to Host",
+          "Hosting a room requires Google Drive permission so G_Cloister can create a folder for room files in your Drive."
+        );
+      } else {
+        setError(err instanceof Error ? err.message : "Could not create the room.");
+      }
     } finally {
       setCreating(false);
     }

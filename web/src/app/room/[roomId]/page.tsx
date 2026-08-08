@@ -48,7 +48,7 @@ function RoomInner() {
   const params = useParams<{ roomId: string }>();
   const router = useRouter();
   const roomId = params?.roomId ?? "";
-  const { user } = useAuth();
+  const { user, hasDrive, openDriveModal } = useAuth();
   const { toast } = useToast();
 
   const room = useRoomStore((s) => s.room);
@@ -224,13 +224,21 @@ function RoomInner() {
             setUploads((prev) => prev.filter((u) => u.key !== key));
           }, 2500);
         } catch (err: unknown) {
+          const errObj = err as { code?: string; status?: number; message?: string };
           const msg = err instanceof Error ? err.message : "Upload failed";
           updateProgress(key, { status: "error", error: msg });
-          toast(`Failed to upload "${file.name}": ${msg}`, "error");
+          if (errObj?.code === "DRIVE_NO_TOKEN" || errObj?.code === "DRIVE_AUTH" || errObj?.status === 403) {
+            openDriveModal(
+              "Google Drive Access Required",
+              "Uploading files or accessing host Drive storage requires Google Drive permissions."
+            );
+          } else {
+            toast(`Failed to upload "${file.name}": ${msg}`, "error");
+          }
         }
       }
     },
-    [room, roomId, updateProgress, toast, addFile]
+    [room, roomId, updateProgress, toast, addFile, openDriveModal]
   );
 
   const [savingToDrive, setSavingToDrive] = useState(false);
@@ -238,6 +246,13 @@ function RoomInner() {
 
   const handleSaveToDrive = async () => {
     if (!room || savingToDrive) return;
+    if (!hasDrive) {
+      openDriveModal(
+        "Google Drive Access Needed to Sync",
+        "Saving room files to your own Google Drive requires Google Drive permission."
+      );
+      return;
+    }
     setSavingToDrive(true);
     try {
       const res = await api.syncToDrive(roomId);
@@ -248,8 +263,16 @@ function RoomInner() {
           : `All room files are already saved in your Google Drive!`
       );
       setTimeout(() => setSavedSuccess(false), 2500);
-    } catch (err) {
-      toast(err instanceof Error ? err.message : "Could not save to Drive.", "error");
+    } catch (err: unknown) {
+      const errObj = err as { code?: string; status?: number; message?: string };
+      if (errObj?.code === "DRIVE_NO_TOKEN" || errObj?.code === "DRIVE_AUTH" || errObj?.status === 403) {
+        openDriveModal(
+          "Google Drive Access Needed to Sync",
+          "Saving room files to your own Google Drive requires Google Drive permission."
+        );
+      } else {
+        toast(err instanceof Error ? err.message : "Could not save to Drive.", "error");
+      }
     } finally {
       setSavingToDrive(false);
     }
