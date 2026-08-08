@@ -440,15 +440,26 @@ function RoomInner() {
             >
               {copied ? "Copied" : "Invite"}
             </Button>
-            {!room.isHost && (
+            {room.isHost ? (
+              <Button
+                size="sm"
+                variant="secondary"
+                icon={<Check size={15} className="text-accent" weight="bold" />}
+                onClick={() => {
+                  toast(`All room files are automatically saved in your Google Drive (G_Cloister/${room.roomId}).`, "info");
+                }}
+              >
+                Saved to Drive
+              </Button>
+            ) : (
               <Button
                 size="sm"
                 variant={savedSuccess ? "primary" : "secondary"}
                 icon={
                   savedSuccess ? (
-                    <Check size={16} weight="bold" />
+                    <Check size={15} weight="bold" />
                   ) : (
-                    <CloudArrowDown size={16} weight="regular" />
+                    <CloudArrowDown size={15} weight="duotone" />
                   )
                 }
                 loading={savingToDrive}
