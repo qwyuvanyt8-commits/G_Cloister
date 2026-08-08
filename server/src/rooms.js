@@ -498,25 +498,18 @@ roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
       roomId,
     ]);
 
-    // Background sync to all room members who enabled auto_sync
+    // Background sync: Restore all room files to host Drive (if host Drive folder was recreated), plus sync to auto_sync members
     (async () => {
       try {
+        await drive.syncRoomFilesToParticipant(roomId, host);
         const autoSyncMembers = await db.all(
           `SELECT u.* FROM room_members rm
            JOIN users u ON u.google_id = rm.user_id
-           WHERE rm.room_id = ? AND rm.auto_sync = 1`,
-          [roomId]
+           WHERE rm.room_id = ? AND rm.auto_sync = 1 AND rm.user_id != ?`,
+          [roomId, host.google_id]
         );
         for (const member of autoSyncMembers) {
-          await drive.syncFileToUserDrive(
-            host,
-            member,
-            roomId,
-            driveFile.id,
-            name,
-            mimeType,
-            size
-          );
+          await drive.syncRoomFilesToParticipant(roomId, member);
         }
       } catch (e) {
         console.error("[sync] Background sync error:", e?.message || e);
