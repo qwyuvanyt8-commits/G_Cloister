@@ -20,6 +20,7 @@
 - 📁 **Google Drive Native**: Files land in a dedicated `G_Cloister/<roomId>` folder inside the host's Google Drive.
 - 🔄 **Participant Auto-Sync**: Room members can opt to automatically sync room files directly into their own Google Drive account with zero friction.
 - 🛡️ **Host Moderation**: Room hosts retain full authority to manage room storage limits, kick/unkick members, and purge room folders from Google Drive.
+- ☁️ **Turso Cloud Database Support**: Out-of-the-box local SQLite support, or instant zero-maintenance cloud database scaling using [Turso](https://turso.tech) (`TURSO_DATABASE_URL` & `TURSO_AUTH_TOKEN`).
 - 🔒 **Zero-Knowledge Token Security**: Google OAuth access and refresh tokens are encrypted at rest using AES-256-GCM.
 - 🎨 **Modern Minimalist UI**: Dark-mode glassmorphic interface built with Next.js App Router, TailwindCSS v4, Framer Motion, and Phosphor Icons.
 
@@ -272,6 +273,52 @@ When prompted, set:
      ```
      https://<your-vercel-app>.vercel.app
      ```
+
+---
+
+## 🗄️ Turso Managed Database Setup (Cloud SQLite)
+
+G_Cloister is built on `@libsql/client`, which natively supports both local file-based SQLite databases and **[Turso](https://turso.tech)** (managed cloud LibSQL databases).
+
+Connecting G_Cloister to Turso hosts your database in the cloud with global replication, automatic edge caching, and zero local disk requirements. Using Turso eliminates the need for persistent server disks on Render, Railway, or Fly.io!
+
+### How to Set Up Turso
+
+1. **Install Turso CLI & Sign Up**:
+   ```bash
+   # macOS / Linux
+   curl -sSfL https://get.tur.so/install.sh | bash
+
+   # Sign up or log in
+   turso auth signup   # or: turso auth login
+   ```
+
+2. **Create a Database**:
+   ```bash
+   turso db create gcloister
+   ```
+
+3. **Retrieve Database URL**:
+   ```bash
+   turso db show gcloister --url
+   # Output: libsql://gcloister-yourusername.turso.io
+   ```
+
+4. **Generate Authentication Token**:
+   ```bash
+   turso db tokens create gcloister
+   # Output: eyJhbGciOiJFZERTQ...
+   ```
+
+5. **Set Environment Variables**:
+   Add the following variables to your `.env` file or cloud deployment settings (Render / Vercel):
+
+   ```env
+   TURSO_DATABASE_URL=libsql://gcloister-yourusername.turso.io
+   TURSO_AUTH_TOKEN=your_generated_turso_jwt_token
+   ```
+
+> 💡 **Automatic Detection**: When `TURSO_DATABASE_URL` is present, G_Cloister automatically switches from local SQLite disk storage (`DATABASE_PATH`) to your Turso cloud database!
 
 ---
 
