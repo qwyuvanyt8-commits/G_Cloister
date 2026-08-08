@@ -1,0 +1,192 @@
+# G_Cloister 🛡️☁️
+
+> **Real-time, room-based file sharing powered by your own Google Drive.**
+
+[![Next.js](https://img.shields.io/badge/Next.js-16.3-black?logo=next.js)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
+[![Express](https://img.shields.io/badge/Express-4.21-000000?logo=express)](https://expressjs.com/)
+[![Socket.IO](https://img.shields.io/badge/Socket.IO-4.8-010101?logo=socketdotio)](https://socket.io/)
+[![SQLite / LibSQL](https://img.shields.io/badge/Database-SQLite%2FLibSQL-003B57?logo=sqlite)](https://turso.tech/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+**G_Cloister** allows users to create password-protected, real-time file sharing "rooms" without needing expensive third-party file hosting or cloud subscriptions. Storage is hosted directly on the room creator's Google Drive via the official Google Drive API (`drive.file` scope).
+
+---
+
+## 🌟 Key Features
+
+- 🔐 **Password-Protected Rooms**: Every room has an auto-generated (or custom) password, hashed with `bcrypt` before storage.
+- ⚡ **Real-Time Synchronization**: Uploads, deletes, renames, member presences, and kicks stream instantly across all active clients via Socket.IO.
+- 📁 **Google Drive Native**: Files land in a dedicated `G_Cloister/<roomId>` folder inside the host's Google Drive.
+- 🔄 **Participant Auto-Sync**: Room members can opt to automatically sync room files directly into their own Google Drive account with zero friction.
+- 🛡️ **Host Moderation**: Room hosts retain full authority to manage room storage limits, kick/unkick members, and purge room folders from Google Drive.
+- 🔒 **Zero-Knowledge Token Security**: Google OAuth access and refresh tokens are encrypted at rest using AES-256-GCM.
+- 🎨 **Modern Minimalist UI**: Dark-mode glassmorphic interface built with Next.js App Router, TailwindCSS v4, Framer Motion, and Phosphor Icons.
+
+---
+
+## 🏗️ Architecture Overview
+
+```
+                        ┌─────────────────────────────────┐
+                        │     Next.js 16 Web Frontend     │
+                        │    (Vercel / Next.js Server)    │
+                        └────────────────┬────────────────┘
+                                         │ REST API / WebSockets
+                                         ▼
+                        ┌─────────────────────────────────┐
+                        │     Express & Socket.IO API     │
+                        │       (Fly.io / Node.js)        │
+                        └───────┬─────────────────┬───────┘
+                                │                 │
+               OAuth 2.0 &      │                 │ Local SQLite / LibSQL
+               Drive API v3     ▼                 ▼
+             ┌─────────────────────┐    ┌────────────────────┐
+             │  Google Drive API   │    │  SQLite Database   │
+             │  (Host's Storage)   │    │  (Users, Sessions, │
+             └─────────────────────┘    │   Rooms, Files)    │
+                                        └────────────────────┘
+```
+
+---
+
+## 📁 Repository Structure
+
+```
+G_Cloister/
+├── server/                   # Express backend API & Socket.IO server
+│   ├── src/
+│   │   ├── auth.js           # OAuth 2.0 authentication & session handling
+│   │   ├── config.js         # Environment configuration & validation
+│   │   ├── crypto.js         # AES-256-GCM token encryption/decryption
+│   │   ├── db.js             # LibSQL / SQLite schema & database operations
+│   │   ├── drive.js          # Google Drive API v3 file operations & sync engine
+│   │   ├── index.js          # Express app entrypoint & middleware
+│   │   ├── rooms.js          # REST API endpoints for rooms and files
+│   │   └── socket.js         # Real-time WebSocket event handlers
+│   ├── Dockerfile            # Container definition for Fly.io backend deployment
+│   └── package.json
+│
+├── web/                      # Next.js 16 App Router frontend
+│   ├── src/
+│   │   ├── app/              # Routes: /, /home, /host, /join, /room/[roomId]
+│   │   ├── components/       # UI components & room views
+│   │   └── lib/              # API client, WebSocket client, Zustand state store
+│   ├── Dockerfile            # Container definition for frontend deployment
+│   └── package.json
+│
+├── .env.example              # Template environment variables
+├── DEPLOY.md                 # Step-by-step production deployment guide (Fly.io + Vercel)
+├── fly.toml                  # Fly.io deployment config
+└── package.json              # Root monorepo scripts
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- **Node.js**: v20 or v22 LTS
+- **npm**: v10+
+- **Google Cloud Console Account**: For OAuth 2.0 credentials.
+
+---
+
+### Step 1: Clone the Repository
+
+```bash
+git clone https://github.com/qwyuvanyt8-commits/G_Cloister.git
+cd G_Cloister
+```
+
+---
+
+### Step 2: Set Up Google OAuth 2.0 Credentials
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/).
+2. Create a new project (e.g. `G_Cloister`).
+3. Enable the **Google Drive API** under **APIs & Services > Library**.
+4. Configure the **OAuth Consent Screen**:
+   - User Type: **External**
+   - Add scopes: `openid`, `email`, `profile`, `https://www.googleapis.com/auth/drive.file`
+   - Add your email address as a **Test User**.
+5. Create **OAuth 2.0 Client ID Credentials**:
+   - Application type: **Web application**
+   - Authorized redirect URI: `http://localhost:4000/api/auth/callback`
+   - Authorized JavaScript origins: `http://localhost:3000`
+6. Save your **Client ID** and **Client Secret**.
+
+---
+
+### Step 3: Configure Environment Variables
+
+Copy `.env.example` to `.env` in the root directory:
+
+```bash
+cp .env.example .env
+```
+
+Fill in your secrets in `.env`:
+
+```env
+GOOGLE_CLIENT_ID=your_client_id.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=your_client_secret
+GOOGLE_REDIRECT_URI=http://localhost:4000/api/auth/callback
+
+PORT=4000
+FRONTEND_URL=http://localhost:3000
+DATABASE_PATH=./data/gcloister.db
+SESSION_SECRET=a_very_long_random_string_for_session_cookies
+ENCRYPTION_KEY=your_base64_32_byte_key
+```
+
+> 💡 **Generating Encryption Keys**:
+> Generate a secure 32-byte base64 string for `ENCRYPTION_KEY`:
+> ```bash
+> node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
+> ```
+
+---
+
+### Step 4: Install Dependencies & Run Locally
+
+Install all monorepo dependencies:
+
+```bash
+npm install
+npm --prefix server install
+npm --prefix web install
+```
+
+Start both the backend server and frontend web app concurrently:
+
+```bash
+npm run dev
+```
+
+- **Frontend**: [http://localhost:3000](http://localhost:3000)
+- **Backend API**: [http://localhost:4000](http://localhost:4000)
+
+---
+
+## 🔒 Security & Privacy Architecture
+
+1. **Restricted OAuth Scope**: G_Cloister uses `https://www.googleapis.com/auth/drive.file`. It can **only** view and manage files and folders created by the app itself. It has zero access to the user's personal Google Drive files.
+2. **Encrypted Token Storage**: OAuth access tokens and refresh tokens are encrypted in SQLite using `AES-256-GCM` before being written to disk.
+3. **Password Security**: Room passwords are never saved in plaintext; they are hashed with `bcrypt`.
+4. **Temporary Preview Links**: Direct Google Drive view links generated for preview modals expire after 15 minutes and permissions are automatically revoked.
+
+---
+
+## 📦 Production Deployment
+
+Refer to [DEPLOY.md](file:///Users/yuvi/Downloads/G_Cloister/DEPLOY.md) for detailed step-by-step instructions on deploying:
+- **Backend**: Express API on **Fly.io** with SQLite persistent volume mount.
+- **Frontend**: Next.js App Router on **Vercel**.
+
+---
+
+## 📄 License
+
+This project is open source and available under the [MIT License](LICENSE).
