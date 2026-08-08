@@ -2,6 +2,7 @@ import { Server } from "socket.io";
 import { config } from "./config.js";
 import { db } from "./db.js";
 import { sessionUserFromToken, publicUser } from "./auth.js";
+import { auditRoomFiles } from "./drive.js";
 
 const online = new Map(); // roomId -> Map<userId, profile>
 let ioRef = null;
@@ -15,6 +16,15 @@ export function setupSocket(httpServer) {
     pingInterval: 5000,
     pingTimeout: 5000,
   });
+
+  // Background audit interval: check active rooms for files deleted from host Drive
+  setInterval(async () => {
+    for (const roomId of online.keys()) {
+      if (online.get(roomId)?.size > 0) {
+        await auditRoomFiles(roomId).catch(() => {});
+      }
+    }
+  }, 5000);
 
   io.use(async (socket, next) => {
     const cookie = socket.handshake.headers.cookie || "";
@@ -54,6 +64,9 @@ export function setupSocket(httpServer) {
       const onlineIds = [...online.get(roomId).keys()];
       socket.emit("room:presence:sync", { onlineUserIds: onlineIds });
       io.to(`room:${roomId}`).emit("member:presence", { userId: user.google_id, online: true });
+
+      // Trigger immediate Drive audit when room is entered
+      auditRoomFiles(roomId).catch(() => {});
     });
 
     socket.on("room:leave", ({ roomId } = {}) => {

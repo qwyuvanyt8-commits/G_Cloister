@@ -2,6 +2,7 @@ import { Readable } from "node:stream";
 import { db } from "./db.js";
 import { oauthClient, decryptTokens } from "./auth.js";
 import { encrypt } from "./crypto.js";
+import { emitToRoom } from "./socket.js";
 
 const DRIVE = "https://www.googleapis.com/drive/v3";
 const UPLOAD = "https://www.googleapis.com/upload/drive/v3/files";
@@ -559,5 +560,50 @@ export async function deleteUserRoomFolder(user, roomId) {
     }
   } catch (err) {
     console.error(`[drive] deleteUserRoomFolder failed for ${user.google_id}:`, err?.message || err);
+  }
+}
+
+export async function auditRoomFiles(roomId) {
+  try {
+    const room = await db.get("SELECT * FROM rooms WHERE room_id = ?", [roomId]);
+    if (!room) return;
+    const host = await db.get("SELECT * FROM users WHERE google_id = ?", [room.host_user_id]);
+    if (!host) return;
+
+    const files = await db.all("SELECT * FROM files WHERE room_id = ?", [roomId]);
+    if (!files.length) return;
+
+    const token = await getAccessToken(host);
+
+    for (const file of files) {
+      let isDeleted = false;
+      try {
+        const driveMeta = await driveJson(
+          token,
+          `${DRIVE}/files/${file.drive_file_id}?fields=id,trashed`
+        );
+        if (driveMeta?.trashed) {
+          isDeleted = true;
+        }
+      } catch (err) {
+        if (err?.status === 404) {
+          isDeleted = true;
+        }
+      }
+
+      if (isDeleted) {
+        console.log(`[audit] File "${file.name}" (${file.id}) was trashed or deleted from host Drive. Removing from room ${roomId}...`);
+        await db.run("DELETE FROM files WHERE id = ?", [file.id]);
+        await db.run(
+          "UPDATE rooms SET total_bytes = MAX(0, total_bytes - ?) WHERE room_id = ?",
+          [file.size_bytes, roomId]
+        );
+        const updatedRoom = await db.get("SELECT total_bytes FROM rooms WHERE room_id = ?", [roomId]);
+        emitToRoom(roomId, "file:deleted", { id: file.id });
+        emitToRoom(roomId, "usage:updated", { usedBytes: updatedRoom?.total_bytes || 0 });
+      }
+    }
+  } catch (err) {
+    console.error(`[audit] auditRoomFiles error for room ${roomId}:`, err?.message || err);
   }
 }

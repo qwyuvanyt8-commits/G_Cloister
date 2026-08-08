@@ -86,6 +86,9 @@ async function roomSummary(room) {
 }
 
 async function buildRoomView(room, viewerId) {
+  // Trigger background audit to verify files against host Google Drive
+  drive.auditRoomFiles(room.room_id).catch(() => {});
+
   const members = await db.all(
     `SELECT rm.role, rm.left, u.google_id, u.email, u.name, u.avatar
      FROM room_members rm JOIN users u ON u.google_id = rm.user_id
