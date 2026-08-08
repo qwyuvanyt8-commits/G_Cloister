@@ -2,12 +2,17 @@
 
 > **Real-time, room-based file sharing powered by your own Google Drive.**
 
+[![Live Application](https://img.shields.io/badge/Live_App-g--cloister--lly5.vercel.app-00C7B7?logo=vercel&logoColor=white)](https://g-cloister-lly5.vercel.app/)
 [![Next.js](https://img.shields.io/badge/Next.js-16.3-black?logo=next.js)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61DAFB?logo=react)](https://react.dev/)
 [![Express](https://img.shields.io/badge/Express-4.21-000000?logo=express)](https://expressjs.com/)
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-4.8-010101?logo=socketdotio)](https://socket.io/)
 [![SQLite / LibSQL](https://img.shields.io/badge/Database-SQLite%2FLibSQL-003B57?logo=sqlite)](https://turso.tech/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+> [!NOTE]
+> 🌐 **Live Web Application**: [https://g-cloister-lly5.vercel.app](https://g-cloister-lly5.vercel.app/)  
+> Try creating password-protected rooms, sharing files in real-time, and syncing directly to Google Drive.
 
 **G_Cloister** allows users to create password-protected, real-time file sharing "rooms" without needing expensive third-party file hosting or cloud subscriptions. Storage is hosted directly on the room creator's Google Drive via the official Google Drive API (`drive.file` scope).
 
