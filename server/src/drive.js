@@ -76,10 +76,26 @@ async function driveJson(token, url, opts = {}) {
 }
 
 export async function ensureRootFolder(user) {
-  if (user.root_folder_id) {
-    return user.root_folder_id;
-  }
   const token = await getAccessToken(user);
+  if (user.root_folder_id) {
+    try {
+      const folder = await driveJson(
+        token,
+        `${DRIVE}/files/${user.root_folder_id}?fields=id,trashed`
+      );
+      if (folder && !folder.trashed) {
+        return folder.id;
+      }
+    } catch {
+      /* folder was deleted or not found */
+    }
+    // Cached root folder is deleted or in trash — clear it
+    await db.run("UPDATE users SET root_folder_id = NULL WHERE google_id = ?", [
+      user.google_id,
+    ]);
+    user.root_folder_id = null;
+  }
+
   const q = encodeURIComponent(
     `name='G_Cloister' and 'root' in parents and trashed=false and appProperties has { key='gcRoot' and value='1' }`
   );
@@ -93,6 +109,7 @@ export async function ensureRootFolder(user) {
       id,
       user.google_id,
     ]);
+    user.root_folder_id = id;
     return id;
   }
   const created = await driveJson(
@@ -112,6 +129,7 @@ export async function ensureRootFolder(user) {
     created.id,
     user.google_id,
   ]);
+  user.root_folder_id = created.id;
   return created.id;
 }
 
@@ -126,21 +144,44 @@ export async function ensureRoomFolder(user, roomId) {
     `${DRIVE}/files?q=${q}&spaces=drive&fields=files(id,name)&pageSize=1`
   );
   if (list.files?.length) return list.files[0].id;
-  const created = await driveJson(
-    token,
-    `${DRIVE}/files`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        name: roomId,
-        mimeType: "application/vnd.google-apps.folder",
-        parents: [rootId],
-        appProperties: { gcRoom: roomId },
-      }),
-    }
-  );
-  return created.id;
+
+  try {
+    const created = await driveJson(
+      token,
+      `${DRIVE}/files`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: roomId,
+          mimeType: "application/vnd.google-apps.folder",
+          parents: [rootId],
+          appProperties: { gcRoom: roomId },
+        }),
+      }
+    );
+    return created.id;
+  } catch {
+    // If parent rootId was invalid/deleted, reset root_folder_id and retry
+    await db.run("UPDATE users SET root_folder_id = NULL WHERE google_id = ?", [user.google_id]);
+    user.root_folder_id = null;
+    const freshRootId = await ensureRootFolder(user);
+    const retryCreated = await driveJson(
+      token,
+      `${DRIVE}/files`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: roomId,
+          mimeType: "application/vnd.google-apps.folder",
+          parents: [freshRootId],
+          appProperties: { gcRoom: roomId },
+        }),
+      }
+    );
+    return retryCreated.id;
+  }
 }
 
 export async function createResumableSession(token, folderId, name, mimeType) {
@@ -389,6 +430,13 @@ export async function syncFileToUserDrive(hostUser, participantUser, roomId, dri
           }
         );
         console.log(`[sync] Native Drive copy successful for "${fileName}": ${copied.id}`);
+        if (participantUser.google_id === hostUser.google_id) {
+          await db.run("UPDATE files SET drive_file_id = ? WHERE room_id = ? AND name = ?", [
+            copied.id,
+            roomId,
+            fileName,
+          ]);
+        }
         return copied.id;
       } catch (copyErr) {
         console.warn(`[sync] Native Drive copy failed (${copyErr.message}), falling back to multipart buffer upload...`);
@@ -406,6 +454,13 @@ export async function syncFileToUserDrive(hostUser, participantUser, roomId, dri
     );
 
     console.log(`[sync] Multipart upload successful for "${fileName}": ${uploaded.id}`);
+    if (participantUser.google_id === hostUser.google_id) {
+      await db.run("UPDATE files SET drive_file_id = ? WHERE room_id = ? AND name = ?", [
+        uploaded.id,
+        roomId,
+        fileName,
+      ]);
+    }
     return uploaded.id;
   } catch (err) {
     console.error(`[drive] syncFileToUserDrive failed for ${participantUser.google_id}:`, err?.message || err);

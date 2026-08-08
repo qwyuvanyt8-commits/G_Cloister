@@ -417,7 +417,7 @@ roomsRouter.delete("/:roomId/forget", requireAuth, async (req, res) => {
   res.json({ ok: true, roomId });
 });
 
-// ---- Auto-sync toggle ----
+// ---- Auto-sync / Save to Drive ----
 roomsRouter.post("/:roomId/sync", requireAuth, async (req, res) => {
   const roomId = sanitizeRoomId(req.params.roomId);
   if (!roomId) return res.status(400).json({ error: "Invalid room ID." });
@@ -425,9 +425,6 @@ roomsRouter.post("/:roomId/sync", requireAuth, async (req, res) => {
   if (!room) return res.status(404).json({ error: "Room not found." });
   if (!(await isMember(req.user.google_id, roomId))) {
     return res.status(403).json({ error: "You are not a member of this room." });
-  }
-  if (room.host_user_id === req.user.google_id) {
-    return res.status(400).json({ error: "As host, files are already in your Google Drive." });
   }
   try {
     const syncedCount = await drive.syncRoomFilesToParticipant(roomId, req.user);
