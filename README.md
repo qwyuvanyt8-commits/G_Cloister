@@ -179,11 +179,99 @@ npm run dev
 
 ---
 
-## 📦 Production Deployment
+## 📦 Production Deployment Guide
 
-Refer to [DEPLOY.md](file:///Users/yuvi/Downloads/G_Cloister/DEPLOY.md) for detailed step-by-step instructions on deploying:
-- **Backend**: Express API on **Render** with SQLite persistent volume disk.
-- **Frontend**: Next.js App Router on **Vercel**.
+Deploy G_Cloister in production using **Render** for the Express backend API and **Vercel** for the Next.js frontend web app.
+
+---
+
+### Step 1: Deploy Backend API to Render
+
+#### Method A: Automatic Deployment using Render Blueprint (Recommended)
+
+1. Fork or push this repository to your GitHub account.
+2. Sign in to [Render Dashboard](https://dashboard.render.com/).
+3. Click **New +** → Select **Blueprint**.
+4. Connect your GitHub repository (`G_Cloister`).
+5. Render will automatically detect `render.yaml` and configure the `gcloister-server` Web Service.
+6. Provide required environment variables when prompted:
+   - `GOOGLE_CLIENT_ID`: Your Google Cloud OAuth Client ID.
+   - `GOOGLE_CLIENT_SECRET`: Your Google Cloud OAuth Client Secret.
+   - `GOOGLE_REDIRECT_URI`: `https://<your-render-app>.onrender.com/api/auth/callback`
+   - `FRONTEND_URL`: `https://<your-vercel-app>.vercel.app`
+7. Click **Apply**.
+
+#### Method B: Manual Web Service Creation
+
+1. Go to [Render Dashboard](https://dashboard.render.com/) → **New +** → **Web Service**.
+2. Connect your GitHub repository.
+3. Configure the service settings:
+   - **Name**: `gcloister-server`
+   - **Runtime**: `Docker`
+   - **Dockerfile Path**: `./server/Dockerfile`
+4. Add the required **Environment Variables**:
+   - `PORT`: `4000`
+   - `NODE_ENV`: `production`
+   - `FRONTEND_URL`: `https://<your-vercel-app>.vercel.app`
+   - `DATABASE_PATH`: `/var/data/gcloister.db`
+   - `GOOGLE_CLIENT_ID`: `your_client_id.apps.googleusercontent.com`
+   - `GOOGLE_CLIENT_SECRET`: `your_client_secret`
+   - `GOOGLE_REDIRECT_URI`: `https://<your-render-app>.onrender.com/api/auth/callback`
+   - `SESSION_SECRET`: Long random string
+   - `ENCRYPTION_KEY`: 32-byte base64 string
+5. Under **Advanced** → **Add Disk**:
+   - **Name**: `gcloister_data`
+   - **Mount Path**: `/var/data`
+   - **Size**: `1 GB`
+6. Click **Create Web Service**.
+
+> 🔍 **Verify Backend Deployment**:
+> Test your live API endpoint:
+> ```bash
+> curl https://<your-render-app>.onrender.com/api/health
+> # Output: {"ok":true,"service":"gcloister","time":...}
+> ```
+
+---
+
+### Step 2: Deploy Frontend Web App to Vercel
+
+#### Method A: Via Vercel Dashboard (Recommended)
+
+1. Sign in to [Vercel Dashboard](https://vercel.com/new).
+2. Import your GitHub repository (`G_Cloister`).
+3. Set **Root Directory** to `web` (Important!).
+4. Add Environment Variable:
+   - **Key**: `NEXT_PUBLIC_API_URL`
+   - **Value**: `https://<your-render-app>.onrender.com`
+5. Click **Deploy**.
+
+#### Method B: Via Vercel CLI
+
+```bash
+cd web
+vercel --prod
+```
+When prompted, set:
+- **Root Directory**: `./`
+- **NEXT_PUBLIC_API_URL**: `https://<your-render-app>.onrender.com`
+
+---
+
+### Step 3: Connect Services & Finalize Google OAuth
+
+1. **Update Render `FRONTEND_URL`**: Set `FRONTEND_URL` in your Render Web Service settings to match your live Vercel URL (e.g. `https://g-cloister.vercel.app`).
+2. **Update Google Cloud Console Credentials**:
+   - Go to [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Services** → **Credentials**.
+   - Edit your OAuth Client ID.
+   - Add to **Authorized redirect URIs**:
+     ```
+     https://<your-render-app>.onrender.com/api/auth/callback
+     ```
+   - Add to **Authorized JavaScript origins**:
+     ```
+     https://<your-vercel-app>.vercel.app
+     ```
 
 ---
 
