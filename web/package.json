@@ -10,21 +10,22 @@
   },
   "dependencies": {
     "@phosphor-icons/react": "^2.1.10",
-    "motion": "^13.0.0",
-    "next": "16.3.0",
-    "react": "19.2.8",
-    "react-dom": "19.2.8",
-    "socket.io-client": "^4.8.3",
-    "zustand": "^5.0.14"
-  },
-  "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "motion": "^13.0.0",
+    "next": "16.3.0",
+    "postcss": "^8.5.3",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "socket.io-client": "^4.8.3",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5",
+    "zustand": "^5.0.14"
+  },
+  "devDependencies": {
     "eslint": "^9",
-    "eslint-config-next": "16.3.0",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "eslint-config-next": "16.3.0"
   }
 }
