@@ -3,6 +3,7 @@ export interface PublicUser {
   name: string;
   email: string;
   avatar: string | null;
+  authType: "google" | "email";
   hasDrive: boolean;
 }
 

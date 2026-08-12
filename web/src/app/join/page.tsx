@@ -108,7 +108,8 @@ function JoinInner() {
             <div className="flex items-center gap-3 rounded-xl border border-border bg-surface-2 px-4 py-3">
               <Key size={18} weight="duotone" className="shrink-0 text-accent" />
               <p className="text-[13px] leading-snug text-muted">
-                Your Google account is just for identity — the room's storage lives on the host's Drive.
+                No Google account needed — the room's storage lives on the host's Drive.
+                Just enter the code and password to step inside.
               </p>
             </div>
           </form>

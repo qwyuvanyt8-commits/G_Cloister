@@ -165,8 +165,9 @@ roomsRouter.post("/", requireAuth, async (req, res) => {
     }
     if (!req.user.refresh_token && !req.user.access_token) {
       return res.status(403).json({
-        error: "You need Google Drive access to host a room. Please sign in again.",
-        code: "DRIVE_NO_TOKEN",
+        error:
+          "You can't create this room — you need to sign in through a Google account to host.",
+        code: "GOOGLE_REQUIRED",
       });
     }
 

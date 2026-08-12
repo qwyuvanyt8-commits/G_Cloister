@@ -2,13 +2,13 @@
 
 import { useRouter } from "next/navigation";
 import { motion } from "motion/react";
-import { GoogleLogo, ArrowRight, Sun, Moon } from "@phosphor-icons/react";
+import { ArrowRight, Sun, Moon } from "@phosphor-icons/react";
 import { Logo, Button, IconButton } from "@/components/ui";
 import { useAuth } from "@/components/auth-provider";
 import { useTheme } from "@/components/theme-provider";
 
-export function LandingNav() {
-  const { user, loading, signIn } = useAuth();
+export function LandingNav({ onSignIn }: { onSignIn: () => void }) {
+  const { user, loading } = useAuth();
   const { theme, toggle } = useTheme();
   const router = useRouter();
 
@@ -48,11 +48,11 @@ export function LandingNav() {
           </IconButton>
           <Button
             size="sm"
-            onClick={user ? () => router.push("/home") : signIn}
+            onClick={user ? () => router.push("/home") : onSignIn}
             loading={loading}
-            icon={!loading && (user ? <ArrowRight size={16} weight="bold" /> : <GoogleLogo size={16} weight="bold" />)}
+            icon={!loading && <ArrowRight size={16} weight="bold" />}
           >
-            {user ? "Go to rooms" : "Sign in with Google"}
+            {user ? "Go to rooms" : "Sign in"}
           </Button>
         </div>
       </div>

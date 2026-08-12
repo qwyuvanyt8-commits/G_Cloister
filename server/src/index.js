@@ -13,6 +13,8 @@ import {
   destroySession,
   publicUser,
   requireAuth,
+  registerUser,
+  loginUser,
 } from "./auth.js";
 import { roomsRouter } from "./rooms.js";
 import { setupSocket } from "./socket.js";
@@ -105,6 +107,46 @@ app.get("/api/auth/callback", async (req, res) => {
 
 app.get("/api/auth/me", requireAuth, (req, res) => {
   res.json({ user: publicUser(req.user) });
+});
+
+app.post("/api/auth/register", async (req, res) => {
+  try {
+    const { user } = await registerUser({
+      name: req.body?.name,
+      email: req.body?.email,
+      password: req.body?.password,
+    });
+    const sessionToken = await createSession(user.google_id);
+    const isProd = process.env.NODE_ENV === "production";
+    res.cookie(config.cookieName, sessionToken, {
+      httpOnly: true,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+      path: "/",
+      maxAge: config.sessionTtlMs,
+    });
+    res.status(201).json({ token: sessionToken, user });
+  } catch (err) {
+    res.status(err?.status || 500).json({ error: err?.message || "Registration failed." });
+  }
+});
+
+app.post("/api/auth/login", async (req, res) => {
+  try {
+    const { user } = await loginUser(req.body?.email, req.body?.password);
+    const sessionToken = await createSession(user.google_id);
+    const isProd = process.env.NODE_ENV === "production";
+    res.cookie(config.cookieName, sessionToken, {
+      httpOnly: true,
+      sameSite: isProd ? "none" : "lax",
+      secure: isProd,
+      path: "/",
+      maxAge: config.sessionTtlMs,
+    });
+    res.json({ token: sessionToken, user });
+  } catch (err) {
+    res.status(err?.status || 500).json({ error: err?.message || "Could not sign in." });
+  }
 });
 
 app.post("/api/auth/logout", async (req, res) => {

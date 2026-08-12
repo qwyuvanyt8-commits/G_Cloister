@@ -62,16 +62,24 @@ function HostInner() {
     setTimeout(() => setCopied(null), 1600);
   };
 
+  const HOSTING_ERROR =
+    "You can't create this room — you need to sign in through a Google account to host.";
+
+  const openHostingDrivePrompt = () => {
+    openDriveModal(
+      "Google Account Required to Host",
+      "Hosting stores room files in your own Google Drive, so it requires a Google account. You're signed in with email right now — switch to Google to unlock hosting."
+    );
+  };
+
   const create = async () => {
     if (!validation.ok) return;
+    setError(null);
     if (!hasDrive) {
-      openDriveModal(
-        "Google Drive Access Needed to Host",
-        "Hosting a room requires Google Drive permission so G_Cloister can create a folder for room files in your Drive."
-      );
+      setError(HOSTING_ERROR);
+      openHostingDrivePrompt();
       return;
     }
-    setError(null);
     setCreating(true);
     try {
       const room = await api.createRoom(roomId.trim().toLowerCase());
@@ -79,11 +87,14 @@ function HostInner() {
       toast("Room created. Your vault is ready.");
     } catch (err: unknown) {
       const errObj = err as { code?: string; status?: number; message?: string };
-      if (errObj?.code === "DRIVE_NO_TOKEN" || errObj?.code === "DRIVE_AUTH" || errObj?.status === 403) {
-        openDriveModal(
-          "Google Drive Access Needed to Host",
-          "Hosting a room requires Google Drive permission so G_Cloister can create a folder for room files in your Drive."
-        );
+      if (
+        errObj?.code === "GOOGLE_REQUIRED" ||
+        errObj?.code === "DRIVE_NO_TOKEN" ||
+        errObj?.code === "DRIVE_AUTH" ||
+        errObj?.status === 403
+      ) {
+        setError(HOSTING_ERROR);
+        openHostingDrivePrompt();
       } else {
         setError(err instanceof Error ? err.message : "Could not create the room.");
       }

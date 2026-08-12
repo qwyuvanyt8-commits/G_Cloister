@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import {
-  GoogleLogo,
   Key,
   Lightning,
   LockKey,
@@ -16,6 +15,7 @@ import {
 } from "@phosphor-icons/react";
 import { LandingNav } from "@/components/landing-nav";
 import { RoomPreview } from "@/components/room-preview";
+import { AuthModal } from "@/components/auth-modal";
 import { Button, Logo } from "@/components/ui";
 import { useAuth } from "@/components/auth-provider";
 import { cn } from "@/lib/cn";
@@ -30,15 +30,16 @@ const marqueeItems = [
 ];
 
 export default function LandingPage() {
-  const { user, loading, signIn } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
   const reduce = useReducedMotion();
+  const [showAuth, setShowAuth] = useState(false);
 
   return (
     <main className="relative overflow-x-clip">
       <div className="aurora pointer-events-none absolute inset-x-0 top-0 h-[140vh]" aria-hidden />
 
-      <LandingNav />
+      <LandingNav onSignIn={() => setShowAuth(true)} />
 
       {/* ---------------- HERO ---------------- */}
       <section className="relative mx-auto grid max-w-[1400px] grid-cols-1 items-center gap-14 px-5 pb-24 pt-32 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:pb-32 lg:pt-40">
@@ -85,11 +86,11 @@ export default function LandingPage() {
           >
             <Button
               size="lg"
-              onClick={user ? () => router.push("/home") : signIn}
+              onClick={user ? () => router.push("/home") : () => setShowAuth(true)}
               loading={loading}
-              icon={user ? <ArrowRight size={19} weight="bold" /> : <GoogleLogo size={19} weight="bold" />}
+              icon={<ArrowRight size={19} weight="bold" />}
             >
-              {user ? "Go to rooms" : "Sign in with Google"}
+              {user ? "Go to rooms" : "Sign in"}
             </Button>
             <Button
               size="lg"
@@ -107,7 +108,7 @@ export default function LandingPage() {
             transition={{ delay: 0.5, duration: 0.8 }}
             className="mt-5 text-[13px] text-faint"
           >
-            Free to host · No storage to buy · Google account required
+            Free to host · No storage to buy · Hosts sign in with Google, members join with email
           </motion.p>
         </div>
 
@@ -147,8 +148,8 @@ export default function LandingPage() {
                 shared <span className="text-accent">vault</span>.
               </h2>
               <p className="mt-5 max-w-[40ch] text-[15px] leading-relaxed text-muted">
-                No sign-up forms, no invite emails. Your Google account is the only
-                key you need.
+                No invite emails, no credit cards. Hosts sign in with Google to open the
+                vault — members only need an email address.
               </p>
             </motion.div>
           </div>
@@ -386,13 +387,15 @@ export default function LandingPage() {
           >
             <Button
               size="lg"
-              onClick={user ? () => router.push("/home") : signIn}
+              onClick={user ? () => router.push("/home") : () => setShowAuth(true)}
               loading={loading}
-              icon={user ? <ArrowRight size={19} weight="bold" /> : <GoogleLogo size={19} weight="bold" />}
+              icon={<ArrowRight size={19} weight="bold" />}
             >
-              {user ? "Go to rooms" : "Sign in with Google"}
+              {user ? "Go to rooms" : "Sign in"}
             </Button>
-            <p className="text-[13px] text-faint">Takes about ten seconds. Your Drive does the heavy lifting.</p>
+            <p className="text-[13px] text-faint">
+              Hosts use Google to open a vault. Members can drop files with just an email.
+            </p>
           </motion.div>
         </div>
       </section>
@@ -409,6 +412,8 @@ export default function LandingPage() {
           </div>
         </div>
       </footer>
+
+      <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
     </main>
   );
 }

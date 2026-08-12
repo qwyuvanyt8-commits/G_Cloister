@@ -104,6 +104,16 @@ export function uploadFile(opts: {
 export const api = {
   me: () => request<{ user: PublicUser }>("/api/auth/me"),
   logout: () => request<{ ok: boolean }>("/api/auth/logout", { method: "POST" }),
+  register: (name: string, email: string, password: string) =>
+    request<{ token: string; user: PublicUser }>("/api/auth/register", {
+      method: "POST",
+      body: JSON.stringify({ name, email, password }),
+    }),
+  login: (email: string, password: string) =>
+    request<{ token: string; user: PublicUser }>("/api/auth/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    }),
   createRoom: (roomId: string) =>
     request<RoomWithPassword>("/api/rooms", { method: "POST", body: JSON.stringify({ roomId }) }),
   joinRoom: (roomId: string, password: string) =>

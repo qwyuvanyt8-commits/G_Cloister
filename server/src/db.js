@@ -124,4 +124,19 @@ export async function initDb() {
   try {
     await db.run("ALTER TABLE room_members ADD COLUMN kicked INTEGER NOT NULL DEFAULT 0");
   } catch { /* column already exists */ }
+
+  // Migration: email/password accounts (hosts must still use Google)
+  try {
+    await db.run("ALTER TABLE users ADD COLUMN password_hash TEXT");
+  } catch { /* column already exists */ }
+  try {
+    await db.run("ALTER TABLE users ADD COLUMN auth_type TEXT NOT NULL DEFAULT 'google'");
+  } catch { /* column already exists */ }
+  try {
+    await db.run(
+      "CREATE UNIQUE INDEX IF NOT EXISTS idx_users_email ON users(email)"
+    );
+  } catch {
+    /* duplicate emails may exist in older data; app-level checks still apply */
+  }
 }
