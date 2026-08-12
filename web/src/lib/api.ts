@@ -59,6 +59,19 @@ export interface AdminUser {
   }>;
 }
 
+export interface AdminRoom {
+  roomId: string;
+  createdAt: number;
+  totalBytes: number;
+  host: {
+    id: string;
+    name: string;
+    email: string;
+    avatar: string | null;
+  };
+  memberCount: number;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   const isAdminPath = path.startsWith("/api/admin");
   const token = isAdminPath ? getAdminToken() : getStoredToken();
@@ -242,6 +255,20 @@ export const api = {
     request<{ ok: boolean }>(`/api/admin/users/${userId}/rooms/${roomId}/unkick`, {
       method: "POST",
     }),
+  adminBroadcast: (message: string, level: string = "info") =>
+    request<{ ok: boolean }>("/api/admin/broadcast", {
+      method: "POST",
+      body: JSON.stringify({ message, level }),
+    }),
+  adminGetRooms: () => request<{ rooms: AdminRoom[] }>("/api/admin/rooms"),
+  adminDeleteRoom: (roomId: string) =>
+    request<{ ok: boolean }>(`/api/admin/rooms/${roomId}`, { method: "DELETE" }),
+  adminResetPassword: (userId: string, password: string) =>
+    request<{ ok: boolean }>(`/api/admin/users/${userId}/reset-password`, {
+      method: "POST",
+      body: JSON.stringify({ password }),
+    }),
+  adminPurgeSessions: () => request<{ ok: boolean }>("/api/admin/sessions/purge", { method: "POST" }),
 };
 
 export const authUrl = `${API}/api/auth/google`;

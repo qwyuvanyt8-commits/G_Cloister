@@ -6,7 +6,7 @@ import { db } from "./db.js";
 import { requireAuth, publicUser } from "./auth.js";
 import { encrypt, decrypt } from "./crypto.js";
 import * as drive from "./drive.js";
-import { emitToRoom, getOnlineUsers } from "./socket.js";
+import { emitToRoom, getOnlineUsers, emitKickToUser } from "./socket.js";
 
 const GB = 1024 * 1024 * 1024;
 
@@ -367,6 +367,10 @@ roomsRouter.post("/:roomId/kick", requireAuth, async (req, res) => {
   }
 
   emitToRoom(roomId, "member:kicked", { userId: targetUserId, roomId });
+  emitKickToUser(targetUserId, roomId, {
+    kickerName: req.user.name || "Room Owner",
+    isHostKicker: true,
+  });
   res.json({ ok: true, targetUserId });
 });
 

@@ -110,13 +110,32 @@ export function getOnlineUsers(roomId) {
   return members ? [...members.values()] : [];
 }
 
-export function disconnectUserSockets(userId) {
+export function emitKickToUser(userId, roomId, { kickerName = "Host", isHostKicker = true } = {}) {
   const io = ioRef;
   if (!io) return;
   for (const [, socket] of io.sockets.sockets) {
     if (socket.data?.user?.google_id === userId) {
-      socket.emit("banned", { error: "Your account has been banned." });
+      socket.emit("room:kicked", { roomId, kickerName, isHostKicker });
+      socket.leave(`room:${roomId}`);
+      if (socket.data?.rooms) {
+        socket.data.rooms.delete(roomId);
+      }
+    }
+  }
+}
+
+export function disconnectUserSockets(userId, reason = "Your account has been banned by an administrator.") {
+  const io = ioRef;
+  if (!io) return;
+  for (const [, socket] of io.sockets.sockets) {
+    if (socket.data?.user?.google_id === userId) {
+      socket.emit("user:banned", { error: reason });
       socket.disconnect(true);
     }
   }
+}
+
+export function broadcastSystemMessage(message, level = "info") {
+  const io = ioRef;
+  if (io) io.emit("system:broadcast", { message, level, timestamp: Date.now() });
 }
