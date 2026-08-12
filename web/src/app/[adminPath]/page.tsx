@@ -39,7 +39,6 @@ export default function AdminPage({
 }) {
   const { adminPath } = use(params);
 
-  // Fallback to 404 if path does not match configured secret admin path
   if (adminPath !== SECRET_PATH) {
     notFound();
   }
