@@ -17,6 +17,7 @@ import {
   loginUser,
 } from "./auth.js";
 import { roomsRouter } from "./rooms.js";
+import { adminRouter } from "./admin.js";
 import { setupSocket } from "./socket.js";
 
 assertConfig();
@@ -162,6 +163,9 @@ app.post("/api/auth/logout", async (req, res) => {
   });
   res.json({ ok: true });
 });
+
+// ---- Admin ----
+app.use("/api/admin", adminRouter);
 
 // ---- Rooms ----
 app.use("/api/rooms", rateLimit(60_000, 120), roomsRouter);

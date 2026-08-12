@@ -43,6 +43,11 @@ export const config = {
   encryptionKey: env.ENCRYPTION_KEY,
   roomStorageBytes: Number(env.ROOM_STORAGE_BYTES || 5 * 1024 * 1024 * 1024),
   maxFileBytes: Number(env.MAX_FILE_BYTES || 2 * 1024 * 1024 * 1024),
+  admin: {
+    email: (env.ADMIN_EMAIL || "admin@example.com").trim().toLowerCase(),
+    password: env.ADMIN_PASSWORD || "change_me_in_production",
+    cookieName: "gcl_admin",
+  },
   cookieName: "gcl_session",
   sessionTtlMs: 30 * 24 * 60 * 60 * 1000,
   previewLinkTtlMs: 15 * 60 * 1000,

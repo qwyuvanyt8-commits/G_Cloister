@@ -24,8 +24,44 @@ export function removeStoredToken() {
   }
 }
 
+export function getAdminToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return localStorage.getItem("gcl_admin_token");
+}
+
+export function setAdminToken(token: string) {
+  if (typeof window !== "undefined") {
+    localStorage.setItem("gcl_admin_token", token);
+  }
+}
+
+export function removeAdminToken() {
+  if (typeof window !== "undefined") {
+    localStorage.removeItem("gcl_admin_token");
+  }
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  name: string;
+  avatar: string | null;
+  authType: "google" | "email";
+  createdAt: number;
+  banned: boolean;
+  joinedRooms: Array<{
+    roomId: string;
+    role: string;
+    joinedAt: number;
+    left: boolean;
+    kicked: boolean;
+    isHost: boolean;
+  }>;
+}
+
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = getStoredToken();
+  const isAdminPath = path.startsWith("/api/admin");
+  const token = isAdminPath ? getAdminToken() : getStoredToken();
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
     ...(options.headers as Record<string, string> || {}),
@@ -182,6 +218,30 @@ export const api = {
   downloadUrl: (roomId: string, fileId: string) =>
     `${API}/api/rooms/${roomId}/files/${fileId}/download`,
   socketUrl: API,
+  adminLogin: (email: string, password: string) =>
+    request<{ token: string; ok: boolean }>("/api/admin/login", {
+      method: "POST",
+      body: JSON.stringify({ email, password }),
+    }),
+  adminMe: () => request<{ ok: boolean; email: string }>("/api/admin/me"),
+  adminLogout: () => request<{ ok: boolean }>("/api/admin/logout", { method: "POST" }),
+  adminGetUsers: () => request<{ users: AdminUser[] }>("/api/admin/users"),
+  adminBanUser: (userId: string) =>
+    request<{ ok: boolean; userId: string; banned: boolean }>(`/api/admin/users/${userId}/ban`, {
+      method: "POST",
+    }),
+  adminUnbanUser: (userId: string) =>
+    request<{ ok: boolean; userId: string; banned: boolean }>(`/api/admin/users/${userId}/unban`, {
+      method: "POST",
+    }),
+  adminKickRoomMember: (userId: string, roomId: string) =>
+    request<{ ok: boolean }>(`/api/admin/users/${userId}/rooms/${roomId}/kick`, {
+      method: "POST",
+    }),
+  adminUnkickRoomMember: (userId: string, roomId: string) =>
+    request<{ ok: boolean }>(`/api/admin/users/${userId}/rooms/${roomId}/unkick`, {
+      method: "POST",
+    }),
 };
 
 export const authUrl = `${API}/api/auth/google`;

@@ -126,7 +126,25 @@ Go to [Google Cloud Console](https://console.cloud.google.com/) → **APIs & Ser
 
 ---
 
-## Step 4 — Verify End-to-End
+## Step 4 — Custom Admin Panel Configuration (Optional)
+
+G_Cloister includes a private Admin Control Panel for monitoring registered users and moderating room memberships.
+
+### Configuring Admin Credentials & Secret Route
+
+Set the following environment variables on **Render** (for server) and **Vercel** (for frontend):
+
+| Key | Location | Description | Default |
+|-----|----------|-------------|---------|
+| `ADMIN_EMAIL` | Render (Server) | Email address required to access admin panel | `admin@example.com` |
+| `ADMIN_PASSWORD` | Render (Server) | Password required to authenticate admin session | `change_me_in_production` |
+| `NEXT_PUBLIC_ADMIN_PATH` | Vercel (Frontend) | Custom URL path segment for the admin panel | `admin` |
+
+> 🔒 **Security Note**: Accessing any route other than your configured `NEXT_PUBLIC_ADMIN_PATH` automatically renders a standard 404 page.
+
+---
+
+## Step 5 — Verify End-to-End
 
 1. Open your Vercel URL in the browser.
 2. Sign in with Google.

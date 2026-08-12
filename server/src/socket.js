@@ -36,7 +36,7 @@ export function setupSocket(httpServer) {
     const tokenFromQuery = socket.handshake.query?.token;
     const token = tokenFromAuth || tokenFromQuery || tokenFromCookie;
     const user = await sessionUserFromToken(token);
-    if (!user) return next(new Error("unauthorized"));
+    if (!user || user.banned === 1) return next(new Error("unauthorized"));
     socket.data.user = user;
     socket.data.rooms = new Set();
     next();
@@ -108,4 +108,15 @@ export function emitToRoom(roomId, event, payload) {
 export function getOnlineUsers(roomId) {
   const members = online.get(roomId);
   return members ? [...members.values()] : [];
+}
+
+export function disconnectUserSockets(userId) {
+  const io = ioRef;
+  if (!io) return;
+  for (const [, socket] of io.sockets.sockets) {
+    if (socket.data?.user?.google_id === userId) {
+      socket.emit("banned", { error: "Your account has been banned." });
+      socket.disconnect(true);
+    }
+  }
 }

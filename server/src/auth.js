@@ -54,6 +54,9 @@ export async function handleGoogleTokens(tokens) {
   // Existing Google account — refresh its profile and tokens.
   let existing = await db.get("SELECT * FROM users WHERE google_id = ?", [googleId]);
   if (existing) {
+    if (existing.banned === 1) {
+      throw baseError("Your account has been banned by an administrator.", 403);
+    }
     await db.run(
       `UPDATE users SET
          email=?, name=?, avatar=?,
@@ -71,6 +74,9 @@ export async function handleGoogleTokens(tokens) {
   // their memberships and room history instead of creating a duplicate).
   const byEmail = await db.get("SELECT * FROM users WHERE email = ?", [email]);
   if (byEmail) {
+    if (byEmail.banned === 1) {
+      throw baseError("Your account has been banned by an administrator.", 403);
+    }
     if (byEmail.auth_type === "email") {
       await db.run(
         `UPDATE users SET
@@ -114,6 +120,9 @@ export async function registerUser({ name = "", email = "", password = "" }) {
 
   const existing = await db.get("SELECT * FROM users WHERE email = ?", [cleanEmail]);
   if (existing) {
+    if (existing.banned === 1) {
+      throw baseError("Your account has been banned by an administrator.", 403);
+    }
     if (existing.auth_type === "google") {
       throw baseError(
         "This email is already connected to a Google account. Sign in with Google instead.",
@@ -143,6 +152,9 @@ export async function loginUser(email, password) {
   const user = await db.get("SELECT * FROM users WHERE email = ?", [cleanEmail]);
   if (!user) {
     throw baseError("No account found with this email. Create one first.", 401);
+  }
+  if (user.banned === 1) {
+    throw baseError("Your account has been banned by an administrator.", 403);
   }
   if (!user.password_hash) {
     throw baseError(
@@ -205,7 +217,12 @@ export async function sessionUserFromToken(token) {
     await db.run("DELETE FROM sessions WHERE token = ?", [token]);
     return null;
   }
-  return getStoredUser(session.user_id);
+  const user = await getStoredUser(session.user_id);
+  if (user && user.banned === 1) {
+    await db.run("DELETE FROM sessions WHERE token = ?", [token]);
+    return null;
+  }
+  return user;
 }
 
 export async function requireAuth(req, res, next) {
@@ -215,6 +232,9 @@ export async function requireAuth(req, res, next) {
   const user = await sessionUserFromToken(token);
   if (!user) {
     return res.status(401).json({ error: "Not authenticated" });
+  }
+  if (user.banned === 1) {
+    return res.status(403).json({ error: "Your account has been banned by an administrator." });
   }
   req.user = user;
   req.sessionToken = token;

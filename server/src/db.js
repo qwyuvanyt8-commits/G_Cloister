@@ -144,4 +144,9 @@ export async function initDb() {
   } catch {
     /* duplicate emails may exist in older data; app-level checks still apply */
   }
+
+  // Migration: add banned column to users if it doesn't exist
+  try {
+    await db.run("ALTER TABLE users ADD COLUMN banned INTEGER NOT NULL DEFAULT 0");
+  } catch { /* column already exists */ }
 }
