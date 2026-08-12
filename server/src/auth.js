@@ -172,7 +172,14 @@ export function publicUser(row) {
   };
 }
 
-export async function createSession(userId) {
+export async function createSession(userIdOrUser) {
+  const userId =
+    typeof userIdOrUser === "object" && userIdOrUser
+      ? userIdOrUser.id || userIdOrUser.google_id
+      : userIdOrUser;
+  if (!userId) {
+    throw baseError("Could not create session: missing user ID.", 400);
+  }
   const token = crypto.randomBytes(32).toString("hex");
   const now = Date.now();
   await db.run(

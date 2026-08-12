@@ -36,17 +36,22 @@ function normalizeRow(row, columns = []) {
   return out;
 }
 
+function cleanArgs(args) {
+  const arr = Array.isArray(args) ? args : [args];
+  return arr.map((v) => (v === undefined ? null : v));
+}
+
 export const db = {
   async get(sql, args = []) {
-    const res = await client.execute({ sql, args: Array.isArray(args) ? args : [args] });
+    const res = await client.execute({ sql, args: cleanArgs(args) });
     return res.rows[0] ? normalizeRow(res.rows[0], res.columns) : null;
   },
   async all(sql, args = []) {
-    const res = await client.execute({ sql, args: Array.isArray(args) ? args : [args] });
+    const res = await client.execute({ sql, args: cleanArgs(args) });
     return res.rows.map((r) => normalizeRow(r, res.columns));
   },
   async run(sql, args = []) {
-    return client.execute({ sql, args: Array.isArray(args) ? args : [args] });
+    return client.execute({ sql, args: cleanArgs(args) });
   },
 };
 

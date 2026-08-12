@@ -116,7 +116,7 @@ app.post("/api/auth/register", async (req, res) => {
       email: req.body?.email,
       password: req.body?.password,
     });
-    const sessionToken = await createSession(user.google_id);
+    const sessionToken = await createSession(user.id || user.google_id);
     const isProd = process.env.NODE_ENV === "production";
     res.cookie(config.cookieName, sessionToken, {
       httpOnly: true,
@@ -134,7 +134,7 @@ app.post("/api/auth/register", async (req, res) => {
 app.post("/api/auth/login", async (req, res) => {
   try {
     const { user } = await loginUser(req.body?.email, req.body?.password);
-    const sessionToken = await createSession(user.google_id);
+    const sessionToken = await createSession(user.id || user.google_id);
     const isProd = process.env.NODE_ENV === "production";
     res.cookie(config.cookieName, sessionToken, {
       httpOnly: true,
