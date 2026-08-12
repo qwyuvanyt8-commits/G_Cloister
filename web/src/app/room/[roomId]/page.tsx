@@ -451,7 +451,7 @@ function RoomInner() {
               >
                 Saved to Drive
               </Button>
-            ) : (
+            ) : hasDrive ? (
               <Button
                 size="sm"
                 variant={savedSuccess ? "primary" : "secondary"}
@@ -467,7 +467,7 @@ function RoomInner() {
               >
                 {savingToDrive ? "Saving to Drive…" : savedSuccess ? "Saved to Drive" : "Save to Drive"}
               </Button>
-            )}
+            ) : null}
             <Button
               size="sm"
               variant="secondary"

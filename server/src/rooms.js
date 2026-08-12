@@ -430,6 +430,12 @@ roomsRouter.post("/:roomId/sync", requireAuth, async (req, res) => {
   if (!(await isMember(req.user.google_id, roomId))) {
     return res.status(403).json({ error: "You are not a member of this room." });
   }
+  if (!req.user.refresh_token && !req.user.access_token) {
+    return res.status(403).json({
+      error: "Saving room files to your Drive requires signing in with Google.",
+      code: "DRIVE_NO_TOKEN",
+    });
+  }
   try {
     const syncedCount = await drive.syncRoomFilesToParticipant(roomId, req.user);
     res.json({ ok: true, syncedCount });
