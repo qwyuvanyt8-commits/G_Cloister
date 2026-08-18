@@ -98,7 +98,7 @@ export function AuthModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-md overflow-hidden border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_#16130d] sm:p-7"
+            className="relative z-10 w-full max-w-md overflow-hidden border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_var(--gc-shadow)] sm:p-7"
           >
             <button
               onClick={onClose}

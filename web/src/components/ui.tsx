@@ -45,13 +45,13 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const btnVariants: Record<BtnVariant, string> = {
   primary:
-    "bg-gc-cobalt text-paper border-2 border-gc-ink shadow-[3px_3px_0_#16130d] hover:bg-gc-cobalt-dark active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
+    "bg-gc-cobalt text-paper border-2 border-gc-ink shadow-[3px_3px_0_var(--gc-shadow)] hover:bg-gc-cobalt-dark active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
   secondary:
     "bg-paper text-gc-ink border-2 border-gc-ink hover:border-gc-cobalt hover:text-gc-cobalt active:translate-x-[1px] active:translate-y-[1px] active:shadow-none",
   ghost:
     "text-gc-muted hover:text-gc-ink hover:bg-paper-2 active:scale-[0.98]",
   danger:
-    "bg-gc-orange text-paper border-2 border-gc-ink shadow-[2px_2px_0_#16130d] hover:bg-gc-orange-dark active:scale-[0.98]",
+    "bg-gc-orange text-paper border-2 border-gc-ink shadow-[2px_2px_0_var(--gc-shadow)] hover:bg-gc-orange-dark active:scale-[0.98]",
 };
 
 const btnSizes = {

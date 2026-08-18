@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --bg: #f5f1e6;
   --bg-2: #efe9da;
@@ -17,6 +19,34 @@
   --danger: #d92f1f;
   --danger-soft: rgba(217, 47, 31, 0.1);
   --shadow: 0 18px 44px -18px rgba(22, 19, 13, 0.28);
+
+  /* gc sticker-palette — light */
+  --gc-paper: #f5f1e6;
+  --gc-paper-2: #efe9da;
+  --gc-ink: #16130d;
+  --gc-muted: #5a5448;
+  --gc-faint: #9a927f;
+  --gc-cobalt: #1e3bf3;
+  --gc-cobalt-dark: #1629b5;
+  --gc-orange: #ff5b1f;
+  --gc-orange-dark: #e0440c;
+  --gc-mint: #bfe8c8;
+  --gc-shadow: #16130d;
+}
+
+/* dark — warm near-black paper, cream ink, bright accents */
+.dark {
+  --gc-paper: #14110d;
+  --gc-paper-2: #1f1a13;
+  --gc-ink: #f1ead9;
+  --gc-muted: #b7ab94;
+  --gc-faint: #756b58;
+  --gc-cobalt: #7b8cff;
+  --gc-cobalt-dark: #5f71ff;
+  --gc-orange: #ff6b33;
+  --gc-orange-dark: #f0581f;
+  --gc-mint: #b5ecc3;
+  --gc-shadow: #000000;
 }
 
 @theme inline {
@@ -40,16 +70,18 @@
   --font-archivo: var(--font-archivo);
   --font-space-mono: var(--font-space-mono);
 
-  --color-paper: #f5f1e6;
-  --color-paper-2: #efe9da;
-  --color-gc-ink: #16130d;
-  --color-gc-muted: #5a5448;
-  --color-gc-faint: #9a927f;
-  --color-gc-cobalt: #1e3bf3;
-  --color-gc-cobalt-dark: #1629b5;
-  --color-gc-orange: #ff5b1f;
-  --color-gc-orange-dark: #e0440c;
-  --color-gc-mint: #bfe8c8;
+  --color-background: var(--gc-paper);
+  --color-paper: var(--gc-paper);
+  --color-paper-2: var(--gc-paper-2);
+  --color-gc-ink: var(--gc-ink);
+  --color-gc-ink-solid: #16130d;
+  --color-gc-muted: var(--gc-muted);
+  --color-gc-faint: var(--gc-faint);
+  --color-gc-cobalt: var(--gc-cobalt);
+  --color-gc-cobalt-dark: var(--gc-cobalt-dark);
+  --color-gc-orange: var(--gc-orange);
+  --color-gc-orange-dark: var(--gc-orange-dark);
+  --color-gc-mint: var(--gc-mint);
 }
 
 html {
@@ -57,8 +89,8 @@ html {
 }
 
 body {
-  background: var(--bg);
-  color: var(--text);
+  background: var(--gc-paper);
+  color: var(--gc-ink);
   font-family: var(--font-archivo), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -73,6 +105,9 @@ body {
   pointer-events: none;
   opacity: 0.5;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+.dark .grain::before {
+  opacity: 0.3;
 }
 
 /* Aurora backdrop for hero — sticker-washed */

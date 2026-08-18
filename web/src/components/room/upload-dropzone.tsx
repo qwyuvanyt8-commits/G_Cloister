@@ -35,7 +35,7 @@ export function UploadDropzone({ onFiles }: { onFiles: (files: File[]) => void }
       className={cn(
         "group relative cursor-pointer border-4 border-dashed px-6 py-10 text-center transition-all duration-150",
         drag
-          ? "border-gc-ink bg-paper-2 scale-[1.005] shadow-[6px_6px_0_#16130d]"
+          ? "border-gc-ink bg-paper-2 scale-[1.005] shadow-[6px_6px_0_var(--gc-shadow)]"
           : "border-gc-ink/40 hover:border-gc-cobalt hover:bg-paper-2/60"
       )}
     >
@@ -53,7 +53,7 @@ export function UploadDropzone({ onFiles }: { onFiles: (files: File[]) => void }
       <span
         className={cn(
           "relative mx-auto flex h-14 w-14 items-center justify-center border-2 transition-all duration-150",
-          drag ? "border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_#16130d]" : "border-dashed border-gc-ink bg-paper-2 text-gc-cobalt group-hover:scale-105"
+          drag ? "border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_var(--gc-shadow)]" : "border-dashed border-gc-ink bg-paper-2 text-gc-cobalt group-hover:scale-105"
         )}
       >
         <CloudArrowUp size={28} weight="duotone" />

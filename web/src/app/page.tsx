@@ -2,9 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowRight } from "@phosphor-icons/react";
+import { ArrowRight, GithubLogo } from "@phosphor-icons/react";
 import { AuthModal } from "@/components/auth-modal";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/components/auth-provider";
 import { cn } from "@/lib/cn";
 
@@ -87,7 +89,7 @@ const ROOM_CARDS = [
 const CARD_TONES: Record<string, string> = {
   cobalt: "bg-gc-cobalt text-paper",
   orange: "bg-gc-orange text-paper",
-  mint: "bg-gc-mint text-gc-ink",
+  mint: "bg-gc-mint text-gc-ink-solid",
   ink: "bg-gc-ink text-paper",
 };
 
@@ -150,7 +152,7 @@ export default function LandingPage() {
       <div className="bg-gc-ink text-paper">
         <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-6 py-2.5 font-space-mono text-[10.5px] uppercase tracking-[0.12em]">
           <span>
-            <span className="text-gc-mint">✓</span> NO STORAGE BILLS — EVER
+            <span className="text-gc-mint dark:text-[#2f9e63]">✓</span> NO STORAGE BILLS — EVER
           </span>
           <span className="hidden md:inline text-gc-orange">● REAL-TIME SYNC ●</span>
           <span className="hidden sm:inline">YOUR DRIVE · YOUR RULES</span>
@@ -159,10 +161,10 @@ export default function LandingPage() {
 
       {/* ---------- masthead ---------- */}
       <header className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 border-b-4 border-gc-ink px-6 py-4">
-        <a href="#" className="inline-flex items-center text-xl font-black leading-none tracking-tight" aria-label="G_Cloister home">
+        <Link href="/" className="inline-flex items-center text-xl font-black leading-none tracking-tight" aria-label="G_Cloister home">
           <span className="bg-gc-cobalt px-2.5 py-1.5 text-paper">G_</span>
           <span className="border-3 border-gc-ink px-2.5 py-1.5">CLOISTER</span>
-        </a>
+        </Link>
         <nav className="hidden items-center gap-5 md:flex">
           {[
             ["ROOMS", "collect"],
@@ -178,15 +180,18 @@ export default function LandingPage() {
             </button>
           ))}
         </nav>
-        <button
-          onClick={start}
-          className={cn(
-            "bg-gc-orange px-4 py-2.5 font-extrabold text-[13px] leading-none text-paper transition-all duration-150 hover:bg-gc-orange-dark hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_#16130d]",
-            "focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-gc-cobalt"
-          )}
-        >
-          {loading ? "…" : user ? "GO TO ROOMS" : "HOST A ROOM"}
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <button
+            onClick={start}
+            className={cn(
+              "bg-gc-orange px-4 py-2.5 font-extrabold text-[13px] leading-none text-paper transition-all duration-150 hover:bg-gc-orange-dark hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_var(--gc-shadow)]",
+              "focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-gc-cobalt"
+            )}
+          >
+            {loading ? "…" : user ? "GO TO ROOMS" : "HOST A ROOM"}
+          </button>
+        </div>
       </header>
 
       {/* ---------- hero ---------- */}
@@ -232,7 +237,7 @@ export default function LandingPage() {
             transition={{ duration: 0.7, delay: 0.24, ease: EASE }}
             className="mt-8 flex flex-wrap items-center gap-3.5"
           >
-            <button onClick={start} className={cn(btnBase, "bg-gc-orange px-7 py-4 text-paper hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gc-orange-dark hover:shadow-[4px_4px_0_#16130d]")}>
+            <button onClick={start} className={cn(btnBase, "bg-gc-orange px-7 py-4 text-paper hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gc-orange-dark hover:shadow-[4px_4px_0_var(--gc-shadow)]")}>
               {user && !loading ? (
                 <>
                   GO TO ROOMS <ArrowRight size={16} weight="bold" />
@@ -264,11 +269,11 @@ export default function LandingPage() {
           initial={reduce ? false : { opacity: 0, y: 34, rotate: 3 }}
           animate={{ opacity: 1, y: 0, rotate: 1 }}
           transition={{ duration: 0.8, delay: 0.18, ease: EASE }}
-          className="relative border-4 border-gc-ink bg-paper-2 p-5 shadow-[10px_10px_0_#16130d]"
+          className="relative border-4 border-gc-ink bg-paper-2 p-5 shadow-[10px_10px_0_var(--gc-shadow)]"
         >
           <div
             aria-hidden
-            className="absolute -right-4 -top-5 z-10 grid h-[86px] w-[68px] rotate-12 place-items-center border-3 border-gc-ink bg-paper text-[28px] font-black text-gc-cobalt shadow-[5px_5px_0_#16130d]"
+            className="absolute -right-4 -top-5 z-10 grid h-[86px] w-[68px] rotate-12 place-items-center border-3 border-gc-ink bg-paper text-[28px] font-black text-gc-cobalt shadow-[5px_5px_0_var(--gc-shadow)]"
           >
             G_
           </div>
@@ -279,7 +284,7 @@ export default function LandingPage() {
             {[
               { g: "◐", tone: "bg-gc-cobalt text-paper", lid: "ROOM WS-01", nm: "CELL-04" },
               { g: "▣", tone: "bg-gc-orange text-paper -rotate-2", lid: "ROOM WS-02", nm: "GARTH" },
-              { g: "▤", tone: "bg-gc-mint text-gc-ink", lid: "ROOM WS-03", nm: "ATRIUM" },
+              { g: "▤", tone: "bg-gc-mint text-gc-ink-solid", lid: "ROOM WS-03", nm: "ATRIUM" },
             ].map((s) => (
               <div
                 key={s.nm}
@@ -335,7 +340,7 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.25 }}
               transition={{ duration: 0.5, delay: i * 0.06, ease: EASE }}
-              className="group border-4 border-gc-ink bg-paper transition-all duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:rotate-[-0.6deg] hover:shadow-[7px_7px_0_#16130d]"
+              className="group border-4 border-gc-ink bg-paper transition-all duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:rotate-[-0.6deg] hover:shadow-[7px_7px_0_var(--gc-shadow)]"
             >
               <div className={cn("grid h-[130px] place-items-center border-b-4 border-gc-ink text-[46px]", CARD_TONES[room.tone])}>
                 <span aria-hidden>{room.glyph}</span>
@@ -376,7 +381,7 @@ export default function LandingPage() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.25 }}
             transition={{ duration: 0.5, delay: 0.3, ease: EASE }}
-            className="border-4 border-dashed border-gc-ink bg-paper-2 transition-all duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[7px_7px_0_#16130d]"
+            className="border-4 border-dashed border-gc-ink bg-paper-2 transition-all duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[7px_7px_0_var(--gc-shadow)]"
           >
             <button onClick={start} className="block w-full text-left">
               <div className="grid h-[130px] place-items-center border-b-4 border-dashed border-gc-ink bg-paper-2 text-[46px] text-gc-faint">
@@ -425,13 +430,13 @@ export default function LandingPage() {
                 className={cn(
                   "rounded-2xl border-2 p-5 transition-transform duration-200 hover:-rotate-1",
                   rule.variant === "cobalt" && "border-gc-ink bg-gc-cobalt text-paper",
-                  rule.variant === "mint" && "border-gc-ink bg-gc-mint",
+                  rule.variant === "mint" && "border-gc-ink bg-gc-mint text-gc-ink-solid",
                   rule.variant === "plain" && "border-dashed border-gc-ink bg-paper"
                 )}
               >
                 <span className="font-space-mono text-[11px] font-bold text-gc-orange">{rule.num}</span>
                 <h3 className="mt-2.5 text-lg font-black tracking-tight">{rule.title}</h3>
-                <p className={cn("mt-2 text-[13.5px] leading-relaxed", rule.variant === "cobalt" ? "text-paper/85" : "text-gc-muted")}>
+                <p className={cn("mt-2 text-[13.5px] leading-relaxed", rule.variant === "cobalt" ? "text-paper/85" : rule.variant === "mint" ? "text-gc-ink-solid/70" : "text-gc-muted")}>
                   {rule.body}
                 </p>
               </motion.div>
@@ -476,7 +481,7 @@ export default function LandingPage() {
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6, ease: EASE }}
-          className="-rotate-1 rounded-[18px] border-2 border-dashed border-gc-ink bg-gc-mint px-8 py-10 text-center"
+          className="-rotate-1 rounded-[18px] border-2 border-dashed border-gc-ink bg-gc-mint px-8 py-10 text-center text-gc-ink-solid"
         >
           <h2 className="font-black leading-[0.94] tracking-[-0.04em] text-[clamp(30px,4.4vw,54px)] text-balance">
             FINE PRINT:
@@ -485,10 +490,31 @@ export default function LandingPage() {
             <br />
             <span className="inline-block bg-gc-cobalt px-[0.12em] text-paper">WE CAN&apos;T SEE THEM.</span>
           </h2>
-          <p className="mx-auto mt-5 max-w-[52ch] text-[15.5px] leading-relaxed text-gc-ink/75">
+          <p className="mx-auto mt-5 max-w-[52ch] text-[15.5px] leading-relaxed text-gc-ink-solid/75">
             No rented cloud space, no scanning of uploads, no selling of data. Revoke
             Drive access and the vault is gone. That&apos;s the whole privacy policy.
           </p>
+        </motion.div>
+
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 12 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.5 }}
+          transition={{ duration: 0.5, delay: 0.15, ease: EASE }}
+          className="mt-8 flex justify-end"
+        >
+          <a
+            href="https://github.com/qwyuvanyt8-commits/G_Cloister"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex rotate-1 items-center gap-2.5 border-2 border-gc-ink bg-paper px-4 py-3 shadow-[3px_3px_0_var(--gc-shadow)] transition-all duration-150 hover:-rotate-1 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_var(--gc-shadow)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-gc-cobalt"
+            aria-label="G_Cloister source on GitHub"
+          >
+            <GithubLogo size={20} weight="fill" className="text-gc-ink" />
+            <span className="font-space-mono text-[11px] font-bold uppercase tracking-[0.12em]">
+              Source · GitHub
+            </span>
+          </a>
         </motion.div>
       </section>
 
@@ -513,7 +539,7 @@ export default function LandingPage() {
           transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
           className="mt-10 flex flex-wrap items-center justify-center gap-3.5"
         >
-          <button onClick={start} className={cn(btnBase, "bg-gc-orange px-7 py-4 text-paper hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gc-orange-dark hover:shadow-[4px_4px_0_#16130d]")}>
+          <button onClick={start} className={cn(btnBase, "bg-gc-orange px-7 py-4 text-paper hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gc-orange-dark hover:shadow-[4px_4px_0_var(--gc-shadow)]")}>
             HOST A ROOM WITH GOOGLE
           </button>
           <button onClick={start} className={cn(btnBase, "bg-gc-ink px-7 py-4 text-paper hover:border-gc-cobalt hover:bg-gc-cobalt")}>

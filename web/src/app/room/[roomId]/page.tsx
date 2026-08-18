@@ -306,7 +306,7 @@ function RoomInner() {
   if (loadState === "notfound") {
     return (
       <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center p-6 text-center">
-        <div className="flex h-14 w-14 items-center justify-center border-2 border-gc-ink bg-gc-orange text-paper shadow-[3px_3px_0_#16130d]">
+        <div className="flex h-14 w-14 items-center justify-center border-2 border-gc-ink bg-gc-orange text-paper shadow-[3px_3px_0_var(--gc-shadow)]">
           <House size={28} />
         </div>
         <h1 className="mt-4 text-xl font-black tracking-tight">Room not found</h1>
@@ -326,7 +326,7 @@ function RoomInner() {
   if (loadState === "member") {
     return (
       <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center p-6 text-center">
-        <div className="flex h-14 w-14 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_#16130d]">
+        <div className="flex h-14 w-14 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_var(--gc-shadow)]">
           <LockKey size={28} weight="bold" />
         </div>
         <h1 className="mt-4 text-xl font-black tracking-tight">Enter password for /{roomId}</h1>
@@ -389,7 +389,7 @@ function RoomInner() {
           className="flex flex-wrap items-center justify-between gap-4 border-b-4 border-gc-ink pb-6"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_#16130d]">
+            <div className="flex h-11 w-11 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_var(--gc-shadow)]">
               <FolderOpen size={22} weight="bold" />
             </div>
             <div>
@@ -476,7 +476,7 @@ function RoomInner() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-6 border-4 border-gc-ink bg-paper px-5 py-4 shadow-[5px_5px_0_#16130d]"
+          className="mt-6 border-4 border-gc-ink bg-paper px-5 py-4 shadow-[5px_5px_0_var(--gc-shadow)]"
         >
           <UsageBar usage={room.usage} />
         </motion.div>
@@ -491,7 +491,7 @@ function RoomInner() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                  className="flex items-center gap-3 border-2 border-gc-ink bg-paper px-4 py-2.5 shadow-[3px_3px_0_#16130d]"
+                  className="flex items-center gap-3 border-2 border-gc-ink bg-paper px-4 py-2.5 shadow-[3px_3px_0_var(--gc-shadow)]"
                 >
                   <span
                     className={cn(

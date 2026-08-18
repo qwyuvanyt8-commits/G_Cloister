@@ -87,7 +87,7 @@ function RoomCardItem({
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
       onClick={() => router.push(`/room/${room.roomId}`)}
-      className="group relative flex cursor-pointer flex-col gap-3 border-4 border-gc-ink bg-paper p-4 text-left shadow-[5px_5px_0_#16130d] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0_#16130d] active:scale-[0.99]"
+      className="group relative flex cursor-pointer flex-col gap-3 border-4 border-gc-ink bg-paper p-4 text-left shadow-[5px_5px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0_var(--gc-shadow)] active:scale-[0.99]"
     >
       <AnimatePresence>
         {confirmDelete && (
@@ -96,7 +96,7 @@ function RoomCardItem({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             onClick={(e) => e.stopPropagation()}
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-paper p-4 text-center border-4 border-gc-ink shadow-[6px_6px_0_#16130d]"
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-paper p-4 text-center border-4 border-gc-ink shadow-[6px_6px_0_var(--gc-shadow)]"
           >
             <span className="text-2xl text-gc-orange">✕</span>
             <p className="mt-2 text-[13.5px] font-extrabold uppercase tracking-tight text-gc-ink">
@@ -123,7 +123,7 @@ function RoomCardItem({
                 type="button"
                 onClick={handleDelete}
                 disabled={deleting}
-                className="h-8 border-2 border-gc-ink bg-gc-orange px-3 font-space-mono text-[11px] font-bold uppercase text-paper shadow-[2px_2px_0_#16130d] transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="h-8 border-2 border-gc-ink bg-gc-orange px-3 font-space-mono text-[11px] font-bold uppercase text-paper shadow-[2px_2px_0_var(--gc-shadow)] transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {deleting ? "…" : isHosted ? "Delete Room" : "Remove"}
               </button>
@@ -284,12 +284,12 @@ function HomeInner() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
             onClick={() => router.push("/host")}
-            className="group relative border-4 border-gc-ink bg-paper p-7 text-left shadow-[7px_7px_0_#16130d] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_#16130d] active:scale-[0.99]"
+            className="group relative border-4 border-gc-ink bg-paper p-7 text-left shadow-[7px_7px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_var(--gc-shadow)] active:scale-[0.99]"
           >
             <span className="absolute right-4 top-4 border-2 border-gc-ink bg-gc-mint px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.1em] text-gc-ink">
               step 01
             </span>
-            <span className="flex h-12 w-12 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_#16130d]">
+            <span className="flex h-12 w-12 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_var(--gc-shadow)]">
               <PlusCircle size={24} weight="bold" />
             </span>
             <h2 className="mt-6 text-2xl font-black tracking-tight">Host a room</h2>
@@ -307,12 +307,12 @@ function HomeInner() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
             onClick={() => router.push("/join")}
-            className="group relative border-4 border-gc-ink bg-paper p-7 text-left shadow-[7px_7px_0_#16130d] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_#16130d] active:scale-[0.99]"
+            className="group relative border-4 border-gc-ink bg-paper p-7 text-left shadow-[7px_7px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_var(--gc-shadow)] active:scale-[0.99]"
           >
             <span className="absolute right-4 top-4 border-2 border-gc-ink bg-gc-orange px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.1em] text-paper">
               step 02
             </span>
-            <span className="flex h-12 w-12 items-center justify-center border-2 border-gc-ink bg-gc-orange text-paper shadow-[3px_3px_0_#16130d]">
+            <span className="flex h-12 w-12 items-center justify-center border-2 border-gc-ink bg-gc-orange text-paper shadow-[3px_3px_0_var(--gc-shadow)]">
               <SignIn size={24} weight="bold" />
             </span>
             <h2 className="mt-6 text-2xl font-black tracking-tight">Join a room</h2>

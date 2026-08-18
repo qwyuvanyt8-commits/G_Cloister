@@ -114,7 +114,7 @@ function HostInner() {
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="text-center"
           >
-            <span className="mx-auto flex h-14 w-14 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_#16130d]">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_var(--gc-shadow)]">
               <Check size={30} weight="bold" />
             </span>
             <h1 className="mt-6 font-black tracking-[-0.03em] text-[clamp(28px,4.5vw,44px)]">Room created</h1>
@@ -127,7 +127,7 @@ function HostInner() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-8 border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_#16130d]"
+            className="mt-8 border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_var(--gc-shadow)]"
           >
             <div className="space-y-5">
               <div>
@@ -205,7 +205,7 @@ function HostInner() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-10 border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_#16130d] sm:p-8"
+          className="mt-10 border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_var(--gc-shadow)] sm:p-8"
         >
           <div className="flex flex-col gap-6">
             <Input

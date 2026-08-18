@@ -66,7 +66,7 @@ function JoinInner() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-10 border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_#16130d] sm:p-8"
+          className="mt-10 border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_var(--gc-shadow)] sm:p-8"
         >
           <form
             onSubmit={(e) => {

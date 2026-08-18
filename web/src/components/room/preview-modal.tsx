@@ -94,7 +94,7 @@ export function PreviewModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 8 }}
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
-            className="flex max-h-[88dvh] w-full max-w-4xl flex-col overflow-hidden border-4 border-gc-ink bg-paper shadow-[8px_8px_0_#16130d]"
+            className="flex max-h-[88dvh] w-full max-w-4xl flex-col overflow-hidden border-4 border-gc-ink bg-paper shadow-[8px_8px_0_var(--gc-shadow)]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-3 border-b-2 border-dashed border-gc-ink/40 px-5 py-3">
@@ -142,7 +142,7 @@ export function PreviewModal({
                   <a
                     href={api.downloadUrl(roomId, file.id)}
                     download
-                    className="inline-flex h-10 items-center gap-2 border-2 border-gc-ink bg-gc-cobalt px-4 font-space-mono text-[11px] font-bold uppercase tracking-[0.06em] text-paper shadow-[2px_2px_0_#16130d] transition-colors hover:bg-gc-cobalt-dark"
+                    className="inline-flex h-10 items-center gap-2 border-2 border-gc-ink bg-gc-cobalt px-4 font-space-mono text-[11px] font-bold uppercase tracking-[0.06em] text-paper shadow-[2px_2px_0_var(--gc-shadow)] transition-colors hover:bg-gc-cobalt-dark"
                   >
                     <DownloadSimple size={15} />
                     Download instead
@@ -150,7 +150,7 @@ export function PreviewModal({
                 </div>
               )}
               {!loading && textContent !== null ? (
-                <div className="h-[72dvh] w-full overflow-auto border-2 border-gc-ink bg-[#16130d] p-5 font-space-mono text-[13px] leading-relaxed text-[#e9e4d5]">
+                <div className="h-[72dvh] w-full overflow-auto border-2 border-gc-ink bg-[var(--gc-shadow)] p-5 font-space-mono text-[13px] leading-relaxed text-[#e9e4d5]">
                   <pre className="whitespace-pre-wrap break-words">{textContent}</pre>
                 </div>
               ) : (

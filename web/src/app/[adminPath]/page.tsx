@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useMemo, use } from "react";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import {
   ShieldCheck,
   ShieldWarning,
@@ -26,6 +27,7 @@ import {
   Sparkle,
 } from "@phosphor-icons/react";
 import { Button, Input, Logo } from "@/components/ui";
+import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/components/toast";
 import {
   api,
@@ -320,10 +322,12 @@ export default function AdminPage({
   if (!authenticated) {
     return (
       <div className="relative flex min-h-screen flex-col items-center justify-center p-4 bg-background">
-        <div className="w-full max-w-md rounded-none border border-gc-ink/30 bg-paper p-7 shadow-[6px_6px_0_#16130d]">
+        <div className="w-full max-w-md rounded-none border border-gc-ink/30 bg-paper p-7 shadow-[6px_6px_0_var(--gc-shadow)]">
           <div className="flex items-center justify-between border-b border-gc-ink/30 pb-4">
             <div className="flex items-center gap-2.5">
+              <Link href="/" aria-label="G_Cloister home">
               <Logo size={28} withWordmark={false} />
+            </Link>
               <span className="font-mono text-[15px] font-semibold text-gc-ink">
                 G<span className="text-gc-cobalt">_</span>Cloister
               </span>
@@ -407,6 +411,7 @@ export default function AdminPage({
           </div>
 
           <div className="flex items-center gap-2.5">
+            <ThemeToggle />
             <Button
               size="sm"
               variant="secondary"
@@ -796,7 +801,7 @@ export default function AdminPage({
             className="fixed inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setSelectedUser(null)}
           />
-          <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-none border border-gc-ink/30 bg-paper p-6 shadow-[6px_6px_0_#16130d]">
+          <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-none border border-gc-ink/30 bg-paper p-6 shadow-[6px_6px_0_var(--gc-shadow)]">
             <div className="flex items-center justify-between border-b border-gc-ink/30 pb-4">
               <div>
                 <h3 className="text-lg font-semibold text-gc-ink">Joined Rooms Overview</h3>
@@ -878,7 +883,7 @@ export default function AdminPage({
             className="fixed inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setShowBroadcastModal(false)}
           />
-          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-none border border-gc-ink/30 bg-paper p-6 shadow-[6px_6px_0_#16130d]">
+          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-none border border-gc-ink/30 bg-paper p-6 shadow-[6px_6px_0_var(--gc-shadow)]">
             <div className="flex items-center justify-between border-b border-gc-ink/30 pb-4">
               <div className="flex items-center gap-2">
                 <Megaphone size={20} className="text-gc-cobalt" />
@@ -958,7 +963,7 @@ export default function AdminPage({
             className="fixed inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setResetPasswordUser(null)}
           />
-          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-none border border-gc-ink/30 bg-paper p-6 shadow-[6px_6px_0_#16130d]">
+          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-none border border-gc-ink/30 bg-paper p-6 shadow-[6px_6px_0_var(--gc-shadow)]">
             <div className="flex items-center justify-between border-b border-gc-ink/30 pb-4">
               <div className="flex items-center gap-2">
                 <Key size={20} className="text-gc-cobalt" />

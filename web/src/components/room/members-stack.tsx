@@ -48,7 +48,7 @@ export function MembersStack({
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center -space-x-2 border-2 border-gc-ink bg-paper p-0.5 shadow-[2px_2px_0_#16130d] transition-transform hover:scale-105 active:scale-95"
+        className="flex items-center -space-x-2 border-2 border-gc-ink bg-paper p-0.5 shadow-[2px_2px_0_var(--gc-shadow)] transition-transform hover:scale-105 active:scale-95"
         aria-label="Room members"
       >
         {visible.map((m) => (
@@ -74,7 +74,7 @@ export function MembersStack({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 6, scale: 0.98 }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="absolute right-0 top-12 z-50 w-80 border-4 border-gc-ink bg-paper p-3 shadow-[6px_6px_0_#16130d]"
+              className="absolute right-0 top-12 z-50 w-80 border-4 border-gc-ink bg-paper p-3 shadow-[6px_6px_0_var(--gc-shadow)]"
             >
               <div className="flex items-center justify-between border-b-2 border-dashed border-gc-ink/40 px-1 pb-2.5 mb-2">
                 <p className="font-space-mono text-[11px] font-bold uppercase tracking-[0.12em]">

@@ -70,7 +70,7 @@ function FileCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ type: "spring", stiffness: 260, damping: 26 }}
-      className="group relative flex flex-col border-4 border-gc-ink bg-paper p-4 shadow-[4px_4px_0_#16130d] transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_#16130d]"
+      className="group relative flex flex-col border-4 border-gc-ink bg-paper p-4 shadow-[4px_4px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_var(--gc-shadow)]"
     >
       <AnimatePresence>
         {confirmDelete && (
@@ -94,7 +94,7 @@ function FileCard({
               <button
                 onClick={del}
                 disabled={deleting}
-                className="h-8 border-2 border-gc-ink bg-gc-orange px-3 font-space-mono text-[11px] font-bold uppercase text-paper shadow-[2px_2px_0_#16130d] transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="h-8 border-2 border-gc-ink bg-gc-orange px-3 font-space-mono text-[11px] font-bold uppercase text-paper shadow-[2px_2px_0_var(--gc-shadow)] transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {deleting ? "…" : "Delete"}
               </button>
