@@ -48,17 +48,16 @@ function JoinInner() {
   };
 
   return (
-    <main className="min-h-[calc(100dvh-4rem)]">
-      <div className="aurora pointer-events-none fixed inset-x-0 top-0 h-[70vh]" aria-hidden />
-      <div className="relative mx-auto max-w-xl px-5 pb-24 pt-14">
+    <main className="min-h-[calc(100dvh-4rem)] bg-paper text-gc-ink">
+      <div className="mx-auto max-w-[560px] px-6 pb-24 pt-14">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-faint">Join</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tighter text-ink">Step inside</h1>
-          <p className="mt-3 max-w-[46ch] text-[15px] leading-relaxed text-muted">
+          <p className="font-space-mono text-[11px] font-bold uppercase tracking-[0.16em] text-gc-cobalt">Join</p>
+          <h1 className="mt-4 font-black tracking-[-0.03em] text-[clamp(28px,4.5vw,44px)]">Step inside</h1>
+          <p className="mt-3 max-w-[50ch] text-[15px] leading-relaxed text-gc-muted">
             A host shared a room ID and password with you. Enter them and the files start flowing.
           </p>
         </motion.div>
@@ -67,7 +66,7 @@ function JoinInner() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="glass mt-10 rounded-3xl p-6 sm:p-8"
+          className="mt-10 border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_#16130d] sm:p-8"
         >
           <form
             onSubmit={(e) => {
@@ -98,17 +97,17 @@ function JoinInner() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="kP#7x2Qm"
-              icon={<LockKey size={18} className="text-accent" />}
+              icon={<LockKey size={18} className="text-gc-cobalt" />}
             />
 
             <Button size="lg" className="w-full" loading={joining} disabled={!valid} onClick={join} icon={!joining && <ArrowRight size={18} />}>
               Enter the room
             </Button>
 
-            <div className="flex items-center gap-3 rounded-xl border border-border bg-surface-2 px-4 py-3">
-              <Key size={18} weight="duotone" className="shrink-0 text-accent" />
-              <p className="text-[13px] leading-snug text-muted">
-                No Google account needed — the room's storage lives on the host's Drive.
+            <div className="flex items-center gap-3 border-2 border-dashed border-gc-ink bg-paper-2 px-4 py-3">
+              <Key size={18} weight="duotone" className="shrink-0 text-gc-cobalt" />
+              <p className="font-space-mono text-[11.5px] leading-snug uppercase tracking-[0.06em] text-gc-muted">
+                No Google account needed — the room&apos;s storage lives on the host&apos;s Drive.
                 Just enter the code and password to step inside.
               </p>
             </div>

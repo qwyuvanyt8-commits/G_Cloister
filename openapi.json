@@ -1,0 +1,194 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "G-Cloister API",
+    "description": "Real-time room-based file sharing API powered by Google Drive API & Socket.IO",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://g-cloister-lly5.vercel.app",
+      "description": "Production Server"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health check endpoint",
+        "responses": {
+          "200": { "description": "API status OK" }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "summary": "Get current authenticated user session",
+        "responses": {
+          "200": { "description": "User profile" },
+          "401": { "description": "Not authenticated" }
+        }
+      }
+    },
+    "/api/auth/google": {
+      "get": {
+        "summary": "Initiate Google OAuth 2.0 login flow",
+        "responses": {
+          "302": { "description": "Redirect to Google consent screen" }
+        }
+      }
+    },
+    "/api/rooms": {
+      "post": {
+        "summary": "Create a new room",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "roomId": { "type": "string", "example": "my-room-123" },
+                  "password": { "type": "string", "example": "Pass123!" },
+                  "storageBytes": { "type": "integer", "example": 524288000 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Room created successfully" },
+          "400": { "description": "Invalid room ID or parameter" },
+          "401": { "description": "Unauthorized" }
+        }
+      }
+    },
+    "/api/rooms/join": {
+      "post": {
+        "summary": "Join a room with password",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "roomId": { "type": "string", "example": "my-room-123" },
+                  "password": { "type": "string", "example": "Pass123!" }
+                },
+                "required": ["roomId"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Joined room successfully" },
+          "403": { "description": "Invalid room password" },
+          "404": { "description": "Room not found" }
+        }
+      }
+    },
+    "/api/rooms/my": {
+      "get": {
+        "summary": "List rooms joined or hosted by current user",
+        "responses": {
+          "200": { "description": "Array of room summaries" }
+        }
+      }
+    },
+    "/api/rooms/{roomId}": {
+      "get": {
+        "summary": "Get room details and file list",
+        "parameters": [
+          { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Room metadata and file grid" },
+          "403": { "description": "Not a room member" },
+          "404": { "description": "Room not found" }
+        }
+      },
+      "delete": {
+        "summary": "Delete room (Host only)",
+        "parameters": [
+          { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Room and associated Drive folder deleted" },
+          "403": { "description": "Forbidden - host only" }
+        }
+      }
+    },
+    "/api/rooms/{roomId}/files": {
+      "post": {
+        "summary": "Upload a file to the room",
+        "parameters": [
+          { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "File uploaded and synced to Google Drive" },
+          "400": { "description": "Storage limit exceeded or invalid file" }
+        }
+      }
+    },
+    "/api/rooms/{roomId}/files/{fileId}/download": {
+      "get": {
+        "summary": "Download a file from room",
+        "parameters": [
+          { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "fileId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Binary file stream" }
+        }
+      }
+    },
+    "/api/rooms/{roomId}/kick": {
+      "post": {
+        "summary": "Kick a member from room (Host only)",
+        "parameters": [
+          { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "userId": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Member kicked" }
+        }
+      }
+    },
+    "/api/rooms/{roomId}/sync": {
+      "post": {
+        "summary": "Sync room files to current user's Google Drive",
+        "parameters": [
+          { "name": "roomId", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Files synced to user Google Drive" }
+        }
+      }
+    }
+  }
+}

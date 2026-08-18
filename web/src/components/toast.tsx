@@ -41,12 +41,12 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.97 }}
               transition={{ type: "spring", stiffness: 400, damping: 28 }}
-              className="glass-solid pointer-events-auto flex w-full items-center gap-3 rounded-xl px-4 py-3"
+              className="pointer-events-auto flex w-full items-center gap-3 border-2 border-gc-ink bg-paper px-4 py-3 shadow-[4px_4px_0_#16130d]"
             >
-              {t.kind === "success" && <CheckCircle size={20} weight="duotone" className="text-accent" />}
-              {t.kind === "error" && <WarningCircle size={20} weight="duotone" className="text-danger" />}
-              {t.kind === "info" && <Info size={20} weight="duotone" className="text-muted" />}
-              <p className="text-sm leading-snug text-ink">{t.message}</p>
+              {t.kind === "success" && <CheckCircle size={20} weight="duotone" className="shrink-0 text-gc-cobalt" />}
+              {t.kind === "error" && <WarningCircle size={20} weight="duotone" className="shrink-0 text-gc-orange" />}
+              {t.kind === "info" && <Info size={20} weight="duotone" className="shrink-0 text-gc-muted" />}
+              <p className="font-space-mono text-[12px] font-bold uppercase tracking-[0.03em] leading-snug text-gc-ink">{t.message}</p>
             </motion.div>
           ))}
         </AnimatePresence>

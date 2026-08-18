@@ -41,21 +41,21 @@ export function KickBanModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-danger/40 bg-surface p-7 shadow-2xl"
+            className="relative z-10 w-full max-w-md overflow-hidden border-4 border-gc-orange bg-paper p-7 shadow-[8px_8px_0_#16130d]"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-danger/30 bg-danger-soft text-danger">
+            <div className="flex h-12 w-12 items-center justify-center border-2 border-gc-orange bg-gc-orange/10 text-gc-orange">
               <ShieldWarning size={28} />
             </div>
 
-            <h3 className="mt-4 text-xl font-bold tracking-tight text-ink">
+            <h3 className="mt-4 text-xl font-black tracking-tight uppercase">
               Account Banned by Administrator
             </h3>
 
-            <p className="mt-2 text-[14px] leading-relaxed text-muted">
+            <p className="mt-2 text-[14px] leading-relaxed text-gc-muted">
               {bannedReason || "Your account has been banned by an administrator."}
             </p>
 
-            <div className="mt-4 rounded-xl border border-danger/20 bg-danger-soft/40 p-3.5 text-[12.5px] leading-snug text-danger">
+            <div className="mt-4 border-2 border-gc-orange bg-gc-orange/10 p-3.5 text-[12.5px] leading-snug text-gc-orange">
               Your active sessions and WebSocket connections have been terminated immediately. Access to hosted and joined rooms is suspended.
             </div>
 
@@ -89,22 +89,22 @@ export function KickBanModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-amber-500/30 bg-surface p-7 shadow-2xl"
+            className="relative z-10 w-full max-w-md overflow-hidden border-4 border-gc-ink bg-paper p-7 shadow-[8px_8px_0_#16130d]"
           >
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-amber-500/30 bg-amber-500/10 text-amber-400">
+            <div className="flex h-12 w-12 items-center justify-center border-2 border-gc-ink bg-gc-mint text-gc-ink">
               <Door size={28} />
             </div>
 
-            <h3 className="mt-4 text-xl font-bold tracking-tight text-ink">
+            <h3 className="mt-4 text-xl font-black tracking-tight uppercase">
               You Have Been Kicked
             </h3>
 
-            <div className="mt-3 rounded-2xl border border-border bg-surface-2 p-4 text-[13.5px]">
-              <div className="flex justify-between border-b border-border pb-2 text-[12px] text-muted">
+            <div className="mt-3 border-2 border-dashed border-gc-ink bg-paper-2 p-4 text-[13.5px]">
+              <div className="flex justify-between border-b-2 border-dashed border-gc-ink/40 pb-2 font-space-mono text-[11px] uppercase tracking-[0.06em] text-gc-muted">
                 <span>Room ID</span>
-                <span className="font-mono font-semibold text-ink">{kickInfo.roomId}</span>
+                <span className="font-space-mono font-bold text-gc-ink">{kickInfo.roomId}</span>
               </div>
-              <div className="flex justify-between pt-2 text-[12px] text-muted">
+              <div className="flex justify-between pt-2 font-space-mono text-[11px] uppercase tracking-[0.06em] text-gc-muted">
                 <span>Kicked By</span>
                 <span className="font-medium text-ink">
                   {kickInfo.kickerName} {kickInfo.isHostKicker ? "(Room Owner)" : "(Administrator)"}
@@ -112,14 +112,14 @@ export function KickBanModal({
               </div>
             </div>
 
-            <p className="mt-4 text-[13.5px] leading-relaxed text-muted">
+            <p className="mt-4 text-[13.5px] leading-relaxed text-gc-muted">
               {kickInfo.isHostKicker ? (
                 <>
-                  You have been kicked from room <span className="font-mono font-semibold text-ink">{kickInfo.roomId}</span> by the room owner (<span className="font-medium text-ink">{kickInfo.kickerName}</span>).
+                  You have been kicked from room <span className="font-space-mono font-bold text-gc-ink">{kickInfo.roomId}</span> by the room owner (<span className="font-medium text-ink">{kickInfo.kickerName}</span>).
                 </>
               ) : (
                 <>
-                  You have been kicked from room <span className="font-mono font-semibold text-ink">{kickInfo.roomId}</span> by an <span className="font-medium text-ink">Administrator</span>.
+                  You have been kicked from room <span className="font-space-mono font-bold text-gc-ink">{kickInfo.roomId}</span> by an <span className="font-medium text-ink">Administrator</span>.
                 </>
               )}
             </p>

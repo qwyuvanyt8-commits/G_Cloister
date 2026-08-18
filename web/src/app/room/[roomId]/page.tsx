@@ -6,10 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import {
   Check,
   LinkSimple,
-  WarningCircle,
-  CaretRight,
   SpinnerGap,
-  ArrowUUpLeft,
   XCircle,
   CheckCircle,
   SignOut,
@@ -21,7 +18,7 @@ import {
 } from "@phosphor-icons/react";
 import { AppNav } from "@/components/app-nav";
 import { RequireAuth } from "@/components/require-auth";
-import { Button, MonoChip } from "@/components/ui";
+import { Button } from "@/components/ui";
 import { useAuth } from "@/components/auth-provider";
 import { useRoomStore } from "@/lib/store";
 import { getSocket } from "@/lib/socket";
@@ -299,9 +296,9 @@ function RoomInner() {
 
   if (loadState === "loading") {
     return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center gap-3">
-        <SpinnerGap size={32} className="animate-spin text-accent" />
-        <p className="font-mono text-[13px] text-faint">Entering room /{roomId}…</p>
+      <div className="flex min-h-[70vh] flex-col items-center justify-center gap-3 bg-paper">
+        <span className="animate-spin text-2xl text-gc-cobalt">◌</span>
+        <p className="font-space-mono text-[12px] uppercase tracking-[0.14em] text-gc-faint">Entering room /{roomId}…</p>
       </div>
     );
   }
@@ -309,12 +306,12 @@ function RoomInner() {
   if (loadState === "notfound") {
     return (
       <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center p-6 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-surface-2 text-faint">
+        <div className="flex h-14 w-14 items-center justify-center border-2 border-gc-ink bg-gc-orange text-paper shadow-[3px_3px_0_#16130d]">
           <House size={28} />
         </div>
-        <h1 className="mt-4 text-xl font-semibold tracking-tight text-ink">Room not found</h1>
-        <p className="mt-2 text-sm text-muted">
-          We couldn&apos;t find room <span className="font-mono text-ink">/{roomId}</span>. Double-check the room ID or create a new room.
+        <h1 className="mt-4 text-xl font-black tracking-tight">Room not found</h1>
+        <p className="mt-2 font-space-mono text-[12px] leading-relaxed text-gc-muted">
+          We couldn&apos;t find room <span className="font-bold text-gc-ink">/{roomId}</span>. Double-check the room ID or create a new room.
         </p>
         <div className="mt-6 flex items-center gap-3">
           <Button variant="secondary" onClick={() => router.push("/home")}>
@@ -329,11 +326,11 @@ function RoomInner() {
   if (loadState === "member") {
     return (
       <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center p-6 text-center">
-        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-accent-soft text-accent">
+        <div className="flex h-14 w-14 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_#16130d]">
           <LockKey size={28} weight="bold" />
         </div>
-        <h1 className="mt-4 text-xl font-semibold tracking-tight text-ink">Enter password for /{roomId}</h1>
-        <p className="mt-2 text-sm text-muted">
+        <h1 className="mt-4 text-xl font-black tracking-tight">Enter password for /{roomId}</h1>
+        <p className="mt-2 font-space-mono text-[12px] leading-relaxed text-gc-muted">
           You are not currently inside this room. Enter the password set by the host to join.
         </p>
         <form
@@ -358,7 +355,7 @@ function RoomInner() {
             placeholder="Room password"
             value={joinPw}
             onChange={(e) => setJoinPw(e.target.value)}
-            className="w-full rounded-xl border border-border bg-surface-2 px-4 py-2.5 text-sm text-ink placeholder:text-faint focus:border-accent focus:outline-none"
+            className="w-full border-2 border-gc-ink bg-paper px-4 py-2.5 text-sm font-space-mono text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none"
             autoFocus
           />
           <Button type="submit" loading={joining} className="w-full">
@@ -372,8 +369,8 @@ function RoomInner() {
   if (loadState === "error" || !room) {
     return (
       <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-xl font-semibold tracking-tight text-ink">Something went wrong</h1>
-        <p className="mt-2 text-sm text-danger">{loadError || "Unable to load room."}</p>
+        <h1 className="text-xl font-black tracking-tight">Something went wrong</h1>
+        <p className="mt-2 font-space-mono text-[12px] text-gc-orange">{loadError || "Unable to load room."}</p>
         <Button variant="secondary" className="mt-6" onClick={() => router.push("/home")}>
           Return to home
         </Button>
@@ -382,27 +379,25 @@ function RoomInner() {
   }
 
   return (
-    <main className="min-h-[calc(100dvh-4rem)]">
-      <div className="aurora pointer-events-none fixed inset-x-0 top-0 h-[60vh]" aria-hidden />
-
-      <div className="relative mx-auto max-w-[1400px] px-5 pb-24 pt-8 lg:px-8">
+    <main className="min-h-[calc(100dvh-4rem)] bg-paper text-gc-ink">
+      <div className="mx-auto max-w-[1180px] px-6 pb-24 pt-8">
         {/* Top header bar */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-wrap items-center justify-between gap-4 border-b border-border/60 pb-6"
+          className="flex flex-wrap items-center justify-between gap-4 border-b-4 border-gc-ink pb-6"
         >
           <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-accent-soft text-accent ring-1 ring-accent-border">
+            <div className="flex h-11 w-11 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_#16130d]">
               <FolderOpen size={22} weight="bold" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="font-mono text-2xl font-bold tracking-tight text-ink">/{room.roomId}</h1>
+                <h1 className="font-space-mono text-2xl font-bold tracking-tight">/{room.roomId}</h1>
                 {room.isHost && (
-                  <span className="flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent">
-                    <Crown size={11} weight="fill" />
+                  <span className="flex items-center gap-1 border-2 border-gc-ink bg-gc-cobalt px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.08em] text-paper">
+                    <Crown size={10} weight="fill" />
                     Host
                   </span>
                 )}
@@ -410,20 +405,16 @@ function RoomInner() {
               <div className="mt-0.5 flex items-center gap-2">
                 <span
                   className={cn(
-                    "flex items-center gap-1.5 font-mono text-[11.5px] font-medium",
-                    connected ? "text-accent" : "text-faint"
+                    "border-2 px-1.5 py-0.5 font-space-mono text-[10px] font-bold uppercase tracking-[0.1em]",
+                    connected
+                      ? "border-gc-ink bg-gc-mint text-gc-ink"
+                      : "border-dashed border-gc-ink bg-paper-2 text-gc-faint"
                   )}
                 >
-                  <span className="relative flex h-1.5 w-1.5">
-                    {connected && (
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
-                    )}
-                    <span className={cn("relative inline-flex h-1.5 w-1.5 rounded-full", connected ? "bg-accent" : "bg-faint")} />
-                  </span>
-                  {connected ? "Live" : "Reconnecting…"}
+                  <span className="mr-1">{connected ? "●" : "○"}</span>
+                  {connected ? "Live" : "Reconnecting"}
                 </span>
-                <span className="text-faint">·</span>
-                <span className="text-[11.5px] text-muted">
+                <span className="font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-faint">
                   hosted by {room.host?.name?.split(" ")[0] || "someone"}
                 </span>
               </div>
@@ -444,7 +435,7 @@ function RoomInner() {
               <Button
                 size="sm"
                 variant="secondary"
-                icon={<Check size={15} className="text-accent" weight="bold" />}
+                icon={<Check size={15} className="text-gc-cobalt" weight="bold" />}
                 onClick={() => {
                   toast(`All room files are automatically saved in your Google Drive (G_Cloister/${room.roomId}).`, "info");
                 }}
@@ -470,10 +461,10 @@ function RoomInner() {
             ) : null}
             <Button
               size="sm"
-              variant="secondary"
+              variant="ghost"
               icon={<SignOut size={15} />}
               onClick={leaveRoom}
-              className="text-danger hover:bg-danger/10"
+              className="text-gc-orange hover:text-gc-orange-dark"
             >
               Leave
             </Button>
@@ -485,7 +476,7 @@ function RoomInner() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="glass mt-6 rounded-2xl px-5 py-4"
+          className="mt-6 border-4 border-gc-ink bg-paper px-5 py-4 shadow-[5px_5px_0_#16130d]"
         >
           <UsageBar usage={room.usage} />
         </motion.div>
@@ -500,14 +491,14 @@ function RoomInner() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                  className="glass-solid flex items-center gap-3 rounded-xl px-4 py-2.5"
+                  className="flex items-center gap-3 border-2 border-gc-ink bg-paper px-4 py-2.5 shadow-[3px_3px_0_#16130d]"
                 >
                   <span
                     className={cn(
                       "shrink-0",
-                      u.status === "done" && "text-accent",
-                      u.status === "error" && "text-danger",
-                      u.status === "uploading" && "text-faint"
+                      u.status === "done" && "text-gc-cobalt",
+                      u.status === "error" && "text-gc-orange",
+                      u.status === "uploading" && "text-gc-faint"
                     )}
                   >
                     {u.status === "done" ? (
@@ -518,18 +509,18 @@ function RoomInner() {
                       <SpinnerGap size={18} className="animate-spin" />
                     )}
                   </span>
-                  <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-ink">{u.name}</p>
+                  <p className="min-w-0 flex-1 truncate text-[13px] font-bold text-gc-ink">{u.name}</p>
                   {u.status === "error" ? (
-                    <p className="text-[12px] text-danger">{u.error}</p>
+                    <p className="font-space-mono text-[11px] text-gc-orange">{u.error}</p>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <div className="h-1.5 w-28 overflow-hidden rounded-full bg-surface-2">
+                      <div className="h-2.5 w-28 border-2 border-gc-ink bg-paper-2">
                         <motion.div
-                          className="h-full rounded-full bg-accent"
+                          className="h-full bg-gc-cobalt"
                           animate={{ width: `${u.progress}%` }}
                         />
                       </div>
-                      <span className="w-9 text-right font-mono text-[11px] tabular-nums text-faint">
+                      <span className="w-9 text-right font-space-mono text-[11px] tabular-nums text-gc-faint">
                         {u.progress}%
                       </span>
                     </div>
@@ -557,11 +548,13 @@ function RoomInner() {
           transition={{ delay: 0.18, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           className="mt-8"
         >
-          <div className="mb-4 flex items-baseline justify-between">
-            <h2 className="text-[15px] font-semibold tracking-tight text-ink">
+          <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3 border-b-4 border-gc-ink pb-3">
+            <h2 className="text-lg font-black tracking-tight">
               {room.files.length} file{room.files.length === 1 ? "" : "s"}
             </h2>
-            <span className="font-mono text-[12px] text-faint">sorted · newest first</span>
+            <span className="font-space-mono text-[10.5px] uppercase tracking-[0.12em] text-gc-faint">
+              sorted · newest first
+            </span>
           </div>
           <FileGrid room={room} onPreview={setPreviewFile} />
         </motion.div>

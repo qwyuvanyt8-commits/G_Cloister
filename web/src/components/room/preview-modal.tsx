@@ -94,15 +94,17 @@ export function PreviewModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.97, y: 8 }}
             transition={{ type: "spring", stiffness: 320, damping: 30 }}
-            className="flex max-h-[88dvh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl bg-surface"
+            className="flex max-h-[88dvh] w-full max-w-4xl flex-col overflow-hidden border-4 border-gc-ink bg-paper shadow-[8px_8px_0_#16130d]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between gap-3 border-b border-border px-5 py-3">
+            <div className="flex items-center justify-between gap-3 border-b-2 border-dashed border-gc-ink/40 px-5 py-3">
               <div className="flex min-w-0 items-center gap-3">
-                <FileIcon name={file.name} mimeType={file.mimeType} size={18} />
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center border-2 border-gc-ink bg-paper-2">
+                  <FileIcon name={file.name} mimeType={file.mimeType} size={18} />
+                </span>
                 <div className="min-w-0">
-                  <p className="truncate text-[14px] font-medium text-ink">{file.name}</p>
-                  <p className="font-mono text-[11px] text-faint">
+                  <p className="truncate text-[14px] font-bold text-gc-ink">{file.name}</p>
+                  <p className="font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-faint">
                     {file.sizeFormatted} · {file.uploader.name}
                   </p>
                 </div>
@@ -111,14 +113,14 @@ export function PreviewModal({
                 <a
                   href={api.downloadUrl(roomId, file.id)}
                   download
-                  className="inline-flex h-9 items-center gap-1.5 rounded-xl border border-border-strong bg-surface px-3 text-[13px] font-medium text-ink transition-colors hover:border-accent-border hover:text-accent active:scale-[0.98]"
+                  className="inline-flex h-9 items-center gap-1.5 border-2 border-gc-ink bg-paper-2 px-3 font-space-mono text-[11px] font-bold uppercase tracking-[0.06em] text-gc-ink transition-colors hover:border-gc-cobalt hover:text-gc-cobalt active:scale-[0.98]"
                 >
                   <DownloadSimple size={15} />
                   Download
                 </a>
                 <button
                   onClick={onClose}
-                  className="flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+                  className="flex h-9 w-9 items-center justify-center border-2 border-gc-ink bg-paper text-gc-muted transition-colors hover:bg-gc-ink hover:text-paper"
                   aria-label="Close preview"
                 >
                   <X size={19} />
@@ -126,21 +128,21 @@ export function PreviewModal({
               </div>
             </div>
 
-            <div className="flex min-h-[50vh] flex-1 items-center justify-center overflow-auto bg-surface-2/60 p-5">
+            <div className="flex min-h-[50vh] flex-1 items-center justify-center overflow-auto border-t-2 border-gc-ink bg-paper-2/50 p-5">
               {loading && (
-                <div className="flex flex-col items-center gap-3 text-muted">
-                  <SpinnerGap size={26} className="animate-spin" />
-                  <span className="text-[13px]">Opening preview…</span>
+                <div className="flex flex-col items-center gap-3 text-gc-muted">
+                  <SpinnerGap size={26} className="animate-spin text-gc-cobalt" />
+                  <span className="font-space-mono text-[11px] uppercase tracking-[0.1em]">Opening preview…</span>
                 </div>
               )}
               {error && !loading && (
                 <div className="flex flex-col items-center gap-4 px-6 text-center">
                   <FileIcon name={file.name} mimeType={file.mimeType} size={34} />
-                  <p className="max-w-[36ch] text-sm text-muted">{error}</p>
+                  <p className="max-w-[36ch] font-space-mono text-[12px] uppercase tracking-[0.04em] text-gc-muted">{error}</p>
                   <a
                     href={api.downloadUrl(roomId, file.id)}
                     download
-                    className="inline-flex h-10 items-center gap-2 rounded-xl bg-accent px-4 text-[13px] font-medium text-[#04120c] transition-colors hover:bg-accent-strong"
+                    className="inline-flex h-10 items-center gap-2 border-2 border-gc-ink bg-gc-cobalt px-4 font-space-mono text-[11px] font-bold uppercase tracking-[0.06em] text-paper shadow-[2px_2px_0_#16130d] transition-colors hover:bg-gc-cobalt-dark"
                   >
                     <DownloadSimple size={15} />
                     Download instead
@@ -148,7 +150,7 @@ export function PreviewModal({
                 </div>
               )}
               {!loading && textContent !== null ? (
-                <div className="h-[72dvh] w-full overflow-auto rounded-lg border border-border bg-[#0d1117] p-5 font-mono text-[13px] leading-relaxed text-[#e6edf3]">
+                <div className="h-[72dvh] w-full overflow-auto border-2 border-gc-ink bg-[#16130d] p-5 font-space-mono text-[13px] leading-relaxed text-[#e9e4d5]">
                   <pre className="whitespace-pre-wrap break-words">{textContent}</pre>
                 </div>
               ) : (
@@ -158,13 +160,13 @@ export function PreviewModal({
                     <img
                       src={link.contentLink}
                       alt={file.name}
-                      className="max-h-[72dvh] max-w-full rounded-lg object-contain"
+                      className="max-h-[72dvh] max-w-full border-2 border-gc-ink object-contain"
                     />
                   ) : (
                     <iframe
                       src={link.viewLink}
                       title={file.name}
-                      className="h-[72dvh] w-full rounded-lg border-0 bg-white"
+                      className="h-[72dvh] w-full border-0 bg-white"
                       sandbox="allow-same-origin allow-scripts allow-popups"
                     />
                   )

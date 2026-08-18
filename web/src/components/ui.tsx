@@ -14,35 +14,19 @@ export function Logo({
   className?: string;
 }) {
   return (
-    <span className={cn("inline-flex items-center gap-2.5 select-none", className)}>
-      <svg
-        width={size}
-        height={size}
-        viewBox="0 0 40 40"
-        fill="none"
-        aria-hidden="true"
-        className="shrink-0"
+    <span className={cn("inline-flex select-none items-center", className)}>
+      <span
+        className="flex items-center bg-gc-cobalt px-2 py-1 text-paper"
+        style={{ fontSize: size * 0.42 }}
       >
-        <defs>
-          <linearGradient id="gcl-mark" x1="0" y1="0" x2="40" y2="40">
-            <stop offset="0" stopColor="var(--accent)" />
-            <stop offset="1" stopColor="var(--accent-strong)" />
-          </linearGradient>
-        </defs>
-        <rect x="1" y="1" width="38" height="38" rx="11" fill="url(#gcl-mark)" />
-        <rect x="1" y="1" width="38" height="38" rx="11" stroke="var(--accent-border)" />
-        <path
-          d="M14 20c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6"
-          stroke="var(--bg)"
-          strokeWidth="3"
-          strokeLinecap="round"
-        />
-        <circle cx="20" cy="20" r="2.4" fill="var(--bg)" />
-        <rect x="19" y="20.5" width="2" height="6.5" rx="1" fill="var(--bg)" />
-      </svg>
+        <span className="font-black leading-none tracking-tight">G_</span>
+      </span>
       {withWordmark && (
-        <span className="font-mono text-[17px] font-semibold tracking-tight text-ink">
-          G<span className="text-accent">_</span>Cloister
+        <span
+          className="hidden items-center border-2 border-gc-ink px-2 py-1 text-gc-ink sm:flex"
+          style={{ fontSize: size * 0.42 }}
+        >
+          <span className="font-black leading-none tracking-tight">CLOISTER</span>
         </span>
       )}
     </span>
@@ -61,13 +45,13 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 const btnVariants: Record<BtnVariant, string> = {
   primary:
-    "bg-accent text-[#06130e] dark:text-[#04120c] hover:bg-accent-strong active:bg-accent-strong shadow-[0_10px_30px_-10px_var(--accent-border)]",
+    "bg-gc-cobalt text-paper border-2 border-gc-ink shadow-[3px_3px_0_#16130d] hover:bg-gc-cobalt-dark active:translate-x-[2px] active:translate-y-[2px] active:shadow-none",
   secondary:
-    "bg-surface text-ink border border-border-strong hover:border-accent-border hover:text-accent active:scale-[0.98]",
+    "bg-paper text-gc-ink border-2 border-gc-ink hover:border-gc-cobalt hover:text-gc-cobalt active:translate-x-[1px] active:translate-y-[1px] active:shadow-none",
   ghost:
-    "text-muted hover:text-ink hover:bg-surface-2 active:scale-[0.98]",
+    "text-gc-muted hover:text-gc-ink hover:bg-paper-2 active:scale-[0.98]",
   danger:
-    "bg-danger-soft text-danger border border-transparent hover:border-danger/40 active:scale-[0.98]",
+    "bg-gc-orange text-paper border-2 border-gc-ink shadow-[2px_2px_0_#16130d] hover:bg-gc-orange-dark active:scale-[0.98]",
 };
 
 const btnSizes = {
@@ -82,7 +66,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ref={ref}
       disabled={disabled || loading}
       className={cn(
-        "relative inline-flex items-center justify-center rounded-xl font-medium transition-all duration-200 whitespace-nowrap",
+        "relative inline-flex items-center justify-center rounded-none font-extrabold uppercase tracking-tight transition-all duration-150 whitespace-nowrap",
         "disabled:opacity-50 disabled:pointer-events-none",
         btnVariants[variant],
         btnSizes[size],
@@ -104,8 +88,8 @@ export function IconButton({
   return (
     <button
       className={cn(
-        "inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors",
-        "hover:text-ink hover:bg-surface-2 active:scale-95",
+        "inline-flex h-9 w-9 items-center justify-center rounded-none border-2 border-transparent text-gc-muted transition-colors",
+        "hover:border-gc-ink hover:bg-paper-2 hover:text-gc-ink active:scale-95",
         className
       )}
       {...props}
@@ -131,7 +115,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label && (
           <label
             htmlFor={inputId}
-            className="text-[13px] font-medium text-muted tracking-tight"
+            className="font-space-mono text-[11px] font-bold uppercase tracking-[0.14em] text-gc-muted"
           >
             {label}
           </label>
@@ -146,11 +130,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             ref={ref}
             id={inputId}
             className={cn(
-              "w-full h-12 rounded-xl bg-surface-2 border px-4 text-[15px] text-ink placeholder:text-faint",
-              "transition-colors duration-200",
-              "focus:outline-none focus:ring-2 focus:ring-accent/40 focus:border-accent-border",
-              mono && "font-mono tracking-tight",
-              error ? "border-danger/60" : "border-border hover:border-border-strong",
+              "w-full h-12 rounded-none bg-paper border-2 border-gc-ink px-4 text-[15px] text-gc-ink placeholder:text-gc-faint",
+              "transition-colors duration-150",
+              "focus:outline-none focus:ring-2 focus:ring-gc-cobalt/25 focus:border-gc-cobalt",
+              mono && "font-space-mono tracking-tight",
+              error ? "border-gc-orange" : "hover:border-gc-cobalt",
               icon ? "pl-11" : undefined,
               trailing ? "pr-12" : undefined,
               className
@@ -162,9 +146,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           )}
         </div>
         {error ? (
-          <p className="text-[13px] text-danger">{error}</p>
+          <p className="text-[13px] font-semibold text-gc-orange">{error}</p>
         ) : hint ? (
-          <p className="text-[13px] text-faint">{hint}</p>
+          <p className="text-[13px] text-gc-faint">{hint}</p>
         ) : null}
       </div>
     );
@@ -214,9 +198,9 @@ export function Avatar({
       ) : (
         <span
           className={cn(
-            "flex items-center justify-center rounded-full font-medium text-[calc(var(--s)*0.4)]",
-            "bg-accent-soft text-accent",
-            ring && "ring-2 ring-surface"
+            "flex items-center justify-center rounded-full font-bold text-[calc(var(--s)*0.4)]",
+            "bg-gc-cobalt/10 text-gc-cobalt",
+            ring && "ring-2 ring-paper"
           )}
           style={{ "--s": size, width: size, height: size, fontSize: size * 0.4 } as React.CSSProperties}
         >
@@ -226,8 +210,8 @@ export function Avatar({
       {online !== undefined && (
         <span
           className={cn(
-            "absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-surface",
-            online ? "bg-accent" : "bg-faint/60"
+            "absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full ring-2 ring-paper",
+            online ? "bg-gc-cobalt" : "bg-gc-faint/60"
           )}
         />
       )}
@@ -257,26 +241,12 @@ export function Spinner({ size = 20, className }: { size?: number; className?: s
   );
 }
 
-/* ---------- Glass card ---------- */
-export function GlassCard({
-  className,
-  solid = false,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement> & { solid?: boolean }) {
-  return (
-    <div
-      className={cn(solid ? "glass-solid rounded-2xl" : "glass rounded-2xl", className)}
-      {...props}
-    />
-  );
-}
-
 /* ---------- Kbd / mono chip ---------- */
 export function MonoChip({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
     <span
       className={cn(
-        "inline-flex items-center rounded-lg bg-surface-2 border border-border px-2.5 py-1 font-mono text-[13px] tracking-tight text-ink",
+        "inline-flex items-center rounded-none bg-paper-2 border-2 border-dashed border-gc-ink px-2.5 py-1 font-space-mono text-[13px] tracking-tight text-gc-ink",
         className
       )}
     >

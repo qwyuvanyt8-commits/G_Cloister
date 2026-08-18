@@ -1,33 +1,130 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
-import {
-  Key,
-  Lightning,
-  LockKey,
-  PaperPlaneTilt,
-  FolderSimple,
-  Cloud,
-  ArrowDown,
-  ArrowRight,
-} from "@phosphor-icons/react";
-import { LandingNav } from "@/components/landing-nav";
-import { RoomPreview } from "@/components/room-preview";
+import { ArrowRight } from "@phosphor-icons/react";
 import { AuthModal } from "@/components/auth-modal";
-import { Button, Logo } from "@/components/ui";
 import { useAuth } from "@/components/auth-provider";
 import { cn } from "@/lib/cn";
 
-const reveal = {
-  hidden: { opacity: 0, y: 28 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const } },
+const MARQUEE_ITEMS = [
+  "CELL-04",
+  "PDF",
+  "SCRIPTORIUM",
+  "MOV",
+  "GARTH",
+  "PNG",
+  "ATRIUM",
+  "ZIP",
+  "REFECTORY",
+  "FIG",
+  "PARLOR",
+  "RAW",
+  "ORCHARD-9",
+  "MP3",
+  "CLOISTER",
+];
+
+const ROOM_CARDS = [
+  {
+    glyph: "📎",
+    tone: "cobalt" as const,
+    name: "CELL-04",
+    status: "OPEN",
+    statusTone: "text-gc-orange" as const,
+    host: "host priya",
+    meta: "3 members · 2.1 GB",
+    chips: ["PDF", "MOV", "PNG"],
+    zip: "••••••",
+  },
+  {
+    glyph: "🎬",
+    tone: "orange" as const,
+    name: "SCRIPTORIUM",
+    status: "OPEN",
+    statusTone: "text-gc-orange" as const,
+    host: "host daniel",
+    meta: "6 members · 4.0 GB",
+    chips: ["FIG", "MP4", "DWG"],
+    zip: "••••••",
+  },
+  {
+    glyph: "🌿",
+    tone: "mint" as const,
+    name: "GARTH",
+    status: "OPEN",
+    statusTone: "text-gc-orange" as const,
+    host: "host leo",
+    meta: "1 member · 300 MB",
+    chips: ["XLSX", "PDF"],
+    zip: "••••••",
+  },
+  {
+    glyph: "▣",
+    tone: "ink" as const,
+    name: "ATRIUM",
+    status: "EMPTY",
+    statusTone: "text-gc-mint" as const,
+    host: "awaiting host",
+    meta: "0 members",
+    chips: [],
+    zip: "———",
+  },
+  {
+    glyph: "📁",
+    tone: "cobalt" as const,
+    name: "REFECTORY",
+    status: "OPEN",
+    statusTone: "text-gc-orange" as const,
+    host: "host ana",
+    meta: "4 members · 1.8 GB",
+    chips: ["PSD", "ZIP", "AUD"],
+    zip: "••••••",
+  },
+];
+
+const CARD_TONES: Record<string, string> = {
+  cobalt: "bg-gc-cobalt text-paper",
+  orange: "bg-gc-orange text-paper",
+  mint: "bg-gc-mint text-gc-ink",
+  ink: "bg-gc-ink text-paper",
 };
 
-const marqueeItems = [
-  "PDF", "MOV", "PNG", "ZIP", "FIG", "MP4", "XLSX", "DOCX", "RAW", "MP3", "AI", "SKETCH", "WEBP", "PSD",
+const RULES = [
+  {
+    num: "RULE 01",
+    title: "REAL TIME",
+    body: "Files land on every screen the moment they drop. Live presence, live storage, live kicks.",
+    variant: "cobalt" as const,
+  },
+  {
+    num: "RULE 02",
+    title: "YOUR DRIVE",
+    body: "Storage carved from the host's Google Drive. The app only sees what it creates.",
+    variant: "mint" as const,
+  },
+  {
+    num: "RULE 03",
+    title: "LOCKED DOORS",
+    body: "Code + password per room. bcrypt hashes, AES-256-GCM at rest, 15-minute previews.",
+    variant: "plain" as const,
+  },
+  {
+    num: "RULE 04",
+    title: "NO CLOUD BILL",
+    body: "Free to host. 5 GB a room. No storage to buy, ever — you already own the drive.",
+    variant: "plain" as const,
+  },
 ];
+
+const STEPS = [
+  { move: "MOV 1", title: "HOST — PEEL ONE", body: "Sign in with Google, pick a room ID, set a password. A G_Cloister folder is carved in your Drive." },
+  { move: "MOV 2", title: "PASS — HAND IT OVER", body: "Send the room ID and password. A chat message, an email, a sticky note — one code, one door." },
+  { move: "MOV 3", title: "DROP — FILL IT", body: "Everyone drops up to 5 GB. Files stream to every member at once — and to the host's Drive." },
+];
+
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 export default function LandingPage() {
   const { user, loading } = useAuth();
@@ -35,381 +132,411 @@ export default function LandingPage() {
   const reduce = useReducedMotion();
   const [showAuth, setShowAuth] = useState(false);
 
+  const start = () => {
+    if (user) router.push("/home");
+    else setShowAuth(true);
+  };
+
+  const go = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const btnBase =
+    "inline-flex items-center justify-center gap-2.5 border-3 border-gc-ink font-extrabold text-[15px] leading-none tracking-tight transition-all duration-150 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-gc-cobalt disabled:opacity-50";
+
   return (
-    <main className="relative overflow-x-clip">
-      <div className="aurora pointer-events-none absolute inset-x-0 top-0 h-[140vh]" aria-hidden />
+    <main className="min-h-screen overflow-x-clip bg-paper font-archivo text-gc-ink">
+      {/* ---------- top ticker ---------- */}
+      <div className="bg-gc-ink text-paper">
+        <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-6 py-2.5 font-space-mono text-[10.5px] uppercase tracking-[0.12em]">
+          <span>
+            <span className="text-gc-mint">✓</span> NO STORAGE BILLS — EVER
+          </span>
+          <span className="hidden md:inline text-gc-orange">● REAL-TIME SYNC ●</span>
+          <span className="hidden sm:inline">YOUR DRIVE · YOUR RULES</span>
+        </div>
+      </div>
 
-      <LandingNav onSignIn={() => setShowAuth(true)} />
+      {/* ---------- masthead ---------- */}
+      <header className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 border-b-4 border-gc-ink px-6 py-4">
+        <a href="#" className="inline-flex items-center text-xl font-black leading-none tracking-tight" aria-label="G_Cloister home">
+          <span className="bg-gc-cobalt px-2.5 py-1.5 text-paper">G_</span>
+          <span className="border-3 border-gc-ink px-2.5 py-1.5">CLOISTER</span>
+        </a>
+        <nav className="hidden items-center gap-5 md:flex">
+          {[
+            ["ROOMS", "collect"],
+            ["RULES", "rules"],
+            ["FINE PRINT", "print"],
+          ].map(([label, id]) => (
+            <button
+              key={id}
+              onClick={() => go(id)}
+              className="font-space-mono text-xs uppercase tracking-[0.08em] text-gc-muted transition-colors hover:text-gc-ink hover:underline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-gc-cobalt"
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+        <button
+          onClick={start}
+          className={cn(
+            "bg-gc-orange px-4 py-2.5 font-extrabold text-[13px] leading-none text-paper transition-all duration-150 hover:bg-gc-orange-dark hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_#16130d]",
+            "focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-gc-cobalt"
+          )}
+        >
+          {loading ? "…" : user ? "GO TO ROOMS" : "HOST A ROOM"}
+        </button>
+      </header>
 
-      {/* ---------------- HERO ---------------- */}
-      <section className="relative mx-auto grid max-w-[1400px] grid-cols-1 items-center gap-14 px-5 pb-24 pt-32 lg:grid-cols-[1.05fr_0.95fr] lg:px-8 lg:pb-32 lg:pt-40">
-        <div className="relative z-10">
-          <motion.div
-            initial={reduce ? false : { opacity: 0, y: 20 }}
+      {/* ---------- hero ---------- */}
+      <section className="mx-auto grid max-w-[1180px] grid-cols-1 items-center gap-12 px-6 py-14 md:grid-cols-[1.1fr_0.9fr] md:py-20">
+        <div>
+          <motion.span
+            initial={reduce ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.5, ease: EASE }}
+            className="font-space-mono text-[11px] font-bold uppercase tracking-[0.16em] text-gc-cobalt"
           >
-            <span className="inline-flex items-center gap-2 rounded-full border border-accent-border bg-accent-soft px-3.5 py-1.5 text-[12.5px] font-medium text-accent">
-              <span className="relative flex h-1.5 w-1.5">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent opacity-70" />
-                <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-accent" />
-              </span>
-              Runs on your Google Drive
-            </span>
-          </motion.div>
+            Sticker sheet / collectible rooms
+          </motion.span>
 
           <motion.h1
-            initial={reduce ? false : { opacity: 0, y: 24 }}
+            initial={reduce ? false : { opacity: 0, y: 26 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-6 text-balance text-5xl font-semibold leading-[1.02] tracking-tighter text-ink sm:text-6xl lg:text-[76px]"
+            transition={{ duration: 0.7, delay: 0.08, ease: EASE }}
+            className="mt-5 font-black leading-[0.9] tracking-[-0.045em] text-[clamp(46px,6.4vw,84px)] text-balance"
           >
-            Files, gathered
+            STICK THE ROOM.
             <br />
-            in <em className="text-accent-gradient font-semibold not-italic">private rooms</em>.
+            <span className="inline-block -rotate-1 bg-gc-cobalt px-[0.14em] text-paper">
+              EVERYWHERE
+            </span>
+            <span className="text-gc-orange">.</span>
           </motion.h1>
 
           <motion.p
             initial={reduce ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-6 max-w-[46ch] text-lg leading-relaxed text-muted"
+            transition={{ duration: 0.7, delay: 0.16, ease: EASE }}
+            className="mt-6 max-w-[44ch] text-[16.5px] leading-relaxed text-gc-muted"
           >
-            Host a room on your Drive, share a code, and move up to 5&nbsp;GB in real time.
+            Every room is a card you can peel and pass along — a code on the back,
+            a door on the front. Host on your Drive, hand the sticker to your people,
+            and drop files together in real time.
           </motion.p>
 
           <motion.div
             initial={reduce ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.24, ease: [0.16, 1, 0.3, 1] }}
-            className="mt-9 flex flex-wrap items-center gap-3"
+            transition={{ duration: 0.7, delay: 0.24, ease: EASE }}
+            className="mt-8 flex flex-wrap items-center gap-3.5"
           >
-            <Button
-              size="lg"
-              onClick={user ? () => router.push("/home") : () => setShowAuth(true)}
-              loading={loading}
-              icon={<ArrowRight size={19} weight="bold" />}
+            <button onClick={start} className={cn(btnBase, "bg-gc-orange px-7 py-4 text-paper hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gc-orange-dark hover:shadow-[4px_4px_0_#16130d]")}>
+              {user && !loading ? (
+                <>
+                  GO TO ROOMS <ArrowRight size={16} weight="bold" />
+                </>
+              ) : (
+                "HOST A ROOM"
+              )}
+            </button>
+            <button
+              onClick={start}
+              className={cn(btnBase, "border-gc-ink bg-gc-ink px-7 py-4 text-paper hover:border-gc-cobalt hover:bg-gc-cobalt")}
             >
-              {user ? "Go to rooms" : "Sign in"}
-            </Button>
-            <Button
-              size="lg"
-              variant="ghost"
-              onClick={() => document.getElementById("how")?.scrollIntoView({ behavior: "smooth" })}
-              icon={<ArrowDown size={18} />}
-            >
-              See how it works
-            </Button>
+              JOIN WITH A CODE
+            </button>
           </motion.div>
 
           <motion.p
             initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 0.5, duration: 0.8 }}
-            className="mt-5 text-[13px] text-faint"
+            transition={{ delay: 0.4, duration: 0.7 }}
+            className="mt-5 font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-muted"
           >
-            Free to host · No storage to buy · Hosts sign in with Google, members join with email
+            Hosts sign in with Google · Members join with an email · Free
           </motion.p>
         </div>
 
-        <RoomPreview className="relative mx-auto w-full max-w-[440px] lg:justify-self-end" />
-      </section>
-
-      {/* ---------------- FILE TYPE MARQUEE ---------------- */}
-      <section className="relative border-y border-border bg-surface/40 py-6 backdrop-blur-sm">
-        <div className="flex w-full overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_15%,black_85%,transparent)]">
-          <div className="marquee-track flex w-max shrink-0 items-center gap-10 pr-10">
-            {[...marqueeItems, ...marqueeItems].map((item, i) => (
-              <span
-                key={i}
-                className="flex items-center gap-10 font-mono text-[15px] tracking-widest text-faint"
+        {/* sticker sheet */}
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 34, rotate: 3 }}
+          animate={{ opacity: 1, y: 0, rotate: 1 }}
+          transition={{ duration: 0.8, delay: 0.18, ease: EASE }}
+          className="relative border-4 border-gc-ink bg-paper-2 p-5 shadow-[10px_10px_0_#16130d]"
+        >
+          <div
+            aria-hidden
+            className="absolute -right-4 -top-5 z-10 grid h-[86px] w-[68px] rotate-12 place-items-center border-3 border-gc-ink bg-paper text-[28px] font-black text-gc-cobalt shadow-[5px_5px_0_#16130d]"
+          >
+            G_
+          </div>
+          <p className="mb-4 text-center font-space-mono text-[9.5px] uppercase tracking-[0.18em] text-gc-muted">
+            Sticker sheet — Scriptorium 001
+          </p>
+          <div className="grid grid-cols-3 gap-3.5">
+            {[
+              { g: "◐", tone: "bg-gc-cobalt text-paper", lid: "ROOM WS-01", nm: "CELL-04" },
+              { g: "▣", tone: "bg-gc-orange text-paper -rotate-2", lid: "ROOM WS-02", nm: "GARTH" },
+              { g: "▤", tone: "bg-gc-mint text-gc-ink", lid: "ROOM WS-03", nm: "ATRIUM" },
+            ].map((s) => (
+              <div
+                key={s.nm}
+                className={cn(
+                  "relative flex aspect-[4/5] flex-col justify-end rounded-[14px] border-2 border-dashed border-gc-ink p-3 transition-transform duration-200 hover:-translate-y-1",
+                  s.tone
+                )}
               >
-                {item}
-                <span className="h-1 w-1 rounded-full bg-accent/50" />
-              </span>
+                <span className="absolute left-3 top-3 text-[24px]">{s.g}</span>
+                <span className="font-space-mono text-[9px] uppercase tracking-[0.14em] opacity-75">{s.lid}</span>
+                <span className="mt-0.5 text-[15px] font-black tracking-tight">{s.nm}</span>
+              </div>
             ))}
           </div>
+          <div className="mt-4 flex items-center justify-between font-space-mono text-[9.5px] uppercase tracking-[0.16em] text-gc-muted">
+            <span>Peel + pass</span>
+            <span>One code · one door</span>
+          </div>
+        </motion.div>
+      </section>
+
+      {/* ---------- marquee ---------- */}
+      <div aria-hidden className="overflow-hidden border-y-4 border-gc-ink bg-gc-ink py-3.5 text-paper">
+        <div className="marquee-track flex w-max">
+          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, i) => (
+            <span key={i} className="flex items-center gap-5 pr-5 font-space-mono text-xs uppercase tracking-[0.16em] whitespace-nowrap">
+              {item}
+              <span className="text-gc-orange">●</span>
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* ---------- collection ---------- */}
+      <section id="collect" className="mx-auto max-w-[1180px] px-6 py-16 md:py-20">
+        <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4 border-b-4 border-gc-ink pb-4">
+          <h2 className="font-black leading-[0.95] tracking-[-0.03em] text-[clamp(30px,4.2vw,50px)]">
+            THE{" "}
+            <span className="inline-block bg-gc-cobalt px-[0.12em] text-paper">COLLECTION</span>
+            <br />
+            SO FAR.
+          </h2>
+          <span className="font-space-mono text-[11px] uppercase tracking-[0.12em] text-gc-muted">
+            Rooms currently open
+          </span>
+        </div>
+
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {ROOM_CARDS.map((room, i) => (
+            <motion.article
+              key={room.name}
+              initial={reduce ? false : { opacity: 0, y: 24 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 0.5, delay: i * 0.06, ease: EASE }}
+              className="group border-4 border-gc-ink bg-paper transition-all duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:rotate-[-0.6deg] hover:shadow-[7px_7px_0_#16130d]"
+            >
+              <div className={cn("grid h-[130px] place-items-center border-b-4 border-gc-ink text-[46px]", CARD_TONES[room.tone])}>
+                <span aria-hidden>{room.glyph}</span>
+              </div>
+              <div className="px-4 pt-4">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-lg font-black tracking-tight">{room.name}</span>
+                  <span className={cn("font-space-mono text-[9.5px] uppercase tracking-[0.12em]", room.statusTone)}>
+                    ● {room.status}
+                  </span>
+                </div>
+                <div className="mt-1.5 flex justify-between font-space-mono text-[10.5px] text-gc-muted">
+                  <span>{room.host}</span>
+                  <span>{room.meta}</span>
+                </div>
+                <div className="mt-3 flex gap-1.5">
+                  {room.chips.length ? (
+                    room.chips.map((c) => (
+                      <span key={c} className="rounded-full border-[1.5px] border-gc-ink px-2 py-0.5 font-space-mono text-[9px] tracking-[0.06em] text-gc-muted">
+                        {c}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="font-space-mono text-[9px] text-gc-faint">— · — · —</span>
+                  )}
+                </div>
+              </div>
+              <div className="mt-3.5 flex items-center justify-between border-t-2 border-dashed border-gc-ink px-4 py-2 font-space-mono text-[9px] uppercase tracking-[0.14em] text-gc-faint">
+                <span>TEAR HERE</span>
+                <span className="font-bold tracking-[0.22em] text-gc-ink">{room.zip}</span>
+              </div>
+            </motion.article>
+          ))}
+
+          {/* next room card */}
+          <motion.article
+            initial={reduce ? false : { opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.25 }}
+            transition={{ duration: 0.5, delay: 0.3, ease: EASE }}
+            className="border-4 border-dashed border-gc-ink bg-paper-2 transition-all duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[7px_7px_0_#16130d]"
+          >
+            <button onClick={start} className="block w-full text-left">
+              <div className="grid h-[130px] place-items-center border-b-4 border-dashed border-gc-ink bg-paper-2 text-[46px] text-gc-faint">
+                <span aria-hidden>+</span>
+              </div>
+              <div className="px-4 pt-4">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="text-lg font-black tracking-tight">YOURS?</span>
+                  <span className="font-space-mono text-[9.5px] uppercase tracking-[0.12em] text-gc-cobalt">NEW</span>
+                </div>
+                <div className="mt-1.5 font-space-mono text-[10.5px] text-gc-muted">
+                  <span>you</span> · <span>0 members · 5 GB</span>
+                </div>
+              </div>
+              <div className="mt-3.5 flex items-center justify-between border-t-2 border-dashed border-gc-ink px-4 py-2 font-space-mono text-[9px] uppercase tracking-[0.14em] text-gc-faint">
+                <span>HOST THE NEXT ONE</span>
+                <span className="font-bold text-gc-cobalt">✦</span>
+              </div>
+            </button>
+          </motion.article>
         </div>
       </section>
 
-      {/* ---------------- HOW IT WORKS ---------------- */}
-      <section id="how" className="relative mx-auto max-w-[1400px] px-5 py-24 lg:px-8 lg:py-32">
-        <div className="grid grid-cols-1 gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-20">
-          <div className="lg:sticky lg:top-28 lg:self-start">
-            <motion.div
-              variants={reveal}
-              initial={reduce ? false : "hidden"}
-              whileInView="show"
-              viewport={{ once: true, amount: 0.4 }}
-            >
-              <h2 className="text-balance text-4xl font-semibold tracking-tighter text-ink lg:text-5xl">
-                Three steps to a
-                <br />
-                shared <span className="text-accent">vault</span>.
-              </h2>
-              <p className="mt-5 max-w-[40ch] text-[15px] leading-relaxed text-muted">
-                No invite emails, no credit cards. Hosts sign in with Google to open the
-                vault — members only need an email address.
-              </p>
-            </motion.div>
+      {/* ---------- rules ---------- */}
+      <section id="rules" className="border-t-4 border-gc-ink bg-paper py-16 md:py-20">
+        <div className="mx-auto max-w-[1180px] px-6">
+          <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4 border-b-4 border-gc-ink pb-4">
+            <h2 className="font-black leading-[0.95] tracking-[-0.03em] text-[clamp(30px,4.2vw,50px)]">
+              THE RULES
+              <br />
+              OF THE SHEET.
+            </h2>
+            <span className="font-space-mono text-[11px] uppercase tracking-[0.12em] text-gc-muted">
+              Printed on the liner
+            </span>
           </div>
 
-          <div>
-            {[
-              {
-                n: "01",
-                icon: Key,
-                title: "Host a room",
-                body: "Pick a room ID — words or numbers, your call. We generate a password and carve a G_Cloister folder inside your own Drive.",
-              },
-              {
-                n: "02",
-                icon: PaperPlaneTilt,
-                title: "Share the code",
-                body: "Send the room ID and password to the people you trust. One code, one door. Nothing else is needed to walk in.",
-              },
-              {
-                n: "03",
-                icon: Lightning,
-                title: "Drop files together",
-                body: "Upload anything up to 5 GB total. Every member sees files appear the moment they land — no refresh, no waiting.",
-              },
-            ].map((step, i) => (
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {RULES.map((rule, i) => (
               <motion.div
-                key={step.n}
-                variants={reveal}
-                initial={reduce ? false : "hidden"}
-                whileInView="show"
-                viewport={{ once: true, amount: 0.4 }}
-                transition={{ delay: i * 0.08 }}
+                key={rule.num}
+                initial={reduce ? false : { opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.5, delay: i * 0.06, ease: EASE }}
                 className={cn(
-                  "group flex gap-6 py-8 first:pt-2",
-                  i > 0 && "border-t border-border"
+                  "rounded-2xl border-2 p-5 transition-transform duration-200 hover:-rotate-1",
+                  rule.variant === "cobalt" && "border-gc-ink bg-gc-cobalt text-paper",
+                  rule.variant === "mint" && "border-gc-ink bg-gc-mint",
+                  rule.variant === "plain" && "border-dashed border-gc-ink bg-paper"
                 )}
               >
-                <div className="flex flex-col items-center">
-                  <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-border bg-surface font-mono text-[13px] font-medium text-muted transition-colors group-hover:border-accent-border group-hover:text-accent">
-                    {step.n}
-                  </span>
-                  {i < 2 && <span className="mt-3 w-px flex-1 bg-border" />}
-                </div>
-                <div className="pb-2">
-                  <div className="flex items-center gap-2.5">
-                    <step.icon size={19} weight="duotone" className="text-accent" />
-                    <h3 className="text-lg font-semibold tracking-tight text-ink">{step.title}</h3>
-                  </div>
-                  <p className="mt-2.5 max-w-[52ch] text-[15px] leading-relaxed text-muted">
-                    {step.body}
-                  </p>
-                </div>
+                <span className="font-space-mono text-[11px] font-bold text-gc-orange">{rule.num}</span>
+                <h3 className="mt-2.5 text-lg font-black tracking-tight">{rule.title}</h3>
+                <p className={cn("mt-2 text-[13.5px] leading-relaxed", rule.variant === "cobalt" ? "text-paper/85" : "text-gc-muted")}>
+                  {rule.body}
+                </p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ---------------- FEATURES BENTO ---------------- */}
-      <section id="features" className="relative border-t border-border bg-surface-2/50">
-        <div className="mx-auto max-w-[1400px] px-5 py-24 lg:px-8 lg:py-32">
-          <motion.div
-            variants={reveal}
-            initial={reduce ? false : "hidden"}
-            whileInView="show"
-            viewport={{ once: true, amount: 0.4 }}
-            className="mb-12"
-          >
-            <h2 className="text-balance text-4xl font-semibold tracking-tighter text-ink lg:text-5xl">
-              A vault with the room to breathe.
-            </h2>
-          </motion.div>
+      {/* ---------- how to play ---------- */}
+      <section id="how" className="mx-auto max-w-[1180px] px-6 py-16 md:py-20">
+        <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4 border-b-4 border-gc-ink pb-4">
+          <h2 className="font-black leading-[0.95] tracking-[-0.03em] text-[clamp(30px,4.2vw,50px)]">HOW TO PLAY.</h2>
+          <span className="font-space-mono text-[11px] uppercase tracking-[0.12em] text-gc-muted">
+            Three moves · one key
+          </span>
+        </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-6">
-            {/* Big number cell */}
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+          {STEPS.map((step, i) => (
             <motion.div
-              variants={reveal}
-              initial={reduce ? false : "hidden"}
-              whileInView="show"
+              key={step.move}
+              initial={reduce ? false : { opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
-              className="relative overflow-hidden rounded-3xl border border-accent-border bg-accent-soft p-7 md:col-span-4 md:min-h-[260px]"
+              transition={{ duration: 0.5, delay: i * 0.08, ease: EASE }}
+              className="relative border-4 border-gc-ink bg-paper p-5 pt-6"
             >
-              <div
-                aria-hidden
-                className="absolute -right-16 -top-16 h-56 w-56 rounded-full bg-accent/15 blur-3xl"
-              />
-              <p className="font-mono text-[12px] uppercase tracking-[0.18em] text-accent">The vault</p>
-              <div className="mt-6 flex flex-wrap items-end gap-x-3">
-                <span className="text-6xl font-semibold tracking-tighter text-ink lg:text-7xl">5.0 GB</span>
-                <span className="mb-2 text-[15px] font-medium text-muted">per room</span>
-              </div>
-              <p className="mt-4 max-w-[42ch] text-[15px] leading-relaxed text-muted">
-                The space is carved from the host's Google Drive — so a room costs
-                nothing and your files stay in a place you already own.
-              </p>
-              <div className="mt-6 h-2 max-w-sm overflow-hidden rounded-full bg-surface">
-                <motion.div
-                  className="h-full rounded-full bg-accent"
-                  initial={{ width: "12%" }}
-                  whileInView={{ width: "12%" }}
-                />
-              </div>
-            </motion.div>
-
-            {/* Real-time cell */}
-            <motion.div
-              variants={reveal}
-              initial={reduce ? false : "hidden"}
-              whileInView="show"
-              viewport={{ once: true, amount: 0.3 }}
-              className="flex flex-col justify-between rounded-3xl border border-border bg-surface p-7 md:col-span-2"
-            >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent-soft">
-                <Lightning size={22} weight="duotone" className="text-accent" />
+              <span className="absolute -top-3.5 left-4 border-2 border-gc-ink bg-gc-orange px-2.5 py-1 font-space-mono text-[10.5px] font-bold uppercase text-paper">
+                {step.move}
               </span>
-              <div>
-                <h3 className="text-lg font-semibold tracking-tight text-ink">Real time, always</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-muted">
-                  Files land in every open room the second they're uploaded.
-                </p>
-              </div>
+              <h3 className="mt-2 text-lg font-black tracking-tight">{step.title}</h3>
+              <p className="mt-2.5 text-[14px] leading-relaxed text-gc-muted">{step.body}</p>
             </motion.div>
-
-            {/* Drive tree cell */}
-            <motion.div
-              variants={reveal}
-              initial={reduce ? false : "hidden"}
-              whileInView="show"
-              viewport={{ once: true, amount: 0.3 }}
-              className="rounded-3xl border border-border bg-surface p-7 md:col-span-2"
-            >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#5aa2ff]/10">
-                <FolderSimple size={22} weight="duotone" className="text-[#5aa2ff]" />
-              </span>
-              <h3 className="mt-5 text-lg font-semibold tracking-tight text-ink">
-                G_Cloister in your Drive
-              </h3>
-              <div className="mt-4 rounded-xl bg-surface-2 p-3.5 font-mono text-[12.5px] leading-relaxed text-muted">
-                <p className="flex items-center gap-2">
-                  <FolderSimple size={14} className="text-accent" weight="duotone" /> My Drive / G_Cloister
-                </p>
-                <p className="ml-5 flex items-center gap-2">
-                  <FolderSimple size={13} className="text-[#5aa2ff]" weight="duotone" /> vault-alpha
-                </p>
-                <p className="ml-10 flex items-center gap-2 text-faint">
-                  <Cloud size={12} className="text-accent" weight="duotone" /> 4 files
-                </p>
-              </div>
-            </motion.div>
-
-            {/* Invite code cell */}
-            <motion.div
-              variants={reveal}
-              initial={reduce ? false : "hidden"}
-              whileInView="show"
-              viewport={{ once: true, amount: 0.3 }}
-              className="flex flex-col justify-between rounded-3xl border border-border bg-surface p-7 md:col-span-2"
-            >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#f0b04e]/10">
-                <PaperPlaneTilt size={22} weight="duotone" className="text-[#f0b04e]" />
-              </span>
-              <div>
-                <h3 className="text-lg font-semibold tracking-tight text-ink">One code to enter</h3>
-                <p className="mt-2 font-mono text-[13px] tracking-widest text-accent">vault-alpha</p>
-                <p className="mt-2 text-[14px] leading-relaxed text-muted">
-                  Paste the code anywhere — chat, email, a sticky note.
-                </p>
-              </div>
-            </motion.div>
-
-            {/* Password cell */}
-            <motion.div
-              variants={reveal}
-              initial={reduce ? false : "hidden"}
-              whileInView="show"
-              viewport={{ once: true, amount: 0.3 }}
-              className="rounded-3xl border border-border bg-surface p-7 md:col-span-2"
-            >
-              <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-danger-soft">
-                <LockKey size={22} weight="duotone" className="text-danger" />
-              </span>
-              <h3 className="mt-5 text-lg font-semibold tracking-tight text-ink">Password on every door</h3>
-              <p className="mt-2 text-[14px] leading-relaxed text-muted">
-                Every room has its own password, hashed before it ever touches a
-                database.
-              </p>
-            </motion.div>
-          </div>
+          ))}
         </div>
       </section>
 
-      {/* ---------------- PRIVACY ---------------- */}
-      <section id="privacy" className="relative mx-auto max-w-[1400px] px-5 py-24 lg:px-8 lg:py-32">
+      {/* ---------- fine print ---------- */}
+      <section id="print" className="mx-auto max-w-[860px] px-6 py-16 md:py-20">
         <motion.div
-          variants={reveal}
-          initial={reduce ? false : "hidden"}
-          whileInView="show"
-          viewport={{ once: true, amount: 0.5 }}
-          className="mx-auto max-w-3xl text-center"
+          initial={reduce ? false : { opacity: 0, scale: 0.97 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 0.6, ease: EASE }}
+          className="-rotate-1 rounded-[18px] border-2 border-dashed border-gc-ink bg-gc-mint px-8 py-10 text-center"
         >
-          <span className="font-mono text-[12px] uppercase tracking-[0.2em] text-faint">Privacy</span>
-          <h2 className="mt-4 text-balance text-3xl font-semibold tracking-tighter text-ink sm:text-4xl">
-            Your files live in the host's Google Drive.
-            <span className="text-muted"> Not ours.</span>
+          <h2 className="font-black leading-[0.94] tracking-[-0.04em] text-[clamp(30px,4.4vw,54px)] text-balance">
+            FINE PRINT:
+            <br />
+            FILES LIVE IN THE HOST&apos;S DRIVE.
+            <br />
+            <span className="inline-block bg-gc-cobalt px-[0.12em] text-paper">WE CAN&apos;T SEE THEM.</span>
           </h2>
-          <p className="mx-auto mt-5 max-w-[52ch] text-[15px] leading-relaxed text-muted">
-            We don't rent cloud space, we don't scan your uploads, and we don't sell
-            your data. Room access is guarded by a password, and the host can revoke
-            the vault anytime by revoking Drive access.
+          <p className="mx-auto mt-5 max-w-[52ch] text-[15.5px] leading-relaxed text-gc-ink/75">
+            No rented cloud space, no scanning of uploads, no selling of data. Revoke
+            Drive access and the vault is gone. That&apos;s the whole privacy policy.
           </p>
         </motion.div>
       </section>
 
-      {/* ---------------- FINAL CTA ---------------- */}
-      <section className="relative overflow-hidden border-t border-border">
-        <div className="aurora pointer-events-none absolute inset-0" aria-hidden />
-        <div className="relative mx-auto max-w-3xl px-5 py-28 text-center lg:py-36">
-          <motion.h2
-            variants={reveal}
-            initial={reduce ? false : "hidden"}
-            whileInView="show"
-            viewport={{ once: true, amount: 0.6 }}
-            className="text-balance text-5xl font-semibold leading-[1.02] tracking-tighter text-ink lg:text-6xl"
-          >
-            Open your
-            <br />
-            cloister<span className="text-accent">.</span>
-          </motion.h2>
-          <motion.div
-            variants={reveal}
-            initial={reduce ? false : "hidden"}
-            whileInView="show"
-            viewport={{ once: true, amount: 0.6 }}
-            className="mt-8 flex flex-col items-center gap-3"
-          >
-            <Button
-              size="lg"
-              onClick={user ? () => router.push("/home") : () => setShowAuth(true)}
-              loading={loading}
-              icon={<ArrowRight size={19} weight="bold" />}
-            >
-              {user ? "Go to rooms" : "Sign in"}
-            </Button>
-            <p className="text-[13px] text-faint">
-              Hosts use Google to open a vault. Members can drop files with just an email.
-            </p>
-          </motion.div>
-        </div>
+      {/* ---------- final cta ---------- */}
+      <section id="final" className="border-t-4 border-gc-ink py-20 text-center md:py-24">
+        <motion.h2
+          initial={reduce ? false : { opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="font-black leading-[0.86] tracking-[-0.05em] text-[clamp(50px,8vw,108px)]"
+        >
+          OPEN A
+          <br />
+          <span className="inline-block bg-gc-cobalt px-[0.12em] text-paper">PACK</span>
+          <span className="text-gc-orange">.</span>
+        </motion.h2>
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
+          className="mt-10 flex flex-wrap items-center justify-center gap-3.5"
+        >
+          <button onClick={start} className={cn(btnBase, "bg-gc-orange px-7 py-4 text-paper hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gc-orange-dark hover:shadow-[4px_4px_0_#16130d]")}>
+            HOST A ROOM WITH GOOGLE
+          </button>
+          <button onClick={start} className={cn(btnBase, "bg-gc-ink px-7 py-4 text-paper hover:border-gc-cobalt hover:bg-gc-cobalt")}>
+            JOIN WITH A CODE
+          </button>
+        </motion.div>
+        <motion.p
+          initial={reduce ? false : { opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mt-6 font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-muted"
+        >
+          Free · 5 GB per room · Your Drive · Your rules
+        </motion.p>
       </section>
 
-      {/* ---------------- FOOTER ---------------- */}
-      <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-6 px-5 py-10 sm:flex-row lg:px-8">
-          <Logo size={26} />
-          <p className="font-mono text-[12px] text-faint">
-            Built on the Google Drive API · {new Date().getFullYear()}
-          </p>
-          <div className="flex items-center gap-6">
-            <span className="text-[13px] text-faint">Your Drive · Your rules</span>
-          </div>
+      {/* ---------- footer ---------- */}
+      <footer className="border-t-4 border-gc-ink">
+        <div className="mx-auto flex max-w-[1180px] flex-col items-center justify-between gap-4 px-6 py-5 font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-muted sm:flex-row">
+          <span>G_CLOISTER © {new Date().getFullYear()}</span>
+          <span>BUILT ON THE GOOGLE DRIVE API</span>
+          <span>YOUR DRIVE · YOUR RULES</span>
         </div>
       </footer>
 

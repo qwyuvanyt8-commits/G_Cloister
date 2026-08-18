@@ -39,7 +39,7 @@ function randomRoomId() {
 function HostInner() {
   const router = useRouter();
   const { toast } = useToast();
-  const { user, hasDrive, openDriveModal } = useAuth();
+  const { hasDrive, openDriveModal } = useAuth();
   const [roomId, setRoomId] = useState("");
   const [password, setPassword] = useState(() => randomPassword());
   const [copied, setCopied] = useState<"id" | "pw" | "all" | null>(null);
@@ -106,21 +106,20 @@ function HostInner() {
   if (created) {
     const inviteUrl = `${window.location.origin}/join?room=${created.roomId}&pw=${encodeURIComponent(created.password)}`;
     return (
-      <main className="min-h-[calc(100dvh-4rem)]">
-        <div className="aurora pointer-events-none fixed inset-x-0 top-0 h-[70vh]" aria-hidden />
-        <div className="relative mx-auto max-w-xl px-5 pb-24 pt-14">
+      <main className="min-h-[calc(100dvh-4rem)] bg-paper text-gc-ink">
+        <div className="mx-auto max-w-[560px] px-6 pb-24 pt-14">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             className="text-center"
           >
-            <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-accent text-[#04120c]">
+            <span className="mx-auto flex h-14 w-14 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_#16130d]">
               <Check size={30} weight="bold" />
             </span>
-            <h1 className="mt-6 text-3xl font-semibold tracking-tighter text-ink">Room created</h1>
-            <p className="mt-2 text-[15px] text-muted">
-              Your vault is live at <span className="font-mono text-accent">G_Cloister/{created.roomId}</span>.
+            <h1 className="mt-6 font-black tracking-[-0.03em] text-[clamp(28px,4.5vw,44px)]">Room created</h1>
+            <p className="mt-2 text-[15px] font-space-mono uppercase tracking-[0.08em] text-gc-muted">
+              Your vault is live at <span className="text-gc-cobalt">G_Cloister/{created.roomId}</span>.
             </p>
           </motion.div>
 
@@ -128,11 +127,11 @@ function HostInner() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="glass mt-8 rounded-3xl p-6"
+            className="mt-8 border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_#16130d]"
           >
             <div className="space-y-5">
               <div>
-                <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-faint">Room ID</p>
+                <p className="font-space-mono text-[10.5px] font-bold uppercase tracking-[0.16em] text-gc-muted">Room ID</p>
                 <div className="mt-2 flex items-center gap-2">
                   <MonoChip className="flex-1 justify-between px-3 py-2.5 text-[15px]">
                     {created.roomId}
@@ -144,16 +143,16 @@ function HostInner() {
               </div>
 
               <div>
-                <p className="text-[12px] font-medium uppercase tracking-[0.14em] text-faint">Password</p>
+                <p className="font-space-mono text-[10.5px] font-bold uppercase tracking-[0.16em] text-gc-muted">Password</p>
                 <div className="mt-2 flex items-center gap-2">
                   <MonoChip className="flex-1 justify-between px-3 py-2.5 text-[15px] tracking-[0.18em]">
-                    <span className="flex items-center gap-2"><LockKey size={15} className="text-accent" />{created.password}</span>
+                    <span className="flex items-center gap-2"><LockKey size={15} className="text-gc-cobalt" />{created.password}</span>
                   </MonoChip>
                   <Button size="sm" variant="secondary" icon={copied === "pw" ? <Check size={15} /> : <Copy size={15} />} onClick={() => copy(created.password, "pw")}>
                     {copied === "pw" ? "Copied" : "Copy"}
                   </Button>
                 </div>
-                <p className="mt-2 text-[12.5px] text-faint">This is the only time the password is shown in full.</p>
+                <p className="mt-2 font-space-mono text-[11px] uppercase tracking-[0.08em] text-gc-faint">This is the only time the password is shown in full.</p>
               </div>
 
               <Button
@@ -188,18 +187,17 @@ function HostInner() {
   }
 
   return (
-    <main className="min-h-[calc(100dvh-4rem)]">
-      <div className="aurora pointer-events-none fixed inset-x-0 top-0 h-[70vh]" aria-hidden />
-      <div className="relative mx-auto max-w-xl px-5 pb-24 pt-14">
+    <main className="min-h-[calc(100dvh-4rem)] bg-paper text-gc-ink">
+      <div className="mx-auto max-w-[560px] px-6 pb-24 pt-14">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-faint">Host</p>
-          <h1 className="mt-3 text-4xl font-semibold tracking-tighter text-ink">Claim a room name</h1>
-          <p className="mt-3 max-w-[48ch] text-[15px] leading-relaxed text-muted">
-            Pick an ID people will remember. We'll cut a <span className="font-mono text-accent">G_Cloister</span> folder into your Drive and hand you a password.
+          <p className="font-space-mono text-[11px] font-bold uppercase tracking-[0.16em] text-gc-cobalt">Host</p>
+          <h1 className="mt-4 font-black tracking-[-0.03em] text-[clamp(28px,4.5vw,44px)]">Claim a room name</h1>
+          <p className="mt-3 max-w-[50ch] text-[15px] leading-relaxed text-gc-muted">
+            Pick an ID people will remember. We&apos;ll cut a <span className="font-space-mono font-bold text-gc-cobalt">G_Cloister</span> folder into your Drive and hand you a password.
           </p>
         </motion.div>
 
@@ -207,7 +205,7 @@ function HostInner() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="glass mt-10 rounded-3xl p-6 sm:p-8"
+          className="mt-10 border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_#16130d] sm:p-8"
         >
           <div className="flex flex-col gap-6">
             <Input
@@ -226,7 +224,7 @@ function HostInner() {
                 <button
                   type="button"
                   onClick={() => setRoomId(randomRoomId())}
-                  className="flex items-center gap-1 rounded-lg px-2 py-1 text-[12px] font-medium text-muted transition-colors hover:text-accent"
+                  className="flex items-center gap-1 px-2 py-1 font-space-mono text-[11px] font-bold uppercase tracking-[0.08em] text-gc-muted transition-colors hover:text-gc-cobalt"
                   aria-label="Suggest a room ID"
                 >
                   <DotsThree size={18} weight="bold" /> suggest
@@ -235,10 +233,10 @@ function HostInner() {
             />
 
             <div>
-              <p className="text-[13px] font-medium text-muted">Room password</p>
+              <p className="font-space-mono text-[11px] font-bold uppercase tracking-[0.14em] text-gc-muted">Room password</p>
               <div className="mt-2 flex items-center gap-2">
                 <MonoChip className="flex-1 justify-between px-3 py-2.5 text-[15px] tracking-[0.18em]">
-                  <span className="flex items-center gap-2"><LockKey size={15} className="text-accent" />{password}</span>
+                  <span className="flex items-center gap-2"><LockKey size={15} className="text-gc-cobalt" />{password}</span>
                 </MonoChip>
                 <Button
                   size="sm"
@@ -258,8 +256,8 @@ function HostInner() {
                   <DotsThree size={18} weight="bold" />
                 </Button>
               </div>
-              <p className="mt-2 text-[12.5px] text-faint">
-                Auto-generated. You can keep it or regenerate until you're happy.
+              <p className="mt-2 font-space-mono text-[11px] uppercase tracking-[0.08em] text-gc-faint">
+                Auto-generated. You can keep it or regenerate until you&apos;re happy.
               </p>
             </div>
 
@@ -274,11 +272,11 @@ function HostInner() {
               Create the room
             </Button>
 
-            <div className="flex items-center gap-3 rounded-xl border border-border bg-surface-2 px-4 py-3">
-              <HardDrives size={18} weight="duotone" className="shrink-0 text-accent" />
-              <p className="text-[13px] leading-snug text-muted">
-                <span className="font-medium text-ink">5 GB</span> of fresh space will be carved out of{" "}
-                <span className="font-medium text-ink">your Google Drive</span>.
+            <div className="flex items-center gap-3 border-2 border-dashed border-gc-ink bg-paper-2 px-4 py-3">
+              <HardDrives size={18} weight="duotone" className="shrink-0 text-gc-cobalt" />
+              <p className="font-space-mono text-[11.5px] leading-snug uppercase tracking-[0.06em] text-gc-muted">
+                <span className="font-bold text-gc-ink">5 GB</span> of fresh space carved out of{" "}
+                <span className="font-bold text-gc-ink">your Google Drive</span>.
               </p>
             </div>
           </div>

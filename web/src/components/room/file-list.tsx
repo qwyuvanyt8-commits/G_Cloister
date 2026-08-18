@@ -13,12 +13,12 @@ import { useToast } from "@/components/toast";
 
 export function EmptyRoom({ isHost }: { isHost: boolean }) {
   return (
-    <div className="flex flex-col items-center rounded-3xl border border-dashed border-border px-6 py-20 text-center">
-      <span className="flex h-16 w-16 items-center justify-center rounded-3xl bg-surface-2">
-        <FileDashed size={30} weight="duotone" className="text-faint" />
+    <div className="flex flex-col items-center border-4 border-dashed border-gc-ink/50 bg-paper-2/40 px-6 py-20 text-center">
+      <span className="flex h-16 w-16 items-center justify-center border-2 border-dashed border-gc-ink bg-paper-2 text-2xl">
+        <FileDashed size={30} weight="duotone" className="text-gc-faint" />
       </span>
-      <h3 className="mt-6 text-lg font-semibold tracking-tight text-ink">The room is empty</h3>
-      <p className="mt-2 max-w-[40ch] text-[14px] leading-relaxed text-muted">
+      <h3 className="mt-6 text-lg font-black tracking-tight">The room is empty</h3>
+      <p className="mt-2 max-w-[40ch] font-space-mono text-[11.5px] uppercase tracking-[0.06em] leading-relaxed text-gc-muted">
         {isHost
           ? "Drop the first file above and watch the room come alive for everyone."
           : "Drop a file above, or wait — the next upload lands here in real time."}
@@ -70,7 +70,7 @@ function FileCard({
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.96 }}
       transition={{ type: "spring", stiffness: 260, damping: 26 }}
-      className="group relative flex flex-col rounded-2xl border border-border bg-surface p-4 transition-colors duration-200 hover:border-accent-border"
+      className="group relative flex flex-col border-4 border-gc-ink bg-paper p-4 shadow-[4px_4px_0_#16130d] transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_#16130d]"
     >
       <AnimatePresence>
         {confirmDelete && (
@@ -78,25 +78,25 @@ function FileCard({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl bg-surface/95 p-4 text-center backdrop-blur-sm border border-danger/30"
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-paper p-4 text-center border-4 border-gc-ink"
           >
-            <TrashSimple size={24} className="text-danger" />
-            <p className="mt-2 text-[13px] font-semibold text-ink">Delete this file?</p>
-            <p className="mt-0.5 max-w-[90%] truncate text-[11.5px] text-muted">{file.name}</p>
+            <TrashSimple size={24} className="text-gc-orange" />
+            <p className="mt-2 text-[13px] font-extrabold uppercase tracking-tight">Delete this file?</p>
+            <p className="mt-0.5 max-w-[90%] truncate font-space-mono text-[10.5px] text-gc-muted">{file.name}</p>
             <div className="mt-3 flex items-center gap-2">
               <button
                 onClick={() => setConfirmDelete(false)}
                 disabled={deleting}
-                className="h-7 rounded-lg border border-border bg-surface-2 px-2.5 text-[12px] font-medium text-muted transition-colors hover:text-ink disabled:opacity-50"
+                className="h-8 border-2 border-gc-ink bg-paper-2 px-2.5 font-space-mono text-[11px] font-bold uppercase text-gc-muted transition-colors hover:text-gc-ink disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={del}
                 disabled={deleting}
-                className="h-7 rounded-lg bg-danger px-3 text-[12px] font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="h-8 border-2 border-gc-ink bg-gc-orange px-3 font-space-mono text-[11px] font-bold uppercase text-paper shadow-[2px_2px_0_#16130d] transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {deleting ? "Deleting…" : "Delete"}
+                {deleting ? "…" : "Delete"}
               </button>
             </div>
           </motion.div>
@@ -104,7 +104,7 @@ function FileCard({
       </AnimatePresence>
 
       <div className="flex items-start justify-between">
-        <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-surface-2">
+        <span className="flex h-11 w-11 items-center justify-center border-2 border-gc-ink bg-paper-2">
           <FileIcon name={file.name} mimeType={file.mimeType} size={22} />
         </span>
         <div className="flex items-center gap-0.5 opacity-0 transition-opacity duration-200 focus-within:opacity-100 group-hover:opacity-100">
@@ -117,16 +117,16 @@ function FileCard({
             href={api.downloadUrl(roomId, file.id)}
             download
             aria-label="Download"
-            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-muted transition-colors hover:bg-surface-2 hover:text-ink active:scale-95"
+            className="inline-flex h-9 w-9 items-center justify-center border-2 border-transparent text-gc-muted transition-colors hover:border-gc-ink hover:bg-paper-2 hover:text-gc-ink active:scale-95"
           >
             <DownloadSimple size={17} />
           </a>
           <IconButton aria-label="Copy link" onClick={copyLink}>
-            {copied ? <Check size={17} className="text-accent" /> : <Copy size={17} />}
+            {copied ? <Check size={17} className="text-gc-cobalt" /> : <Copy size={17} />}
           </IconButton>
           {canDelete && (
             <IconButton aria-label="Delete" onClick={() => setConfirmDelete(true)}>
-              <TrashSimple size={17} className="text-muted hover:text-danger" />
+              <TrashSimple size={17} className="text-gc-muted hover:text-gc-orange" />
             </IconButton>
           )}
         </div>
@@ -136,17 +136,17 @@ function FileCard({
         onClick={() => previewable && onPreview(file)}
         className="mt-3.5 min-w-0 text-left"
       >
-        <p className="truncate text-[14px] font-medium text-ink" title={file.name}>
+        <p className="truncate text-[14px] font-bold tracking-tight" title={file.name}>
           {file.name}
         </p>
       </button>
-      <p className="mt-0.5 font-mono text-[11.5px] tabular-nums text-faint">
+      <p className="mt-0.5 font-space-mono text-[11px] tabular-nums text-gc-faint">
         {file.sizeFormatted} · {timeAgo(file.createdAt)}
       </p>
 
-      <div className="mt-3.5 flex items-center gap-2 border-t border-border pt-3">
+      <div className="mt-3.5 flex items-center gap-2 border-t-2 border-dashed border-gc-ink/40 pt-2.5">
         <Avatar name={file.uploader.name} src={file.uploader.avatar} size={20} />
-        <span className="truncate text-[12px] text-muted">
+        <span className="truncate font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-muted">
           {file.uploader.name.split(" ")[0]}
         </span>
       </div>

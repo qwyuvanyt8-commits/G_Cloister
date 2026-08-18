@@ -33,10 +33,10 @@ export function UploadDropzone({ onFiles }: { onFiles: (files: File[]) => void }
         if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
       }}
       className={cn(
-        "group relative cursor-pointer overflow-hidden rounded-3xl border-2 border-dashed px-6 py-10 text-center transition-all duration-300",
+        "group relative cursor-pointer border-4 border-dashed px-6 py-10 text-center transition-all duration-150",
         drag
-          ? "border-accent bg-accent-soft scale-[1.01]"
-          : "border-border hover:border-accent-border hover:bg-accent-soft/40"
+          ? "border-gc-ink bg-paper-2 scale-[1.005] shadow-[6px_6px_0_#16130d]"
+          : "border-gc-ink/40 hover:border-gc-cobalt hover:bg-paper-2/60"
       )}
     >
       <input
@@ -50,24 +50,18 @@ export function UploadDropzone({ onFiles }: { onFiles: (files: File[]) => void }
           e.target.value = "";
         }}
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute -top-24 left-1/2 h-48 w-72 -translate-x-1/2 rounded-full bg-accent/10 blur-3xl transition-opacity duration-300 group-hover:opacity-100"
-      />
       <span
         className={cn(
-          "relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl transition-all duration-300",
-          drag ? "bg-accent text-[#04120c] -translate-y-1" : "bg-surface-2 text-accent group-hover:scale-105"
+          "relative mx-auto flex h-14 w-14 items-center justify-center border-2 transition-all duration-150",
+          drag ? "border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_#16130d]" : "border-dashed border-gc-ink bg-paper-2 text-gc-cobalt group-hover:scale-105"
         )}
       >
         <CloudArrowUp size={28} weight="duotone" />
       </span>
-      <p className="relative mt-4 text-[15px] font-medium text-ink">
-        {drag ? "Drop to add files" : "Drag & drop files here"}
-      </p>
-      <p className="relative mt-1 text-[13px] text-muted">
+      <p className="relative mt-4 text-[16px] font-black tracking-tight">{drag ? "Drop to add files" : "Drag & drop files here"}</p>
+      <p className="relative mt-1 font-space-mono text-[11px] uppercase tracking-[0.1em] text-gc-muted">
         or{" "}
-        <span className="font-medium text-accent underline-offset-4 group-hover:underline">
+        <span className="font-bold text-gc-cobalt underline-offset-4 group-hover:underline">
           browse your device
         </span>{" "}
         — drop as many as you like

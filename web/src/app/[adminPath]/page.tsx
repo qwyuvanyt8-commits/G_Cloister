@@ -90,29 +90,6 @@ export default function AdminPage({
 
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  // Verify active admin session on mount
-  useEffect(() => {
-    const checkSession = async () => {
-      const token = getAdminToken();
-      if (!token) {
-        setCheckingAuth(false);
-        return;
-      }
-      try {
-        await api.adminMe();
-        setAuthenticated(true);
-        fetchUsers();
-        fetchRooms();
-      } catch {
-        removeAdminToken();
-        setAuthenticated(false);
-      } finally {
-        setCheckingAuth(false);
-      }
-    };
-    checkSession();
-  }, []);
-
   const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
@@ -136,6 +113,29 @@ export default function AdminPage({
       setLoadingRooms(false);
     }
   };
+
+  // Verify active admin session on mount
+  useEffect(() => {
+    const checkSession = async () => {
+      const token = getAdminToken();
+      if (!token) {
+        setCheckingAuth(false);
+        return;
+      }
+      try {
+        await api.adminMe();
+        setAuthenticated(true);
+        fetchUsers();
+        fetchRooms();
+      } catch {
+        removeAdminToken();
+        setAuthenticated(false);
+      } finally {
+        setCheckingAuth(false);
+      }
+    };
+    checkSession();
+  }, []);
 
   const handleAdminLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -307,9 +307,9 @@ export default function AdminPage({
 
   if (checkingAuth) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-background text-muted">
+      <div className="flex min-h-screen items-center justify-center bg-background text-gc-muted">
         <div className="flex items-center gap-3">
-          <ShieldCheck size={24} className="animate-spin text-accent" />
+          <ShieldCheck size={24} className="animate-spin text-gc-cobalt" />
           <span className="text-[14px]">Verifying admin authorization…</span>
         </div>
       </div>
@@ -320,25 +320,25 @@ export default function AdminPage({
   if (!authenticated) {
     return (
       <div className="relative flex min-h-screen flex-col items-center justify-center p-4 bg-background">
-        <div className="w-full max-w-md rounded-3xl border border-border bg-surface p-7 shadow-2xl">
-          <div className="flex items-center justify-between border-b border-border pb-4">
+        <div className="w-full max-w-md rounded-none border border-gc-ink/30 bg-paper p-7 shadow-[6px_6px_0_#16130d]">
+          <div className="flex items-center justify-between border-b border-gc-ink/30 pb-4">
             <div className="flex items-center gap-2.5">
               <Logo size={28} withWordmark={false} />
-              <span className="font-mono text-[15px] font-semibold text-ink">
-                G<span className="text-accent">_</span>Cloister
+              <span className="font-mono text-[15px] font-semibold text-gc-ink">
+                G<span className="text-gc-cobalt">_</span>Cloister
               </span>
             </div>
-            <span className="rounded-full bg-accent/10 px-2.5 py-1 font-mono text-[11px] font-medium text-accent">
+            <span className="rounded-full bg-gc-cobalt/10 px-2.5 py-1 font-mono text-[11px] font-medium text-gc-cobalt">
               ADMIN GATEWAY
             </span>
           </div>
 
           <div className="mt-5">
-            <div className="flex items-center gap-2 text-ink">
-              <ShieldCheck size={22} className="text-accent" />
+            <div className="flex items-center gap-2 text-gc-ink">
+              <ShieldCheck size={22} className="text-gc-cobalt" />
               <h1 className="text-lg font-semibold tracking-tight">Admin System Sign-In</h1>
             </div>
-            <p className="mt-1 text-[13px] text-muted">
+            <p className="mt-1 text-[13px] text-gc-muted">
               Restricted management console. Authorized administrators only.
             </p>
           </div>
@@ -348,7 +348,7 @@ export default function AdminPage({
               label="Admin Email"
               type="email"
               placeholder="admin@example.com"
-              icon={<Envelope size={18} className="text-faint" />}
+              icon={<Envelope size={18} className="text-gc-faint" />}
               value={adminEmail}
               onChange={(e) => setAdminEmail(e.target.value)}
               required
@@ -357,14 +357,14 @@ export default function AdminPage({
               label="Admin Password"
               type="password"
               placeholder="••••••••••••"
-              icon={<LockKey size={18} className="text-faint" />}
+              icon={<LockKey size={18} className="text-gc-faint" />}
               value={adminPassword}
               onChange={(e) => setAdminPassword(e.target.value)}
               required
             />
 
             {loginError && (
-              <div className="flex items-center gap-2 rounded-xl border border-danger/30 bg-danger-soft/60 px-3.5 py-2.5 text-[13px] text-danger">
+              <div className="flex items-center gap-2 rounded-none border border-gc-orange/30 bg-gc-orange/10/60 px-3.5 py-2.5 text-[13px] text-gc-orange">
                 <Warning size={18} className="shrink-0" />
                 <span>{loginError}</span>
               </div>
@@ -375,9 +375,9 @@ export default function AdminPage({
             </Button>
           </form>
 
-          <div className="mt-6 rounded-2xl border border-border bg-surface-2 p-3.5 text-[12px] leading-relaxed text-muted">
-            <div className="flex items-center gap-2 font-medium text-ink">
-              <EyeClosed size={16} className="text-accent" />
+          <div className="mt-6 rounded-none border border-gc-ink/30 bg-paper-2 p-3.5 text-[12px] leading-relaxed text-gc-muted">
+            <div className="flex items-center gap-2 font-medium text-gc-ink">
+              <EyeClosed size={16} className="text-gc-cobalt" />
               <span>Strict Privacy Policy Active</span>
             </div>
             <p className="mt-1">
@@ -391,16 +391,16 @@ export default function AdminPage({
 
   // ---- Render Admin Dashboard ----
   return (
-    <div className="min-h-screen bg-background text-ink">
+    <div className="min-h-screen bg-background text-gc-ink">
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-30 border-b border-border bg-background/80 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b border-gc-ink/30 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
           <div className="flex items-center gap-3">
             <Logo size={28} withWordmark={false} />
-            <span className="font-mono text-[16px] font-semibold text-ink">
-              G<span className="text-accent">_</span>Cloister
+            <span className="font-mono text-[16px] font-semibold text-gc-ink">
+              G<span className="text-gc-cobalt">_</span>Cloister
             </span>
-            <span className="rounded-full border border-accent/20 bg-accent/10 px-2.5 py-0.5 font-mono text-[11px] font-medium text-accent flex items-center gap-1">
+            <span className="rounded-full border border-gc-cobalt/20 bg-gc-cobalt/10 px-2.5 py-0.5 font-mono text-[11px] font-medium text-gc-cobalt flex items-center gap-1">
               <Sparkle size={12} weight="bold" />
               SUPER ADMIN CONSOLE
             </span>
@@ -410,7 +410,7 @@ export default function AdminPage({
             <Button
               size="sm"
               variant="secondary"
-              icon={<Megaphone size={15} className="text-accent" />}
+              icon={<Megaphone size={15} className="text-gc-cobalt" />}
               onClick={() => setShowBroadcastModal(true)}
             >
               Broadcast Alert
@@ -440,81 +440,81 @@ export default function AdminPage({
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         {/* Privacy Notice Banner */}
-        <div className="mb-6 flex items-center justify-between rounded-2xl border border-accent/20 bg-accent/5 p-4 text-[13px]">
+        <div className="mb-6 flex items-center justify-between rounded-none border border-gc-cobalt/20 bg-gc-cobalt/5 p-4 text-[13px]">
           <div className="flex items-center gap-3">
-            <EyeClosed size={22} className="shrink-0 text-accent" />
+            <EyeClosed size={22} className="shrink-0 text-gc-cobalt" />
             <div>
-              <p className="font-semibold text-ink">User File Privacy Enforced</p>
-              <p className="text-muted">
+              <p className="font-semibold text-gc-ink">User File Privacy Enforced</p>
+              <p className="text-gc-muted">
                 Admin controls monitor identity, auth methods, and room memberships only. All room files remain strictly private.
               </p>
             </div>
           </div>
-          <span className="hidden rounded-lg bg-surface px-3 py-1 font-mono text-[11px] font-medium text-muted sm:inline-block">
+          <span className="hidden rounded-none bg-paper px-3 py-1 font-mono text-[11px] font-medium text-gc-muted sm:inline-block">
             ZERO_FILE_ACCESS
           </span>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
-          <div className="rounded-2xl border border-border bg-surface p-4">
-            <div className="flex items-center justify-between text-muted">
+          <div className="rounded-none border border-gc-ink/30 bg-paper p-4">
+            <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Total Users</span>
-              <Users size={18} className="text-accent" />
+              <Users size={18} className="text-gc-cobalt" />
             </div>
-            <p className="mt-2 text-2xl font-bold text-ink">{stats.total}</p>
+            <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.total}</p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface p-4">
-            <div className="flex items-center justify-between text-muted">
+          <div className="rounded-none border border-gc-ink/30 bg-paper p-4">
+            <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Google Auth</span>
               <GoogleLogo size={18} className="text-blue-400" />
             </div>
-            <p className="mt-2 text-2xl font-bold text-ink">{stats.googleCount}</p>
+            <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.googleCount}</p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface p-4">
-            <div className="flex items-center justify-between text-muted">
+          <div className="rounded-none border border-gc-ink/30 bg-paper p-4">
+            <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Email Auth</span>
               <Envelope size={18} className="text-purple-400" />
             </div>
-            <p className="mt-2 text-2xl font-bold text-ink">{stats.emailCount}</p>
+            <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.emailCount}</p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface p-4">
-            <div className="flex items-center justify-between text-muted">
+          <div className="rounded-none border border-gc-ink/30 bg-paper p-4">
+            <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Banned Users</span>
-              <ShieldWarning size={18} className="text-danger" />
+              <ShieldWarning size={18} className="text-gc-orange" />
             </div>
-            <p className="mt-2 text-2xl font-bold text-ink">{stats.bannedCount}</p>
+            <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.bannedCount}</p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface p-4">
-            <div className="flex items-center justify-between text-muted">
+          <div className="rounded-none border border-gc-ink/30 bg-paper p-4">
+            <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Active Rooms</span>
-              <Door size={18} className="text-accent" />
+              <Door size={18} className="text-gc-cobalt" />
             </div>
-            <p className="mt-2 text-2xl font-bold text-ink">{stats.roomsCount}</p>
+            <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.roomsCount}</p>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface p-4">
-            <div className="flex items-center justify-between text-muted">
+          <div className="rounded-none border border-gc-ink/30 bg-paper p-4">
+            <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Vault Storage</span>
               <HardDrives size={18} className="text-emerald-400" />
             </div>
-            <p className="mt-2 text-xl font-bold text-ink">{formatBytes(stats.totalStorageBytes)}</p>
+            <p className="mt-2 text-xl font-bold text-gc-ink">{formatBytes(stats.totalStorageBytes)}</p>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="mt-6 flex items-center justify-between border-b border-border pb-3">
+        <div className="mt-6 flex items-center justify-between border-b border-gc-ink/30 pb-3">
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab("users")}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-[13.5px] font-semibold transition-colors ${
+              className={`flex items-center gap-2 rounded-none px-4 py-2 text-[13.5px] font-semibold transition-colors ${
                 activeTab === "users"
-                  ? "bg-surface-2 text-ink shadow-sm border border-border"
-                  : "text-muted hover:text-ink"
+                  ? "bg-paper-2 text-gc-ink shadow-sm border border-gc-ink/30"
+                  : "text-gc-muted hover:text-gc-ink"
               }`}
             >
               <Users size={16} />
@@ -523,10 +523,10 @@ export default function AdminPage({
 
             <button
               onClick={() => setActiveTab("rooms")}
-              className={`flex items-center gap-2 rounded-xl px-4 py-2 text-[13.5px] font-semibold transition-colors ${
+              className={`flex items-center gap-2 rounded-none px-4 py-2 text-[13.5px] font-semibold transition-colors ${
                 activeTab === "rooms"
-                  ? "bg-surface-2 text-ink shadow-sm border border-border"
-                  : "text-muted hover:text-ink"
+                  ? "bg-paper-2 text-gc-ink shadow-sm border border-gc-ink/30"
+                  : "text-gc-muted hover:text-gc-ink"
               }`}
             >
               <Door size={16} />
@@ -552,24 +552,24 @@ export default function AdminPage({
           <div className="mt-4 space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="relative flex-1 max-w-md">
-                <MagnifyingGlass size={17} className="absolute left-3.5 top-3 text-faint" />
+                <MagnifyingGlass size={17} className="absolute left-3.5 top-3 text-gc-faint" />
                 <input
                   type="text"
                   placeholder="Search by name, email, or ID…"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-xl border border-border bg-surface py-2 pl-9 pr-4 text-[13.5px] text-ink placeholder:text-faint focus:border-accent focus:outline-none"
+                  className="w-full rounded-none border border-gc-ink/30 bg-paper py-2 pl-9 pr-4 text-[13.5px] text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none"
                 />
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="flex rounded-xl border border-border bg-surface p-1">
+                <div className="flex rounded-none border border-gc-ink/30 bg-paper p-1">
                   {(["all", "google", "email"] as const).map((m) => (
                     <button
                       key={m}
                       onClick={() => setAuthFilter(m)}
-                      className={`rounded-lg px-3 py-1 text-[12.5px] font-medium capitalize transition-colors ${
-                        authFilter === m ? "bg-surface-2 text-ink" : "text-muted hover:text-ink"
+                      className={`rounded-none px-3 py-1 text-[12.5px] font-medium capitalize transition-colors ${
+                        authFilter === m ? "bg-paper-2 text-gc-ink" : "text-gc-muted hover:text-gc-ink"
                       }`}
                     >
                       {m === "all" ? "All Auth" : m}
@@ -577,13 +577,13 @@ export default function AdminPage({
                   ))}
                 </div>
 
-                <div className="flex rounded-xl border border-border bg-surface p-1">
+                <div className="flex rounded-none border border-gc-ink/30 bg-paper p-1">
                   {(["all", "active", "banned"] as const).map((s) => (
                     <button
                       key={s}
                       onClick={() => setStatusFilter(s)}
-                      className={`rounded-lg px-3 py-1 text-[12.5px] font-medium capitalize transition-colors ${
-                        statusFilter === s ? "bg-surface-2 text-ink" : "text-muted hover:text-ink"
+                      className={`rounded-none px-3 py-1 text-[12.5px] font-medium capitalize transition-colors ${
+                        statusFilter === s ? "bg-paper-2 text-gc-ink" : "text-gc-muted hover:text-gc-ink"
                       }`}
                     >
                       {s}
@@ -593,10 +593,10 @@ export default function AdminPage({
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+            <div className="overflow-hidden rounded-none border border-gc-ink/30 bg-paper">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[13.5px]">
-                  <thead className="border-b border-border bg-surface-2 text-[12px] font-semibold text-muted uppercase tracking-wider">
+                  <thead className="border-b border-gc-ink/30 bg-paper-2 text-[12px] font-semibold text-gc-muted uppercase tracking-wider">
                     <tr>
                       <th className="px-5 py-3">User Identity</th>
                       <th className="px-5 py-3">Login Method</th>
@@ -609,13 +609,13 @@ export default function AdminPage({
                   <tbody className="divide-y divide-border">
                     {filteredUsers.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-5 py-8 text-center text-muted">
+                        <td colSpan={6} className="px-5 py-8 text-center text-gc-muted">
                           No users match your criteria.
                         </td>
                       </tr>
                     ) : (
                       filteredUsers.map((u) => (
-                        <tr key={u.id} className="transition-colors hover:bg-surface-2/50">
+                        <tr key={u.id} className="transition-colors hover:bg-paper-2/50">
                           <td className="px-5 py-3.5">
                             <div className="flex items-center gap-3">
                               {u.avatar ? (
@@ -623,16 +623,16 @@ export default function AdminPage({
                                 <img
                                   src={u.avatar}
                                   alt=""
-                                  className="h-8 w-8 rounded-full object-cover border border-border"
+                                  className="h-8 w-8 rounded-full object-cover border border-gc-ink/30"
                                 />
                               ) : (
-                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 font-mono text-[13px] font-semibold text-accent">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-paper-2 font-mono text-[13px] font-semibold text-gc-cobalt">
                                   {(u.name || u.email)[0].toUpperCase()}
                                 </div>
                               )}
                               <div>
-                                <p className="font-medium text-ink">{u.name}</p>
-                                <p className="font-mono text-[12px] text-muted">{u.email}</p>
+                                <p className="font-medium text-gc-ink">{u.name}</p>
+                                <p className="font-mono text-[12px] text-gc-muted">{u.email}</p>
                               </div>
                             </div>
                           </td>
@@ -651,14 +651,14 @@ export default function AdminPage({
                             )}
                           </td>
 
-                          <td className="px-5 py-3.5 text-muted">
+                          <td className="px-5 py-3.5 text-gc-muted">
                             {timeAgo(u.createdAt)}
                           </td>
 
                           <td className="px-5 py-3.5">
                             <button
                               onClick={() => setSelectedUser(u)}
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface-2 px-2.5 py-1 text-[12px] font-medium text-ink transition-colors hover:border-accent hover:text-accent"
+                              className="inline-flex items-center gap-1.5 rounded-none border border-gc-ink/30 bg-paper-2 px-2.5 py-1 text-[12px] font-medium text-gc-ink transition-colors hover:border-gc-cobalt hover:text-gc-cobalt"
                             >
                               <Door size={14} />
                               <span>{u.joinedRooms.length} Room{u.joinedRooms.length !== 1 ? "s" : ""}</span>
@@ -667,12 +667,12 @@ export default function AdminPage({
 
                           <td className="px-5 py-3.5">
                             {u.banned ? (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-danger/30 bg-danger-soft/60 px-2.5 py-0.5 text-[11.5px] font-medium text-danger">
+                              <span className="inline-flex items-center gap-1 rounded-full border border-gc-orange/30 bg-gc-orange/10/60 px-2.5 py-0.5 text-[11.5px] font-medium text-gc-orange">
                                 <ShieldWarning size={13} />
                                 Banned
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-accent/20 bg-accent/10 px-2.5 py-0.5 text-[11.5px] font-medium text-accent">
+                              <span className="inline-flex items-center gap-1 rounded-full border border-gc-cobalt/20 bg-gc-cobalt/10 px-2.5 py-0.5 text-[11.5px] font-medium text-gc-cobalt">
                                 <CheckCircle size={13} />
                                 Active
                               </span>
@@ -715,10 +715,10 @@ export default function AdminPage({
         {/* ---- TAB 2: ACTIVE ROOMS ---- */}
         {activeTab === "rooms" && (
           <div className="mt-4 space-y-4">
-            <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+            <div className="overflow-hidden rounded-none border border-gc-ink/30 bg-paper">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[13.5px]">
-                  <thead className="border-b border-border bg-surface-2 text-[12px] font-semibold text-muted uppercase tracking-wider">
+                  <thead className="border-b border-gc-ink/30 bg-paper-2 text-[12px] font-semibold text-gc-muted uppercase tracking-wider">
                     <tr>
                       <th className="px-5 py-3">Room Identifier</th>
                       <th className="px-5 py-3">Room Host</th>
@@ -731,39 +731,39 @@ export default function AdminPage({
                   <tbody className="divide-y divide-border">
                     {rooms.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="px-5 py-8 text-center text-muted">
+                        <td colSpan={6} className="px-5 py-8 text-center text-gc-muted">
                           No active rooms found in the system database.
                         </td>
                       </tr>
                     ) : (
                       rooms.map((r) => (
-                        <tr key={r.roomId} className="transition-colors hover:bg-surface-2/50">
+                        <tr key={r.roomId} className="transition-colors hover:bg-paper-2/50">
                           <td className="px-5 py-3.5">
                             <div className="flex items-center gap-2">
-                              <Door size={16} className="text-accent shrink-0" />
-                              <span className="font-mono font-semibold text-ink">{r.roomId}</span>
+                              <Door size={16} className="text-gc-cobalt shrink-0" />
+                              <span className="font-mono font-semibold text-gc-ink">{r.roomId}</span>
                             </div>
                           </td>
 
                           <td className="px-5 py-3.5">
                             <div>
-                              <p className="font-medium text-ink">{r.host.name}</p>
-                              <p className="font-mono text-[12px] text-muted">{r.host.email}</p>
+                              <p className="font-medium text-gc-ink">{r.host.name}</p>
+                              <p className="font-mono text-[12px] text-gc-muted">{r.host.email}</p>
                             </div>
                           </td>
 
-                          <td className="px-5 py-3.5 font-mono text-muted">
+                          <td className="px-5 py-3.5 font-mono text-gc-muted">
                             {formatBytes(r.totalBytes)}
                           </td>
 
                           <td className="px-5 py-3.5">
-                            <span className="inline-flex items-center gap-1 rounded-full border border-border bg-surface-2 px-2.5 py-0.5 text-[12px] font-medium text-ink">
+                            <span className="inline-flex items-center gap-1 rounded-full border border-gc-ink/30 bg-paper-2 px-2.5 py-0.5 text-[12px] font-medium text-gc-ink">
                               <Users size={13} />
                               {r.memberCount} member{r.memberCount !== 1 ? "s" : ""}
                             </span>
                           </td>
 
-                          <td className="px-5 py-3.5 text-muted">
+                          <td className="px-5 py-3.5 text-gc-muted">
                             {timeAgo(r.createdAt)}
                           </td>
 
@@ -796,15 +796,15 @@ export default function AdminPage({
             className="fixed inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setSelectedUser(null)}
           />
-          <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-3xl border border-border bg-surface p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border pb-4">
+          <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-none border border-gc-ink/30 bg-paper p-6 shadow-[6px_6px_0_#16130d]">
+            <div className="flex items-center justify-between border-b border-gc-ink/30 pb-4">
               <div>
-                <h3 className="text-lg font-semibold text-ink">Joined Rooms Overview</h3>
-                <p className="text-[12.5px] text-muted">{selectedUser.email}</p>
+                <h3 className="text-lg font-semibold text-gc-ink">Joined Rooms Overview</h3>
+                <p className="text-[12.5px] text-gc-muted">{selectedUser.email}</p>
               </div>
               <button
                 onClick={() => setSelectedUser(null)}
-                className="rounded-xl p-2 text-muted hover:bg-surface-2 hover:text-ink"
+                className="rounded-none p-2 text-gc-muted hover:bg-paper-2 hover:text-gc-ink"
               >
                 <X size={18} />
               </button>
@@ -812,7 +812,7 @@ export default function AdminPage({
 
             <div className="mt-4 max-h-80 overflow-y-auto space-y-3">
               {selectedUser.joinedRooms.length === 0 ? (
-                <p className="py-6 text-center text-[13px] text-muted">
+                <p className="py-6 text-center text-[13px] text-gc-muted">
                   This user has not joined any rooms yet.
                 </p>
               ) : (
@@ -821,31 +821,31 @@ export default function AdminPage({
                   return (
                     <div
                       key={r.roomId}
-                      className="flex items-center justify-between rounded-xl border border-border bg-surface-2 p-3"
+                      className="flex items-center justify-between rounded-none border border-gc-ink/30 bg-paper-2 p-3"
                     >
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-mono font-semibold text-ink">
+                          <span className="font-mono font-semibold text-gc-ink">
                             {r.roomId}
                           </span>
                           <span
                             className={`rounded-full px-2 py-0.5 font-mono text-[10.5px] font-medium ${
                               r.isHost
-                                ? "bg-accent/10 text-accent border border-accent/20"
-                                : "bg-surface text-muted border border-border"
+                                ? "bg-gc-cobalt/10 text-gc-cobalt border border-gc-cobalt/20"
+                                : "bg-paper text-gc-muted border border-gc-ink/30"
                             }`}
                           >
                             {r.isHost ? "Host" : "Member"}
                           </span>
                         </div>
-                        <p className="mt-1 text-[11.5px] text-faint">
+                        <p className="mt-1 text-[11.5px] text-gc-faint">
                           Joined {timeAgo(r.joinedAt)}
                         </p>
                       </div>
 
                       <div className="flex items-center gap-2">
                         {r.kicked ? (
-                          <span className="text-[11.5px] font-medium text-danger">Kicked</span>
+                          <span className="text-[11.5px] font-medium text-gc-orange">Kicked</span>
                         ) : null}
                         <Button
                           size="sm"
@@ -862,7 +862,7 @@ export default function AdminPage({
               )}
             </div>
 
-            <div className="mt-5 border-t border-border pt-4 text-right">
+            <div className="mt-5 border-t border-gc-ink/30 pt-4 text-right">
               <Button variant="secondary" size="sm" onClick={() => setSelectedUser(null)}>
                 Close Window
               </Button>
@@ -878,15 +878,15 @@ export default function AdminPage({
             className="fixed inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setShowBroadcastModal(false)}
           />
-          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-border bg-surface p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border pb-4">
+          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-none border border-gc-ink/30 bg-paper p-6 shadow-[6px_6px_0_#16130d]">
+            <div className="flex items-center justify-between border-b border-gc-ink/30 pb-4">
               <div className="flex items-center gap-2">
-                <Megaphone size={20} className="text-accent" />
-                <h3 className="text-lg font-semibold text-ink">Global System Broadcast</h3>
+                <Megaphone size={20} className="text-gc-cobalt" />
+                <h3 className="text-lg font-semibold text-gc-ink">Global System Broadcast</h3>
               </div>
               <button
                 onClick={() => setShowBroadcastModal(false)}
-                className="rounded-xl p-2 text-muted hover:bg-surface-2 hover:text-ink"
+                className="rounded-none p-2 text-gc-muted hover:bg-paper-2 hover:text-gc-ink"
               >
                 <X size={18} />
               </button>
@@ -894,27 +894,27 @@ export default function AdminPage({
 
             <form onSubmit={handleSendBroadcast} className="mt-4 space-y-4">
               <div>
-                <label className="text-[12.5px] font-medium text-muted">Announcement Message</label>
+                <label className="text-[12.5px] font-medium text-gc-muted">Announcement Message</label>
                 <textarea
                   placeholder="Enter message to broadcast to all connected users in real time…"
                   value={broadcastMessage}
                   onChange={(e) => setBroadcastMessage(e.target.value)}
                   required
                   rows={3}
-                  className="mt-1.5 w-full rounded-xl border border-border bg-surface p-3 text-[13.5px] text-ink placeholder:text-faint focus:border-accent focus:outline-none"
+                  className="mt-1.5 w-full rounded-none border border-gc-ink/30 bg-paper p-3 text-[13.5px] text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="text-[12.5px] font-medium text-muted">Alert Level</label>
+                <label className="text-[12.5px] font-medium text-gc-muted">Alert Level</label>
                 <div className="mt-1.5 flex gap-2">
                   <button
                     type="button"
                     onClick={() => setBroadcastLevel("info")}
-                    className={`flex-1 rounded-xl border p-2 text-[12.5px] font-medium transition-colors ${
+                    className={`flex-1 rounded-none border p-2 text-[12.5px] font-medium transition-colors ${
                       broadcastLevel === "info"
-                        ? "border-accent/40 bg-accent/10 text-accent"
-                        : "border-border bg-surface text-muted"
+                        ? "border-gc-cobalt/40 bg-gc-cobalt/10 text-gc-cobalt"
+                        : "border-gc-ink/30 bg-paper text-gc-muted"
                     }`}
                   >
                     Information (Green)
@@ -922,10 +922,10 @@ export default function AdminPage({
                   <button
                     type="button"
                     onClick={() => setBroadcastLevel("error")}
-                    className={`flex-1 rounded-xl border p-2 text-[12.5px] font-medium transition-colors ${
+                    className={`flex-1 rounded-none border p-2 text-[12.5px] font-medium transition-colors ${
                       broadcastLevel === "error"
-                        ? "border-danger/40 bg-danger-soft text-danger"
-                        : "border-border bg-surface text-muted"
+                        ? "border-gc-orange/40 bg-gc-orange/10 text-gc-orange"
+                        : "border-gc-ink/30 bg-paper text-gc-muted"
                     }`}
                   >
                     Alert Warning (Red)
@@ -958,30 +958,30 @@ export default function AdminPage({
             className="fixed inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setResetPasswordUser(null)}
           />
-          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-border bg-surface p-6 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-border pb-4">
+          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-none border border-gc-ink/30 bg-paper p-6 shadow-[6px_6px_0_#16130d]">
+            <div className="flex items-center justify-between border-b border-gc-ink/30 pb-4">
               <div className="flex items-center gap-2">
-                <Key size={20} className="text-accent" />
-                <h3 className="text-lg font-semibold text-ink">Reset User Password</h3>
+                <Key size={20} className="text-gc-cobalt" />
+                <h3 className="text-lg font-semibold text-gc-ink">Reset User Password</h3>
               </div>
               <button
                 onClick={() => setResetPasswordUser(null)}
-                className="rounded-xl p-2 text-muted hover:bg-surface-2 hover:text-ink"
+                className="rounded-none p-2 text-gc-muted hover:bg-paper-2 hover:text-gc-ink"
               >
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleResetPassword} className="mt-4 space-y-4">
-              <div className="rounded-xl border border-border bg-surface-2 p-3 text-[12.5px] text-muted">
-                Resetting password for: <span className="font-semibold text-ink">{resetPasswordUser.email}</span>
+              <div className="rounded-none border border-gc-ink/30 bg-paper-2 p-3 text-[12.5px] text-gc-muted">
+                Resetting password for: <span className="font-semibold text-gc-ink">{resetPasswordUser.email}</span>
               </div>
 
               <Input
                 label="New Password"
                 type="password"
                 placeholder="Enter new password (min 6 chars)"
-                icon={<LockKey size={18} className="text-faint" />}
+                icon={<LockKey size={18} className="text-gc-faint" />}
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 required

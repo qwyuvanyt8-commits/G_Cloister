@@ -98,11 +98,11 @@ export function AuthModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-md overflow-hidden rounded-3xl border border-border bg-surface p-6 shadow-2xl sm:p-7"
+            className="relative z-10 w-full max-w-md overflow-hidden border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_#16130d] sm:p-7"
           >
             <button
               onClick={onClose}
-              className="absolute right-4 top-4 rounded-xl p-2 text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center border-2 border-gc-ink bg-paper text-gc-muted transition-colors hover:bg-gc-ink hover:text-paper"
               aria-label="Close dialog"
             >
               <X size={18} />
@@ -110,14 +110,17 @@ export function AuthModal({
 
             <div className="flex items-center gap-2.5">
               <Logo size={30} withWordmark={false} />
-              <span className="font-mono text-[16px] font-semibold tracking-tight text-ink">
-                G<span className="text-accent">_</span>Cloister
+              <span className="flex items-center">
+                <span className="bg-gc-cobalt px-2 py-1 text-[14px] font-black leading-none text-paper">G_</span>
+                <span className="hidden border-2 border-gc-ink px-2 py-0.5 text-[14px] font-black leading-none sm:block">
+                  CLOISTER
+                </span>
               </span>
             </div>
-            <h3 className="mt-4 text-xl font-semibold tracking-tight text-ink">
+            <h3 className="mt-4 text-xl font-black tracking-tight uppercase">
               {mode === "register" ? "Create your account" : "Welcome back"}
             </h3>
-            <p className="mt-1 text-[13.5px] leading-relaxed text-muted">
+            <p className="mt-1 text-[13.5px] leading-relaxed text-gc-muted">
               Hosts sign in with Google to store room files in their Drive. Members can
               join with just an email — no Google account needed.
             </p>
@@ -135,24 +138,24 @@ export function AuthModal({
               </Button>
 
               <div className="flex items-center gap-3">
-                <span className="h-px flex-1 bg-border" />
-                <span className="text-[11.5px] font-medium uppercase tracking-[0.14em] text-faint">
+                <span className="h-px flex-1 bg-gc-ink/20" />
+                <span className="font-space-mono text-[10.5px] font-bold uppercase tracking-[0.14em] text-gc-faint">
                   or use email
                 </span>
-                <span className="h-px flex-1 bg-border" />
+                <span className="h-px flex-1 bg-gc-ink/20" />
               </div>
 
-              <div className="flex rounded-xl border border-border bg-surface-2 p-1">
+              <div className="flex rounded-none border-2 border-gc-ink bg-paper p-1">
                 {(["signin", "register"] as const).map((m) => (
                   <button
                     key={m}
                     type="button"
                     onClick={() => switchMode(m)}
                     className={cn(
-                      "flex-1 rounded-lg px-3 py-1.5 text-[13px] font-medium transition-colors",
+                      "flex-1 px-3 py-1.5 font-space-mono text-[12px] font-bold uppercase tracking-[0.08em] transition-colors",
                       mode === m
-                        ? "bg-surface text-ink shadow-sm ring-1 ring-border-strong"
-                        : "text-muted hover:text-ink"
+                        ? "bg-gc-cobalt text-paper"
+                        : "text-gc-muted hover:text-gc-ink"
                     )}
                   >
                     {m === "signin" ? "Sign in" : "New here"}
@@ -202,7 +205,7 @@ export function AuthModal({
                 </div>
 
                 {error && (
-                  <div className="rounded-xl border border-danger/30 bg-danger-soft/60 px-3.5 py-2.5 text-[13px] text-danger">
+                  <div className="border-2 border-gc-orange bg-gc-orange/10 px-3.5 py-2.5 font-space-mono text-[12px] uppercase tracking-[0.04em] text-gc-orange">
                     {error}
                   </div>
                 )}
@@ -212,10 +215,10 @@ export function AuthModal({
                 </Button>
               </form>
 
-              <div className="flex items-start gap-2.5 rounded-xl border border-border bg-surface-2 px-3.5 py-3">
-                <GoogleDriveLogo size={17} weight="duotone" className="mt-0.5 shrink-0 text-accent" />
-                <p className="text-[12.5px] leading-snug text-muted">
-                  A Google account is only required to <span className="font-medium text-ink">host</span> a
+              <div className="flex items-start gap-2.5 border-2 border-dashed border-gc-ink bg-paper-2 px-3.5 py-3">
+                <GoogleDriveLogo size={17} weight="duotone" className="mt-0.5 shrink-0 text-gc-cobalt" />
+                <p className="font-space-mono text-[11px] uppercase leading-relaxed tracking-[0.04em] text-gc-muted">
+                  A Google account is only required to <span className="font-bold text-gc-ink">host</span> a
                   room — the vault lives in the host&apos;s Drive. Joining and uploading works with any account.
                 </p>
               </div>

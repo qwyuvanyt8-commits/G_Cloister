@@ -16,7 +16,6 @@ import {
 } from "@phosphor-icons/react";
 import { AppNav } from "@/components/app-nav";
 import { RequireAuth } from "@/components/require-auth";
-import { Button } from "@/components/ui";
 import { useAuth } from "@/components/auth-provider";
 import { useToast } from "@/components/toast";
 import { api } from "@/lib/api";
@@ -88,7 +87,7 @@ function RoomCardItem({
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
       onClick={() => router.push(`/room/${room.roomId}`)}
-      className="group relative flex cursor-pointer flex-col gap-3 rounded-2xl border border-border bg-surface p-5 text-left transition-all duration-300 hover:-translate-y-0.5 hover:border-accent-border hover:shadow-lg hover:shadow-accent/5 active:scale-[0.99]"
+      className="group relative flex cursor-pointer flex-col gap-3 border-4 border-gc-ink bg-paper p-4 text-left shadow-[5px_5px_0_#16130d] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0_#16130d] active:scale-[0.99]"
     >
       <AnimatePresence>
         {confirmDelete && (
@@ -97,13 +96,13 @@ function RoomCardItem({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             onClick={(e) => e.stopPropagation()}
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl bg-surface/95 p-4 text-center backdrop-blur-sm border border-danger/30"
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-paper p-4 text-center border-4 border-gc-ink shadow-[6px_6px_0_#16130d]"
           >
-            <TrashSimple size={24} className="text-danger" />
-            <p className="mt-2 text-[13.5px] font-semibold text-ink">
-              {isHosted ? `Delete /${room.roomId}?` : `Remove /${room.roomId}?`}
+            <span className="text-2xl text-gc-orange">✕</span>
+            <p className="mt-2 text-[13.5px] font-extrabold uppercase tracking-tight text-gc-ink">
+              {isHosted ? `DELETE /${room.roomId}?` : `REMOVE /${room.roomId}?`}
             </p>
-            <p className="mt-0.5 max-w-[90%] text-[11.5px] text-muted leading-tight">
+            <p className="mt-0.5 max-w-[90%] text-[11.5px] font-space-mono text-gc-muted leading-tight">
               {isHosted
                 ? "This permanently deletes the room for all members."
                 : "Remove this room from your joined list."}
@@ -116,7 +115,7 @@ function RoomCardItem({
                   setConfirmDelete(false);
                 }}
                 disabled={deleting}
-                className="h-7 rounded-lg border border-border bg-surface-2 px-2.5 text-[12px] font-medium text-muted transition-colors hover:text-ink disabled:opacity-50"
+                className="h-8 border-2 border-gc-ink bg-paper-2 px-2.5 font-space-mono text-[11px] font-bold uppercase text-gc-muted transition-colors hover:text-gc-ink disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -124,27 +123,27 @@ function RoomCardItem({
                 type="button"
                 onClick={handleDelete}
                 disabled={deleting}
-                className="h-7 rounded-lg bg-danger px-3 text-[12px] font-medium text-white shadow-sm transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="h-8 border-2 border-gc-ink bg-gc-orange px-3 font-space-mono text-[11px] font-bold uppercase text-paper shadow-[2px_2px_0_#16130d] transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {deleting ? "Deleting…" : isHosted ? "Delete Room" : "Remove"}
+                {deleting ? "…" : isHosted ? "Delete Room" : "Remove"}
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-[15px] font-semibold tracking-tight text-ink">
+      <div className="flex items-center justify-between gap-2">
+        <span className="truncate font-space-mono text-[16px] font-bold tracking-tight text-gc-ink">
           /{room.roomId}
         </span>
         <div className="flex items-center gap-2">
           {isHosted ? (
-            <span className="flex items-center gap-1 rounded-full bg-accent-soft px-2 py-0.5 text-[11px] font-semibold text-accent">
-              <Crown size={11} weight="fill" />
-              {room.isMember === false ? "Host (Left)" : "Host"}
+            <span className="flex items-center gap-1 border-2 border-gc-ink bg-gc-cobalt px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.08em] text-paper">
+              <Crown size={10} weight="fill" />
+              {room.isMember === false ? "Host · Left" : "Host"}
             </span>
           ) : room.isMember === false ? (
-            <span className="flex items-center gap-1 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-semibold text-muted">
+            <span className="border-2 border-gc-ink bg-paper-2 px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.08em] text-gc-muted">
               Left
             </span>
           ) : null}
@@ -155,30 +154,33 @@ function RoomCardItem({
               e.stopPropagation();
               setConfirmDelete(true);
             }}
-            className="relative z-10 flex h-7 w-7 items-center justify-center rounded-lg text-faint opacity-70 transition-all hover:bg-danger-soft hover:text-danger hover:opacity-100 group-hover:opacity-100"
+            className="relative z-10 flex h-8 w-8 items-center justify-center border-2 border-transparent text-gc-faint transition-all hover:border-gc-ink hover:bg-gc-orange hover:text-paper"
           >
-            <TrashSimple size={15} />
+            <TrashSimple size={14} />
           </button>
         </div>
       </div>
 
       {!isHosted && room.hostName && (
-        <p className="text-[12px] text-muted">
+        <p className="font-space-mono text-[11px] uppercase tracking-[0.08em] text-gc-muted">
           hosted by {room.hostName.split(" ")[0]}
         </p>
       )}
 
-      <div className="flex flex-wrap items-center gap-3 text-[12px] text-faint">
+      <div className="flex flex-wrap items-center gap-3 font-space-mono text-[11px] uppercase tracking-[0.04em] text-gc-faint">
         <span className="flex items-center gap-1">
-          <Users size={13} /> {room.memberCount}
+          <Users size={13} weight="fill" /> {room.memberCount}
         </span>
         <span className="flex items-center gap-1">
-          <HardDrive size={13} /> {room.usedFormatted} / {room.limitFormatted}
+          <HardDrive size={13} weight="fill" /> {room.usedFormatted} / {room.limitFormatted}
         </span>
         <span className="ml-auto">{timeAgo(room.createdAt)}</span>
       </div>
 
-      <div className="pointer-events-none absolute inset-0 rounded-2xl ring-1 ring-inset ring-accent/0 transition-all duration-300 group-hover:ring-accent/20" />
+      <div className="mt-auto flex items-center justify-between border-t-2 border-dashed border-gc-ink pt-2.5 font-space-mono text-[9px] uppercase tracking-[0.14em] text-gc-faint">
+        <span>tear here</span>
+        <span className="font-bold tracking-[0.22em] text-gc-ink">G_ · {room.roomId.slice(0, 4)}</span>
+      </div>
     </motion.div>
   );
 }
@@ -256,44 +258,46 @@ function HomeInner() {
   const hasRooms = hosted.length > 0 || joined.length > 0;
 
   return (
-    <main className="min-h-[calc(100dvh-4rem)]">
-      <div className="aurora pointer-events-none fixed inset-x-0 top-0 h-[80vh]" aria-hidden />
-      <div className="relative mx-auto max-w-[1400px] px-5 pb-24 pt-16 lg:px-8 lg:pt-24">
+    <main className="min-h-[calc(100dvh-4rem)] bg-paper text-gc-ink">
+      <div className="mx-auto max-w-[1180px] px-6 pb-24 pt-12 lg:pt-16">
         <motion.div
           initial={{ opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
-          <p className="font-mono text-[12px] uppercase tracking-[0.2em] text-faint">
+          <p className="font-space-mono text-[11px] font-bold uppercase tracking-[0.16em] text-gc-cobalt">
             Welcome{user ? `, ${user.name.split(" ")[0]}` : ""}
           </p>
-          <h1 className="mt-3 text-balance text-4xl font-semibold tracking-tighter text-ink sm:text-5xl">
-            What will you open <span className="text-accent">today</span>?
+          <h1 className="mt-4 text-balance text-[clamp(34px,5vw,58px)] font-black leading-[0.95] tracking-[-0.03em]">
+            What will you open{" "}
+            <span className="inline-block bg-gc-cobalt px-[0.12em] text-paper">
+              today
+            </span>
+            <span className="text-gc-orange">?</span>
           </h1>
         </motion.div>
 
-        <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-2">
+        <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
           {/* Host */}
           <motion.button
             initial={{ opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
             onClick={() => router.push("/host")}
-            className="group relative overflow-hidden rounded-3xl border border-accent-border bg-accent-soft p-8 text-left transition-transform duration-300 hover:-translate-y-1 active:scale-[0.99]"
+            className="group relative border-4 border-gc-ink bg-paper p-7 text-left shadow-[7px_7px_0_#16130d] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_#16130d] active:scale-[0.99]"
           >
-            <div
-              aria-hidden
-              className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-accent/15 blur-3xl transition-opacity duration-500 group-hover:opacity-100"
-            />
-            <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-accent text-[#04120c]">
+            <span className="absolute right-4 top-4 border-2 border-gc-ink bg-gc-mint px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.1em] text-gc-ink">
+              step 01
+            </span>
+            <span className="flex h-12 w-12 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_#16130d]">
               <PlusCircle size={24} weight="bold" />
             </span>
-            <h2 className="relative mt-6 text-2xl font-semibold tracking-tight text-ink">Host a room</h2>
-            <p className="relative mt-2 max-w-[40ch] text-[15px] leading-relaxed text-muted">
+            <h2 className="mt-6 text-2xl font-black tracking-tight">Host a room</h2>
+            <p className="mt-2 max-w-[42ch] text-[15px] leading-relaxed text-gc-muted">
               Pick a room ID. Your Google Drive becomes the vault with a fresh 5&nbsp;GB to fill.
             </p>
-            <span className="relative mt-6 inline-flex items-center gap-2 text-sm font-semibold text-accent">
-              Create a room <ArrowRight size={16} weight="bold" className="transition-transform group-hover:translate-x-1" />
+            <span className="mt-6 inline-flex items-center gap-2 font-space-mono text-[11px] font-bold uppercase tracking-[0.14em] text-gc-cobalt transition-transform group-hover:translate-x-1">
+              Create a room <ArrowRight size={14} weight="bold" />
             </span>
           </motion.button>
 
@@ -303,21 +307,20 @@ function HomeInner() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
             onClick={() => router.push("/join")}
-            className="group relative overflow-hidden rounded-3xl border border-border bg-surface p-8 text-left transition-transform duration-300 hover:-translate-y-1 active:scale-[0.99]"
+            className="group relative border-4 border-gc-ink bg-paper p-7 text-left shadow-[7px_7px_0_#16130d] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_#16130d] active:scale-[0.99]"
           >
-            <div
-              aria-hidden
-              className="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-accent/8 blur-3xl"
-            />
-            <span className="relative flex h-12 w-12 items-center justify-center rounded-2xl bg-surface-2 text-ink ring-1 ring-border">
-              <SignIn size={24} weight="duotone" />
+            <span className="absolute right-4 top-4 border-2 border-gc-ink bg-gc-orange px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.1em] text-paper">
+              step 02
             </span>
-            <h2 className="relative mt-6 text-2xl font-semibold tracking-tight text-ink">Join a room</h2>
-            <p className="relative mt-2 max-w-[40ch] text-[15px] leading-relaxed text-muted">
+            <span className="flex h-12 w-12 items-center justify-center border-2 border-gc-ink bg-gc-orange text-paper shadow-[3px_3px_0_#16130d]">
+              <SignIn size={24} weight="bold" />
+            </span>
+            <h2 className="mt-6 text-2xl font-black tracking-tight">Join a room</h2>
+            <p className="mt-2 max-w-[42ch] text-[15px] leading-relaxed text-gc-muted">
               Got a code and a password from a host? Step inside and see their files appear live.
             </p>
-            <span className="relative mt-6 inline-flex items-center gap-2 text-sm font-semibold text-muted transition-colors group-hover:text-accent">
-              Enter with a code <ArrowRight size={16} weight="bold" className="transition-transform group-hover:translate-x-1" />
+            <span className="mt-6 inline-flex items-center gap-2 font-space-mono text-[11px] font-bold uppercase tracking-[0.14em] text-gc-muted transition-colors group-hover:text-gc-orange">
+              Enter with a code <ArrowRight size={14} weight="bold" />
             </span>
           </motion.button>
         </div>
@@ -325,10 +328,10 @@ function HomeInner() {
         {/* Skeleton while first load */}
         {loading && hosted.length === 0 && joined.length === 0 && (
           <div className="mt-14 space-y-6 animate-pulse">
-            <div className="h-6 w-32 rounded-lg bg-surface-2" />
+            <div className="h-6 w-32 border-2 border-dashed border-gc-ink bg-paper-2" />
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="h-28 rounded-2xl bg-surface-2/60 border border-border" />
-              <div className="h-28 rounded-2xl bg-surface-2/60 border border-border" />
+              <div className="h-28 border-4 border-dashed border-gc-ink bg-paper-2/60" />
+              <div className="h-28 border-4 border-dashed border-gc-ink bg-paper-2/60" />
             </div>
           </div>
         )}
@@ -341,16 +344,18 @@ function HomeInner() {
             transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
             className="mt-14"
           >
-            <div className="flex items-center gap-2.5 mb-5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent-soft text-accent">
-                <Crown size={16} weight="fill" />
-              </span>
-              <h2 className="text-lg font-semibold tracking-tight text-ink">Your Rooms</h2>
-              <span className="ml-1 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-faint">
-                {hosted.length}
+            <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3 border-b-4 border-gc-ink pb-3">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper">
+                  <Crown size={15} weight="fill" />
+                </span>
+                <h2 className="text-xl font-black tracking-tight">Your rooms</h2>
+              </div>
+              <span className="font-space-mono text-[11px] font-bold uppercase tracking-[0.12em] text-gc-faint">
+                ({hosted.length})
               </span>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {hosted.map((r, i) => (
                 <RoomCardItem
                   key={r.roomId}
@@ -372,16 +377,18 @@ function HomeInner() {
             transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
             className="mt-14"
           >
-            <div className="flex items-center gap-2.5 mb-5">
-              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-surface-2 text-muted">
-                <FolderOpen size={16} weight="duotone" />
-              </span>
-              <h2 className="text-lg font-semibold tracking-tight text-ink">Joined Rooms</h2>
-              <span className="ml-1 rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-faint">
-                {joined.length}
+            <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3 border-b-4 border-gc-ink pb-3">
+              <div className="flex items-center gap-3">
+                <span className="flex h-8 w-8 items-center justify-center border-2 border-gc-ink bg-gc-orange text-paper">
+                  <FolderOpen size={15} weight="duotone" />
+                </span>
+                <h2 className="text-xl font-black tracking-tight">Joined rooms</h2>
+              </div>
+              <span className="font-space-mono text-[11px] font-bold uppercase tracking-[0.12em] text-gc-faint">
+                ({joined.length})
               </span>
             </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
               {joined.map((r, i) => (
                 <RoomCardItem
                   key={r.roomId}
@@ -401,10 +408,10 @@ function HomeInner() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1, duration: 0.6 }}
-            className="mt-14 flex flex-col items-center text-center"
+            className="mt-14 flex flex-col items-center border-4 border-dashed border-gc-ink bg-paper-2 px-6 py-16 text-center"
           >
-            <FolderOpen size={32} weight="duotone" className="text-faint" />
-            <p className="mt-3 text-[14px] text-muted">
+            <span className="text-3xl text-gc-faint">✦</span>
+            <p className="mt-3 font-space-mono text-[12px] uppercase tracking-[0.12em] text-gc-muted">
               No rooms yet. Host one or join with a code to get started.
             </p>
           </motion.div>
@@ -414,7 +421,7 @@ function HomeInner() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.8 }}
-          className="mt-10 flex items-center gap-2 text-[13px] text-faint"
+          className="mt-10 flex items-center gap-2 font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-muted"
         >
           <GoogleLogo size={14} />
           All rooms run on your own Google Drive — nothing is hosted on third-party servers.
