@@ -182,6 +182,15 @@ export default function LandingPage() {
         </nav>
         <div className="flex items-center gap-2">
           <ThemeToggle />
+          <a
+            href="https://github.com/qwyuvanyt8-commits/G_Cloister"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="G_Cloister source on GitHub"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center border-2 border-gc-ink bg-paper text-gc-ink shadow-[2px_2px_0_var(--gc-shadow)] transition-colors hover:border-gc-cobalt hover:text-gc-cobalt active:scale-95 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-gc-cobalt"
+          >
+            <GithubLogo size={18} weight="duotone" />
+          </a>
           <button
             onClick={start}
             className={cn(
@@ -494,27 +503,6 @@ export default function LandingPage() {
             No rented cloud space, no scanning of uploads, no selling of data. Revoke
             Drive access and the vault is gone. That&apos;s the whole privacy policy.
           </p>
-        </motion.div>
-
-        <motion.div
-          initial={reduce ? false : { opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.5 }}
-          transition={{ duration: 0.5, delay: 0.15, ease: EASE }}
-          className="mt-8 flex justify-end"
-        >
-          <a
-            href="https://github.com/qwyuvanyt8-commits/G_Cloister"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex rotate-1 items-center gap-2.5 border-2 border-gc-ink bg-paper px-4 py-3 shadow-[3px_3px_0_var(--gc-shadow)] transition-all duration-150 hover:-rotate-1 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_var(--gc-shadow)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-gc-cobalt"
-            aria-label="G_Cloister source on GitHub"
-          >
-            <GithubLogo size={20} weight="fill" className="text-gc-ink" />
-            <span className="font-space-mono text-[11px] font-bold uppercase tracking-[0.12em]">
-              Source · GitHub
-            </span>
-          </a>
         </motion.div>
       </section>
 
