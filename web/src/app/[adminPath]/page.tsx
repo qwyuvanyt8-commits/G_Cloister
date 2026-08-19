@@ -26,7 +26,7 @@ import {
   HardDrives,
   Sparkle,
 } from "@phosphor-icons/react";
-import { Button, Input, Logo } from "@/components/ui";
+import { Button, Input, Logo, Spinner } from "@/components/ui";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/components/toast";
 import {
@@ -310,9 +310,11 @@ export default function AdminPage({
   if (checkingAuth) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-gc-muted">
-        <div className="flex items-center gap-3">
-          <ShieldCheck size={24} className="animate-spin text-gc-cobalt" />
-          <span className="text-[14px]">Verifying admin authorization…</span>
+        <div className="flex flex-col items-center gap-3 border-4 border-dashed border-gc-ink bg-paper paper-fiber px-8 py-10 shadow-[6px_6px_0_var(--gc-shadow)]">
+          <Spinner size={26} className="text-gc-cobalt" />
+          <span className="font-space-mono text-[11px] font-bold uppercase tracking-[0.14em]">
+            Verifying admin authorization…
+          </span>
         </div>
       </div>
     );
@@ -322,8 +324,8 @@ export default function AdminPage({
   if (!authenticated) {
     return (
       <div className="relative flex min-h-screen flex-col items-center justify-center p-4 bg-background">
-        <div className="w-full max-w-md rounded-none border border-gc-ink/30 bg-paper p-7 shadow-[6px_6px_0_var(--gc-shadow)]">
-          <div className="flex items-center justify-between border-b border-gc-ink/30 pb-4">
+        <div className="w-full max-w-md border-4 border-gc-ink bg-paper paper-fiber p-7 shadow-[8px_8px_0_var(--gc-shadow)]">
+          <div className="flex items-center justify-between border-b-4 border-dashed border-gc-ink/50 pb-4">
             <div className="flex items-center gap-2.5">
               <Link href="/" aria-label="G_Cloister home">
               <Logo size={28} withWordmark={false} />
@@ -332,7 +334,7 @@ export default function AdminPage({
                 G<span className="text-gc-cobalt">_</span>Cloister
               </span>
             </div>
-            <span className="rounded-full bg-gc-cobalt/10 px-2.5 py-1 font-mono text-[11px] font-medium text-gc-cobalt">
+            <span className="border-2 border-gc-cobalt bg-gc-cobalt/10 px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-gc-cobalt">
               ADMIN GATEWAY
             </span>
           </div>
@@ -340,9 +342,9 @@ export default function AdminPage({
           <div className="mt-5">
             <div className="flex items-center gap-2 text-gc-ink">
               <ShieldCheck size={22} className="text-gc-cobalt" />
-              <h1 className="text-lg font-semibold tracking-tight">Admin System Sign-In</h1>
+              <h1 className="text-lg font-extrabold uppercase tracking-tight">Admin System Sign-In</h1>
             </div>
-            <p className="mt-1 text-[13px] text-gc-muted">
+            <p className="mt-1 font-space-mono text-[11px] uppercase tracking-[0.08em] text-gc-muted">
               Restricted management console. Authorized administrators only.
             </p>
           </div>
@@ -368,7 +370,7 @@ export default function AdminPage({
             />
 
             {loginError && (
-              <div className="flex items-center gap-2 rounded-none border border-gc-orange/30 bg-gc-orange/10/60 px-3.5 py-2.5 text-[13px] text-gc-orange">
+              <div className="flex items-center gap-2 border-2 border-gc-orange bg-gc-orange/10 px-3.5 py-2.5 text-[13px] text-gc-orange">
                 <Warning size={18} className="shrink-0" />
                 <span>{loginError}</span>
               </div>
@@ -379,8 +381,8 @@ export default function AdminPage({
             </Button>
           </form>
 
-          <div className="mt-6 rounded-none border border-gc-ink/30 bg-paper-2 p-3.5 text-[12px] leading-relaxed text-gc-muted">
-            <div className="flex items-center gap-2 font-medium text-gc-ink">
+          <div className="mt-6 border-2 border-dashed border-gc-ink bg-paper-2 p-3.5 text-[12px] leading-relaxed text-gc-muted">
+            <div className="flex items-center gap-2 font-extrabold uppercase tracking-tight text-gc-ink">
               <EyeClosed size={16} className="text-gc-cobalt" />
               <span>Strict Privacy Policy Active</span>
             </div>
@@ -397,14 +399,14 @@ export default function AdminPage({
   return (
     <div className="min-h-screen bg-background text-gc-ink">
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-30 border-b border-gc-ink/30 bg-background/80 backdrop-blur-md">
+      <header className="sticky top-0 z-30 border-b-4 border-gc-ink bg-paper">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
           <div className="flex items-center gap-3">
             <Logo size={28} withWordmark={false} />
             <span className="font-mono text-[16px] font-semibold text-gc-ink">
               G<span className="text-gc-cobalt">_</span>Cloister
             </span>
-            <span className="rounded-full border border-gc-cobalt/20 bg-gc-cobalt/10 px-2.5 py-0.5 font-mono text-[11px] font-medium text-gc-cobalt flex items-center gap-1">
+            <span className="flex items-center gap-1 border-2 border-gc-ink bg-gc-cobalt px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-paper shadow-[2px_2px_0_var(--gc-shadow)]">
               <Sparkle size={12} weight="bold" />
               SUPER ADMIN CONSOLE
             </span>
@@ -424,7 +426,7 @@ export default function AdminPage({
             <Button
               size="sm"
               variant="secondary"
-              icon={<Broom size={15} className="text-amber-400" />}
+              icon={<Broom size={15} className="text-gc-orange" />}
               loading={purgingSessions}
               onClick={handlePurgeSessions}
             >
@@ -445,24 +447,24 @@ export default function AdminPage({
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         {/* Privacy Notice Banner */}
-        <div className="mb-6 flex items-center justify-between rounded-none border border-gc-cobalt/20 bg-gc-cobalt/5 p-4 text-[13px]">
+        <div className="mb-6 flex items-center justify-between border-2 border-gc-cobalt bg-gc-cobalt/5 paper-fiber p-4 text-[13px]">
           <div className="flex items-center gap-3">
             <EyeClosed size={22} className="shrink-0 text-gc-cobalt" />
             <div>
-              <p className="font-semibold text-gc-ink">User File Privacy Enforced</p>
+              <p className="font-extrabold uppercase tracking-tight text-gc-ink">User File Privacy Enforced</p>
               <p className="text-gc-muted">
                 Admin controls monitor identity, auth methods, and room memberships only. All room files remain strictly private.
               </p>
             </div>
           </div>
-          <span className="hidden rounded-none bg-paper px-3 py-1 font-mono text-[11px] font-medium text-gc-muted sm:inline-block">
+          <span className="hidden border-2 border-dashed border-gc-ink bg-paper px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-gc-muted sm:inline-block">
             ZERO_FILE_ACCESS
           </span>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
-          <div className="rounded-none border border-gc-ink/30 bg-paper p-4">
+          <div className="border-2 border-gc-ink bg-paper p-4 shadow-[3px_3px_0_var(--gc-shadow)]">
             <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Total Users</span>
               <Users size={18} className="text-gc-cobalt" />
@@ -470,23 +472,23 @@ export default function AdminPage({
             <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.total}</p>
           </div>
 
-          <div className="rounded-none border border-gc-ink/30 bg-paper p-4">
+          <div className="border-2 border-gc-ink bg-paper p-4 shadow-[3px_3px_0_var(--gc-shadow)]">
             <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Google Auth</span>
-              <GoogleLogo size={18} className="text-blue-400" />
+              <GoogleLogo size={18} className="text-gc-cobalt" />
             </div>
             <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.googleCount}</p>
           </div>
 
-          <div className="rounded-none border border-gc-ink/30 bg-paper p-4">
+          <div className="border-2 border-gc-ink bg-paper p-4 shadow-[3px_3px_0_var(--gc-shadow)]">
             <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Email Auth</span>
-              <Envelope size={18} className="text-purple-400" />
+              <Envelope size={18} className="text-gc-orange" />
             </div>
             <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.emailCount}</p>
           </div>
 
-          <div className="rounded-none border border-gc-ink/30 bg-paper p-4">
+          <div className="border-2 border-gc-ink bg-paper p-4 shadow-[3px_3px_0_var(--gc-shadow)]">
             <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Banned Users</span>
               <ShieldWarning size={18} className="text-gc-orange" />
@@ -494,7 +496,7 @@ export default function AdminPage({
             <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.bannedCount}</p>
           </div>
 
-          <div className="rounded-none border border-gc-ink/30 bg-paper p-4">
+          <div className="border-2 border-gc-ink bg-paper p-4 shadow-[3px_3px_0_var(--gc-shadow)]">
             <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Active Rooms</span>
               <Door size={18} className="text-gc-cobalt" />
@@ -502,39 +504,39 @@ export default function AdminPage({
             <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.roomsCount}</p>
           </div>
 
-          <div className="rounded-none border border-gc-ink/30 bg-paper p-4">
+          <div className="border-2 border-gc-ink bg-paper p-4 shadow-[3px_3px_0_var(--gc-shadow)]">
             <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Vault Storage</span>
-              <HardDrives size={18} className="text-emerald-400" />
+              <HardDrives size={18} className="text-gc-cobalt" />
             </div>
             <p className="mt-2 text-xl font-bold text-gc-ink">{formatBytes(stats.totalStorageBytes)}</p>
           </div>
         </div>
 
         {/* Navigation Tabs */}
-        <div className="mt-6 flex items-center justify-between border-b border-gc-ink/30 pb-3">
+        <div className="mt-6 flex items-center justify-between border-b-4 border-gc-ink pb-4">
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab("users")}
-              className={`flex items-center gap-2 rounded-none px-4 py-2 text-[13.5px] font-semibold transition-colors ${
+              className={`flex items-center gap-2 border-2 px-4 py-2 text-[13.5px] font-extrabold uppercase tracking-tight transition-all ${
                 activeTab === "users"
-                  ? "bg-paper-2 text-gc-ink shadow-sm border border-gc-ink/30"
-                  : "text-gc-muted hover:text-gc-ink"
+                  ? "border-gc-ink bg-gc-ink text-paper shadow-[3px_3px_0_var(--gc-shadow)]"
+                  : "border-transparent text-gc-muted hover:text-gc-ink hover:border-gc-ink/40"
               }`}
             >
-              <Users size={16} />
+              <Users size={16} weight={activeTab === "users" ? "fill" : "regular"} />
               <span>Users Management ({users.length})</span>
             </button>
 
             <button
               onClick={() => setActiveTab("rooms")}
-              className={`flex items-center gap-2 rounded-none px-4 py-2 text-[13.5px] font-semibold transition-colors ${
+              className={`flex items-center gap-2 border-2 px-4 py-2 text-[13.5px] font-extrabold uppercase tracking-tight transition-all ${
                 activeTab === "rooms"
-                  ? "bg-paper-2 text-gc-ink shadow-sm border border-gc-ink/30"
-                  : "text-gc-muted hover:text-gc-ink"
+                  ? "border-gc-ink bg-gc-ink text-paper shadow-[3px_3px_0_var(--gc-shadow)]"
+                  : "border-transparent text-gc-muted hover:text-gc-ink hover:border-gc-ink/40"
               }`}
             >
-              <Door size={16} />
+              <Door size={16} weight={activeTab === "rooms" ? "fill" : "regular"} />
               <span>Active Rooms ({rooms.length})</span>
             </button>
           </div>
@@ -563,18 +565,18 @@ export default function AdminPage({
                   placeholder="Search by name, email, or ID…"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-none border border-gc-ink/30 bg-paper py-2 pl-9 pr-4 text-[13.5px] text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none"
+                  className="w-full border-2 border-gc-ink bg-paper py-2 pl-9 pr-4 text-[13.5px] text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none focus:ring-2 focus:ring-gc-cobalt/25"
                 />
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="flex rounded-none border border-gc-ink/30 bg-paper p-1">
+                <div className="flex border-2 border-gc-ink bg-paper p-1">
                   {(["all", "google", "email"] as const).map((m) => (
                     <button
                       key={m}
                       onClick={() => setAuthFilter(m)}
-                      className={`rounded-none px-3 py-1 text-[12.5px] font-medium capitalize transition-colors ${
-                        authFilter === m ? "bg-paper-2 text-gc-ink" : "text-gc-muted hover:text-gc-ink"
+                      className={`px-3 py-1 text-[12.5px] font-bold uppercase tracking-tight transition-colors ${
+                        authFilter === m ? "bg-gc-cobalt text-paper" : "text-gc-muted hover:text-gc-ink"
                       }`}
                     >
                       {m === "all" ? "All Auth" : m}
@@ -582,13 +584,13 @@ export default function AdminPage({
                   ))}
                 </div>
 
-                <div className="flex rounded-none border border-gc-ink/30 bg-paper p-1">
+                <div className="flex border-2 border-gc-ink bg-paper p-1">
                   {(["all", "active", "banned"] as const).map((s) => (
                     <button
                       key={s}
                       onClick={() => setStatusFilter(s)}
-                      className={`rounded-none px-3 py-1 text-[12.5px] font-medium capitalize transition-colors ${
-                        statusFilter === s ? "bg-paper-2 text-gc-ink" : "text-gc-muted hover:text-gc-ink"
+                      className={`px-3 py-1 text-[12.5px] font-bold uppercase tracking-tight transition-colors ${
+                        statusFilter === s ? "bg-gc-ink text-paper" : "text-gc-muted hover:text-gc-ink"
                       }`}
                     >
                       {s}
@@ -598,10 +600,10 @@ export default function AdminPage({
               </div>
             </div>
 
-            <div className="overflow-hidden rounded-none border border-gc-ink/30 bg-paper">
+            <div className="overflow-hidden border-4 border-gc-ink bg-paper paper-fiber shadow-[5px_5px_0_var(--gc-shadow)]">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[13.5px]">
-                  <thead className="border-b border-gc-ink/30 bg-paper-2 text-[12px] font-semibold text-gc-muted uppercase tracking-wider">
+                  <thead className="border-b-4 border-gc-ink bg-paper-2 text-[12px] font-bold text-gc-muted uppercase tracking-wider">
                     <tr>
                       <th className="px-5 py-3">User Identity</th>
                       <th className="px-5 py-3">Login Method</th>
@@ -611,7 +613,7 @@ export default function AdminPage({
                       <th className="px-5 py-3 text-right">Actions & Moderation</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border">
+                  <tbody className="divide-y-2 divide-dashed divide-gc-ink/20">
                     {filteredUsers.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="px-5 py-8 text-center text-gc-muted">
@@ -628,7 +630,7 @@ export default function AdminPage({
                                 <img
                                   src={u.avatar}
                                   alt=""
-                                  className="h-8 w-8 rounded-full object-cover border border-gc-ink/30"
+                                  className="h-8 w-8 rounded-full object-cover border-2 border-gc-ink"
                                 />
                               ) : (
                                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-paper-2 font-mono text-[13px] font-semibold text-gc-cobalt">
@@ -644,12 +646,12 @@ export default function AdminPage({
 
                           <td className="px-5 py-3.5">
                             {u.authType === "google" ? (
-                              <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/20 bg-blue-500/10 px-2.5 py-1 text-[11.5px] font-medium text-blue-400">
+                              <span className="inline-flex items-center gap-1.5 border-2 border-gc-cobalt bg-gc-cobalt/10 px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-tight text-gc-cobalt">
                                 <GoogleLogo size={14} />
                                 Google OAuth
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1.5 rounded-full border border-purple-500/20 bg-purple-500/10 px-2.5 py-1 text-[11.5px] font-medium text-purple-400">
+                              <span className="inline-flex items-center gap-1.5 border-2 border-gc-orange bg-gc-orange/10 px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-tight text-gc-orange">
                                 <Envelope size={14} />
                                 Email / Password
                               </span>
@@ -663,7 +665,7 @@ export default function AdminPage({
                           <td className="px-5 py-3.5">
                             <button
                               onClick={() => setSelectedUser(u)}
-                              className="inline-flex items-center gap-1.5 rounded-none border border-gc-ink/30 bg-paper-2 px-2.5 py-1 text-[12px] font-medium text-gc-ink transition-colors hover:border-gc-cobalt hover:text-gc-cobalt"
+                              className="inline-flex items-center gap-1.5 border-2 border-gc-ink bg-paper-2 px-2.5 py-1 text-[12px] font-bold uppercase tracking-tight text-gc-ink transition-colors hover:border-gc-cobalt hover:text-gc-cobalt"
                             >
                               <Door size={14} />
                               <span>{u.joinedRooms.length} Room{u.joinedRooms.length !== 1 ? "s" : ""}</span>
@@ -672,12 +674,12 @@ export default function AdminPage({
 
                           <td className="px-5 py-3.5">
                             {u.banned ? (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-gc-orange/30 bg-gc-orange/10/60 px-2.5 py-0.5 text-[11.5px] font-medium text-gc-orange">
+                              <span className="inline-flex items-center gap-1 border-2 border-gc-orange bg-gc-orange/10 px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-tight text-gc-orange">
                                 <ShieldWarning size={13} />
                                 Banned
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 rounded-full border border-gc-cobalt/20 bg-gc-cobalt/10 px-2.5 py-0.5 text-[11.5px] font-medium text-gc-cobalt">
+                              <span className="inline-flex items-center gap-1 border-2 border-gc-cobalt bg-gc-cobalt/10 px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-tight text-gc-cobalt">
                                 <CheckCircle size={13} />
                                 Active
                               </span>
@@ -720,10 +722,10 @@ export default function AdminPage({
         {/* ---- TAB 2: ACTIVE ROOMS ---- */}
         {activeTab === "rooms" && (
           <div className="mt-4 space-y-4">
-            <div className="overflow-hidden rounded-none border border-gc-ink/30 bg-paper">
+            <div className="overflow-hidden border-4 border-gc-ink bg-paper paper-fiber shadow-[5px_5px_0_var(--gc-shadow)]">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[13.5px]">
-                  <thead className="border-b border-gc-ink/30 bg-paper-2 text-[12px] font-semibold text-gc-muted uppercase tracking-wider">
+                  <thead className="border-b-4 border-gc-ink bg-paper-2 text-[12px] font-bold text-gc-muted uppercase tracking-wider">
                     <tr>
                       <th className="px-5 py-3">Room Identifier</th>
                       <th className="px-5 py-3">Room Host</th>
@@ -733,7 +735,7 @@ export default function AdminPage({
                       <th className="px-5 py-3 text-right">Force Evacuate</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border">
+                  <tbody className="divide-y-2 divide-dashed divide-gc-ink/20">
                     {rooms.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="px-5 py-8 text-center text-gc-muted">
@@ -762,7 +764,7 @@ export default function AdminPage({
                           </td>
 
                           <td className="px-5 py-3.5">
-                            <span className="inline-flex items-center gap-1 rounded-full border border-gc-ink/30 bg-paper-2 px-2.5 py-0.5 text-[12px] font-medium text-gc-ink">
+                            <span className="inline-flex items-center gap-1 border-2 border-dashed border-gc-ink bg-paper-2 px-2.5 py-0.5 text-[12px] font-bold uppercase tracking-tight text-gc-ink">
                               <Users size={13} />
                               {r.memberCount} member{r.memberCount !== 1 ? "s" : ""}
                             </span>
@@ -801,8 +803,8 @@ export default function AdminPage({
             className="fixed inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setSelectedUser(null)}
           />
-          <div className="relative z-10 w-full max-w-lg overflow-hidden rounded-none border border-gc-ink/30 bg-paper p-6 shadow-[6px_6px_0_var(--gc-shadow)]">
-            <div className="flex items-center justify-between border-b border-gc-ink/30 pb-4">
+          <div className="relative z-10 w-full max-w-lg overflow-hidden border-4 border-gc-ink bg-paper paper-fiber p-6 shadow-[8px_8px_0_var(--gc-shadow)] max-h-[90dvh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b-2 border-dashed border-gc-ink/50 pb-4">
               <div>
                 <h3 className="text-lg font-semibold text-gc-ink">Joined Rooms Overview</h3>
                 <p className="text-[12.5px] text-gc-muted">{selectedUser.email}</p>
@@ -826,7 +828,7 @@ export default function AdminPage({
                   return (
                     <div
                       key={r.roomId}
-                      className="flex items-center justify-between rounded-none border border-gc-ink/30 bg-paper-2 p-3"
+                      className="flex items-center justify-between border-2 border-gc-ink bg-paper-2 p-3"
                     >
                       <div>
                         <div className="flex items-center gap-2">
@@ -834,10 +836,10 @@ export default function AdminPage({
                             {r.roomId}
                           </span>
                           <span
-                            className={`rounded-full px-2 py-0.5 font-mono text-[10.5px] font-medium ${
+                            className={`border-2 px-2 py-0.5 font-mono text-[10.5px] font-bold uppercase tracking-tight ${
                               r.isHost
-                                ? "bg-gc-cobalt/10 text-gc-cobalt border border-gc-cobalt/20"
-                                : "bg-paper text-gc-muted border border-gc-ink/30"
+                                ? "border-gc-ink bg-gc-cobalt text-paper"
+                                : "border-gc-ink bg-paper text-gc-muted"
                             }`}
                           >
                             {r.isHost ? "Host" : "Member"}
@@ -867,7 +869,7 @@ export default function AdminPage({
               )}
             </div>
 
-            <div className="mt-5 border-t border-gc-ink/30 pt-4 text-right">
+            <div className="mt-5 border-t-2 border-dashed border-gc-ink/40 pt-4 text-right">
               <Button variant="secondary" size="sm" onClick={() => setSelectedUser(null)}>
                 Close Window
               </Button>
@@ -883,8 +885,8 @@ export default function AdminPage({
             className="fixed inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setShowBroadcastModal(false)}
           />
-          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-none border border-gc-ink/30 bg-paper p-6 shadow-[6px_6px_0_var(--gc-shadow)]">
-            <div className="flex items-center justify-between border-b border-gc-ink/30 pb-4">
+          <div className="relative z-10 w-full max-w-md overflow-hidden border-4 border-gc-ink bg-paper paper-fiber p-6 shadow-[8px_8px_0_var(--gc-shadow)] max-h-[90dvh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b-2 border-dashed border-gc-ink/50 pb-4">
               <div className="flex items-center gap-2">
                 <Megaphone size={20} className="text-gc-cobalt" />
                 <h3 className="text-lg font-semibold text-gc-ink">Global System Broadcast</h3>
@@ -906,7 +908,7 @@ export default function AdminPage({
                   onChange={(e) => setBroadcastMessage(e.target.value)}
                   required
                   rows={3}
-                  className="mt-1.5 w-full rounded-none border border-gc-ink/30 bg-paper p-3 text-[13.5px] text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none"
+                  className="mt-1.5 w-full border-2 border-gc-ink bg-paper p-3 text-[13.5px] text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none focus:ring-2 focus:ring-gc-cobalt/25"
                 />
               </div>
 
@@ -916,10 +918,10 @@ export default function AdminPage({
                   <button
                     type="button"
                     onClick={() => setBroadcastLevel("info")}
-                    className={`flex-1 rounded-none border p-2 text-[12.5px] font-medium transition-colors ${
+                    className={`flex-1 border-2 p-2 text-[12.5px] font-bold uppercase tracking-tight transition-colors ${
                       broadcastLevel === "info"
-                        ? "border-gc-cobalt/40 bg-gc-cobalt/10 text-gc-cobalt"
-                        : "border-gc-ink/30 bg-paper text-gc-muted"
+                        ? "border-gc-ink bg-gc-cobalt text-paper"
+                        : "border-gc-ink bg-paper text-gc-muted hover:text-gc-ink"
                     }`}
                   >
                     Information (Green)
@@ -927,10 +929,10 @@ export default function AdminPage({
                   <button
                     type="button"
                     onClick={() => setBroadcastLevel("error")}
-                    className={`flex-1 rounded-none border p-2 text-[12.5px] font-medium transition-colors ${
+                    className={`flex-1 border-2 p-2 text-[12.5px] font-bold uppercase tracking-tight transition-colors ${
                       broadcastLevel === "error"
-                        ? "border-gc-orange/40 bg-gc-orange/10 text-gc-orange"
-                        : "border-gc-ink/30 bg-paper text-gc-muted"
+                        ? "border-gc-ink bg-gc-orange text-paper"
+                        : "border-gc-ink bg-paper text-gc-muted hover:text-gc-ink"
                     }`}
                   >
                     Alert Warning (Red)
@@ -963,8 +965,8 @@ export default function AdminPage({
             className="fixed inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setResetPasswordUser(null)}
           />
-          <div className="relative z-10 w-full max-w-md overflow-hidden rounded-none border border-gc-ink/30 bg-paper p-6 shadow-[6px_6px_0_var(--gc-shadow)]">
-            <div className="flex items-center justify-between border-b border-gc-ink/30 pb-4">
+          <div className="relative z-10 w-full max-w-md overflow-hidden border-4 border-gc-ink bg-paper paper-fiber p-6 shadow-[8px_8px_0_var(--gc-shadow)] max-h-[90dvh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b-2 border-dashed border-gc-ink/50 pb-4">
               <div className="flex items-center gap-2">
                 <Key size={20} className="text-gc-cobalt" />
                 <h3 className="text-lg font-semibold text-gc-ink">Reset User Password</h3>
@@ -978,7 +980,7 @@ export default function AdminPage({
             </div>
 
             <form onSubmit={handleResetPassword} className="mt-4 space-y-4">
-              <div className="rounded-none border border-gc-ink/30 bg-paper-2 p-3 text-[12.5px] text-gc-muted">
+              <div className="border-2 border-dashed border-gc-ink bg-paper-2 p-3 text-[12.5px] text-gc-muted">
                 Resetting password for: <span className="font-semibold text-gc-ink">{resetPasswordUser.email}</span>
               </div>
 

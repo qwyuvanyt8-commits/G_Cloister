@@ -480,7 +480,7 @@ function RoomInner() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-6 border-4 border-gc-ink bg-paper px-5 py-4 shadow-[5px_5px_0_var(--gc-shadow)]"
+          className="mt-6 border-4 border-gc-ink bg-paper paper-fiber px-5 py-4 shadow-[5px_5px_0_var(--gc-shadow)]"
         >
           <UsageBar usage={room.usage} />
         </motion.div>

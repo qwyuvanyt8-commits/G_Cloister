@@ -87,7 +87,7 @@ function RoomCardItem({
       exit={{ opacity: 0, scale: 0.95 }}
       transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
       onClick={() => router.push(`/room/${room.roomId}`)}
-      className="group relative flex cursor-pointer flex-col gap-3 border-4 border-gc-ink bg-paper p-4 text-left shadow-[5px_5px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0_var(--gc-shadow)] active:scale-[0.99]"
+      className="group relative flex cursor-pointer flex-col border-4 border-gc-ink bg-paper paper-fiber p-4 text-left shadow-[5px_5px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0_var(--gc-shadow)] active:scale-[0.99]"
     >
       <AnimatePresence>
         {confirmDelete && (
@@ -132,9 +132,25 @@ function RoomCardItem({
         )}
       </AnimatePresence>
 
-      <div className="flex items-center justify-between gap-2">
-        <span className="truncate font-space-mono text-[16px] font-bold tracking-tight text-gc-ink">
-          /{room.roomId}
+      <div className="flex items-center justify-between gap-2 border-b-2 border-dashed border-gc-ink/40 pb-3">
+        <span className="flex min-w-0 items-center gap-2.5">
+          <span
+            aria-hidden
+            className={cn(
+              "flex h-9 w-9 shrink-0 items-center justify-center border-2 border-gc-ink text-[15px] font-black tracking-tight shadow-[2px_2px_0_var(--gc-shadow)]",
+              isHosted ? "bg-gc-cobalt text-paper" : "bg-gc-orange text-paper"
+            )}
+          >
+            {room.roomId[0]?.toUpperCase() || "G_"}
+          </span>
+          <span className="min-w-0">
+            <span className="block truncate font-space-mono text-[15px] font-bold tracking-tight text-gc-ink">
+              /{room.roomId}
+            </span>
+            <span className="block font-space-mono text-[8.5px] uppercase tracking-[0.18em] text-gc-faint">
+              {isHosted ? "room you host" : "room you joined"} · {room.roomId.slice(0, 4)}
+            </span>
+          </span>
         </span>
         <div className="flex items-center gap-2">
           {isHosted ? (
@@ -162,12 +178,12 @@ function RoomCardItem({
       </div>
 
       {!isHosted && room.hostName && (
-        <p className="font-space-mono text-[11px] uppercase tracking-[0.08em] text-gc-muted">
-          hosted by {room.hostName.split(" ")[0]}
+        <p className="mt-3 font-space-mono text-[11px] uppercase tracking-[0.08em] text-gc-muted">
+          hosted by <span className="font-bold text-gc-ink">{room.hostName.split(" ")[0]}</span>
         </p>
       )}
 
-      <div className="flex flex-wrap items-center gap-3 font-space-mono text-[11px] uppercase tracking-[0.04em] text-gc-faint">
+      <div className="mt-3 flex flex-wrap items-center gap-3 font-space-mono text-[11px] uppercase tracking-[0.04em] text-gc-faint">
         <span className="flex items-center gap-1">
           <Users size={13} weight="fill" /> {room.memberCount}
         </span>
@@ -177,8 +193,10 @@ function RoomCardItem({
         <span className="ml-auto">{timeAgo(room.createdAt)}</span>
       </div>
 
-      <div className="mt-auto flex items-center justify-between border-t-2 border-dashed border-gc-ink pt-2.5 font-space-mono text-[9px] uppercase tracking-[0.14em] text-gc-faint">
-        <span>tear here</span>
+      <div className="mt-3.5 flex items-center justify-between border-t-2 border-dashed border-gc-ink pt-2.5 font-space-mono text-[9px] uppercase tracking-[0.14em] text-gc-faint">
+        <span className="flex items-center gap-1.5">
+          <span aria-hidden className="h-1.5 w-1.5 rounded-full border border-gc-ink" /> tear here
+        </span>
         <span className="font-bold tracking-[0.22em] text-gc-ink">G_ · {room.roomId.slice(0, 4)}</span>
       </div>
     </motion.div>
@@ -284,7 +302,7 @@ function HomeInner() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
             onClick={() => router.push("/host")}
-            className="group relative border-4 border-gc-ink bg-paper p-7 text-left shadow-[7px_7px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_var(--gc-shadow)] active:scale-[0.99]"
+            className="group relative border-4 border-gc-ink bg-paper paper-fiber p-7 text-left shadow-[7px_7px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_var(--gc-shadow)] active:translate-x-0 active:translate-y-0 active:shadow-none active:scale-[0.99]"
           >
             <span className="absolute right-4 top-4 border-2 border-gc-ink bg-gc-mint px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.1em] text-gc-ink">
               step 01
@@ -307,7 +325,7 @@ function HomeInner() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
             onClick={() => router.push("/join")}
-            className="group relative border-4 border-gc-ink bg-paper p-7 text-left shadow-[7px_7px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_var(--gc-shadow)] active:scale-[0.99]"
+            className="group relative border-4 border-gc-ink bg-paper paper-fiber p-7 text-left shadow-[7px_7px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_var(--gc-shadow)] active:translate-x-0 active:translate-y-0 active:shadow-none active:scale-[0.99]"
           >
             <span className="absolute right-4 top-4 border-2 border-gc-ink bg-gc-orange px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.1em] text-paper">
               step 02
@@ -408,11 +426,16 @@ function HomeInner() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1, duration: 0.6 }}
-            className="mt-14 flex flex-col items-center border-4 border-dashed border-gc-ink bg-paper-2 px-6 py-16 text-center"
+            className="corner-tick mt-14 flex flex-col items-center border-4 border-dashed border-gc-ink bg-paper-2 paper-fiber px-6 py-16 text-center"
           >
-            <span className="text-3xl text-gc-faint">✦</span>
-            <p className="mt-3 font-space-mono text-[12px] uppercase tracking-[0.12em] text-gc-muted">
+            <span className="relative flex h-16 w-16 items-center justify-center border-2 border-dashed border-gc-ink bg-paper text-gc-faint shadow-[3px_3px_0_var(--gc-shadow)]">
+              <span aria-hidden className="text-2xl transition-transform duration-300 hover:rotate-90">✦</span>
+            </span>
+            <p className="mt-5 font-space-mono text-[12px] uppercase tracking-[0.12em] text-gc-muted">
               No rooms yet. Host one or join with a code to get started.
+            </p>
+            <p className="mt-1.5 flex items-center gap-1.5 font-space-mono text-[10px] uppercase tracking-[0.14em] text-gc-faint">
+              <span aria-hidden>▸</span> blank sticker sheet ready <span aria-hidden>◂</span>
             </p>
           </motion.div>
         )}

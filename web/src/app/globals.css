@@ -32,6 +32,9 @@
   --gc-orange-dark: #e0440c;
   --gc-mint: #bfe8c8;
   --gc-shadow: #16130d;
+  --gc-shadow-hard: #16130d;
+  --gc-ring: rgba(30, 59, 243, 0.35);
+  --gc-stamp: rgba(224, 68, 12, 0.7);
 }
 
 /* dark — warm near-black paper, cream ink, bright accents */
@@ -46,7 +49,10 @@
   --gc-orange: #ff6b33;
   --gc-orange-dark: #f0581f;
   --gc-mint: #b5ecc3;
-  --gc-shadow: #000000;
+  --gc-shadow: #2e2619;
+  --gc-shadow-hard: #0c0906;
+  --gc-ring: rgba(123, 140, 255, 0.35);
+  --gc-stamp: rgba(255, 107, 51, 0.85);
 }
 
 @theme inline {
@@ -82,6 +88,7 @@
   --color-gc-orange: var(--gc-orange);
   --color-gc-orange-dark: var(--gc-orange-dark);
   --color-gc-mint: var(--gc-mint);
+  --color-gc-stamp: var(--gc-stamp);
 }
 
 html {
@@ -172,5 +179,87 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .marquee-track {
     animation: none;
+  }
+}
+
+/* ---------- sticker / paper craft utilities ---------- */
+
+/* Perforation guide — a row of "scissor" dots (horizontal). Uses currentColor so it follows ink */
+.tear-guide {
+  background-image: radial-gradient(currentColor 1.3px, transparent 1.5px);
+  background-size: 9px 3.2px;
+  background-repeat: repeat-x;
+  background-position: 0 50%;
+  height: 3px;
+  width: 100%;
+}
+
+/* Faint fibre weave for big paper panels — layered under content, never on scrolling containers */
+.paper-fiber {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+}
+.dark .paper-fiber {
+  opacity: 0.35;
+}
+
+/* Dashed rubber-stamp ring (rotated circle) for "ROLLED" stamps */
+.stamp-ring {
+  border: 2px dashed var(--gc-stamp);
+  color: var(--gc-stamp);
+  border-radius: 9999px;
+}
+
+/* Ink corner ticks for framed panels */
+.corner-tick {
+  position: relative;
+}
+.corner-tick::before,
+.corner-tick::after {
+  content: "";
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--gc-ink);
+  border-style: solid;
+  border-width: 0;
+  pointer-events: none;
+}
+.corner-tick::before {
+  top: -3px;
+  left: -3px;
+  border-top-width: 2px;
+  border-left-width: 2px;
+}
+.corner-tick::after {
+  bottom: -3px;
+  right: -3px;
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+}
+
+/* Side "unpeeled" tab — a vertical notched margin for sticker edges */
+.peel-edge {
+  position: relative;
+}
+.peel-edge::after {
+  content: "";
+  position: absolute;
+  inset-inline-end: 12px;
+  bottom: 0;
+  width: calc(100% - 24px);
+  height: 10px;
+  background-image: radial-gradient(circle at 50% 100%, transparent 4px, var(--gc-paper-2) 4.5px);
+  background-size: 14px 10px;
+  background-repeat: repeat-x;
+  pointer-events: none;
+}
+
+/* Marquee slows on hover so the room tags stay readable */
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track:hover {
+    animation-play-state: initial;
   }
 }

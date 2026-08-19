@@ -13,7 +13,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={toggle}
-      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+      aria-label={mounted ? (theme === "dark" ? "Switch to light mode" : "Switch to dark mode") : "Toggle theme"}
       className="inline-flex h-10 w-10 shrink-0 items-center justify-center border-2 border-gc-ink bg-paper text-gc-ink shadow-[2px_2px_0_var(--gc-shadow)] transition-colors hover:border-gc-cobalt hover:text-gc-cobalt active:scale-95 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-gc-cobalt"
     >
       {!mounted ? (

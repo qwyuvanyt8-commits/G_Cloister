@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
-import { ArrowRight, GithubLogo } from "@phosphor-icons/react";
+import { ArrowRight, GithubLogo, Lightning, LockKey } from "@phosphor-icons/react";
 import { AuthModal } from "@/components/auth-modal";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useAuth } from "@/components/auth-provider";
@@ -30,8 +30,8 @@ const MARQUEE_ITEMS = [
 
 const ROOM_CARDS = [
   {
-    glyph: "📎",
-    tone: "cobalt" as const,
+    mono: "C4",
+    tone: "bg-gc-cobalt text-paper" as const,
     name: "CELL-04",
     status: "OPEN",
     statusTone: "text-gc-orange" as const,
@@ -41,8 +41,8 @@ const ROOM_CARDS = [
     zip: "••••••",
   },
   {
-    glyph: "🎬",
-    tone: "orange" as const,
+    mono: "SC",
+    tone: "bg-gc-orange text-paper" as const,
     name: "SCRIPTORIUM",
     status: "OPEN",
     statusTone: "text-gc-orange" as const,
@@ -52,8 +52,8 @@ const ROOM_CARDS = [
     zip: "••••••",
   },
   {
-    glyph: "🌿",
-    tone: "mint" as const,
+    mono: "GA",
+    tone: "bg-gc-mint text-gc-ink-solid" as const,
     name: "GARTH",
     status: "OPEN",
     statusTone: "text-gc-orange" as const,
@@ -63,8 +63,8 @@ const ROOM_CARDS = [
     zip: "••••••",
   },
   {
-    glyph: "▣",
-    tone: "ink" as const,
+    mono: "AT",
+    tone: "bg-gc-ink text-paper" as const,
     name: "ATRIUM",
     status: "EMPTY",
     statusTone: "text-gc-mint" as const,
@@ -74,8 +74,8 @@ const ROOM_CARDS = [
     zip: "———",
   },
   {
-    glyph: "📁",
-    tone: "cobalt" as const,
+    mono: "RE",
+    tone: "bg-gc-cobalt text-paper" as const,
     name: "REFECTORY",
     status: "OPEN",
     statusTone: "text-gc-orange" as const,
@@ -149,20 +149,22 @@ export default function LandingPage() {
   return (
     <main className="min-h-screen overflow-x-clip bg-paper font-archivo text-gc-ink">
       {/* ---------- top ticker ---------- */}
-      <div className="bg-gc-ink text-paper">
+      <div className="relative bg-gc-ink text-paper">
         <div className="mx-auto flex max-w-[1180px] items-center justify-between gap-4 px-6 py-2.5 font-space-mono text-[10.5px] uppercase tracking-[0.12em]">
-          <span>
+          <span className="flex items-center gap-1.5">
             <span className="text-gc-mint dark:text-[#2f9e63]">✓</span> NO STORAGE BILLS — EVER
           </span>
-          <span className="hidden md:inline text-gc-orange">● REAL-TIME SYNC ●</span>
+          <span className="hidden items-center gap-1.5 md:inline-flex">
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gc-orange" aria-hidden /> REAL-TIME SYNC
+          </span>
           <span className="hidden sm:inline">YOUR DRIVE · YOUR RULES</span>
         </div>
       </div>
 
       {/* ---------- masthead ---------- */}
       <header className="mx-auto flex max-w-[1180px] items-center justify-between gap-5 border-b-4 border-gc-ink px-6 py-4">
-        <Link href="/" className="inline-flex items-center text-xl font-black leading-none tracking-tight" aria-label="G_Cloister home">
-          <span className="bg-gc-cobalt px-2.5 py-1.5 text-paper">G_</span>
+        <Link href="/" className="group inline-flex items-center text-xl font-black leading-none tracking-tight" aria-label="G_Cloister home">
+          <span className="bg-gc-cobalt px-2.5 py-1.5 text-paper shadow-[2px_2px_0_var(--gc-shadow)] transition-transform duration-150 group-hover:-translate-y-0.5">G_</span>
           <span className="border-3 border-gc-ink px-2.5 py-1.5">CLOISTER</span>
         </Link>
         <nav className="hidden items-center gap-5 md:flex">
@@ -174,9 +176,9 @@ export default function LandingPage() {
             <button
               key={id}
               onClick={() => go(id)}
-              className="font-space-mono text-xs uppercase tracking-[0.08em] text-gc-muted transition-colors hover:text-gc-ink hover:underline focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-gc-cobalt"
+              className="group font-space-mono text-xs uppercase tracking-[0.08em] text-gc-muted transition-colors hover:text-gc-ink focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-gc-cobalt"
             >
-              {label}
+              <span className="underline-offset-4 group-hover:underline">{label}</span>
             </button>
           ))}
         </nav>
@@ -194,7 +196,7 @@ export default function LandingPage() {
           <button
             onClick={start}
             className={cn(
-              "bg-gc-orange px-4 py-2.5 font-extrabold text-[13px] leading-none text-paper transition-all duration-150 hover:bg-gc-orange-dark hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_var(--gc-shadow)]",
+              "bg-gc-orange px-4 py-2.5 font-extrabold text-[13px] leading-none text-paper shadow-[3px_3px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gc-orange-dark hover:shadow-[4px_4px_0_var(--gc-shadow)] active:translate-x-0 active:translate-y-0 active:shadow-none",
               "focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-gc-cobalt"
             )}
           >
@@ -204,14 +206,15 @@ export default function LandingPage() {
       </header>
 
       {/* ---------- hero ---------- */}
-      <section className="mx-auto grid max-w-[1180px] grid-cols-1 items-center gap-12 px-6 py-14 md:grid-cols-[1.1fr_0.9fr] md:py-20">
+      <section className="mx-auto grid max-w-[1180px] grid-cols-1 items-center gap-12 px-6 pb-16 pt-12 md:grid-cols-[1.08fr_0.92fr] md:pb-20 md:pt-16">
         <div>
           <motion.span
             initial={reduce ? false : { opacity: 0, y: 14 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, ease: EASE }}
-            className="font-space-mono text-[11px] font-bold uppercase tracking-[0.16em] text-gc-cobalt"
+            className="inline-flex items-center gap-2 font-space-mono text-[11px] font-bold uppercase tracking-[0.16em] text-gc-cobalt"
           >
+            <span className="inline-flex h-4 w-4 items-center justify-center border-2 border-gc-cobalt text-[8px]">✦</span>
             Sticker sheet / collectible rooms
           </motion.span>
 
@@ -223,7 +226,7 @@ export default function LandingPage() {
           >
             STICK THE ROOM.
             <br />
-            <span className="inline-block -rotate-1 bg-gc-cobalt px-[0.14em] text-paper">
+            <span className="inline-block -rotate-1 bg-gc-cobalt px-[0.14em] text-paper shadow-[4px_4px_0_var(--gc-shadow)]">
               EVERYWHERE
             </span>
             <span className="text-gc-orange">.</span>
@@ -246,7 +249,7 @@ export default function LandingPage() {
             transition={{ duration: 0.7, delay: 0.24, ease: EASE }}
             className="mt-8 flex flex-wrap items-center gap-3.5"
           >
-            <button onClick={start} className={cn(btnBase, "bg-gc-orange px-7 py-4 text-paper hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gc-orange-dark hover:shadow-[4px_4px_0_var(--gc-shadow)]")}>
+            <button onClick={start} className={cn(btnBase, "bg-gc-orange px-7 py-4 text-paper shadow-[4px_4px_0_var(--gc-shadow)] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gc-orange-dark hover:shadow-[5px_5px_0_var(--gc-shadow)] active:translate-x-0 active:translate-y-0 active:shadow-none")}>
               {user && !loading ? (
                 <>
                   GO TO ROOMS <ArrowRight size={16} weight="bold" />
@@ -257,20 +260,11 @@ export default function LandingPage() {
             </button>
             <button
               onClick={start}
-              className={cn(btnBase, "border-gc-ink bg-gc-ink px-7 py-4 text-paper hover:border-gc-cobalt hover:bg-gc-cobalt")}
+              className={cn(btnBase, "border-gc-ink bg-gc-ink px-7 py-4 text-paper shadow-[4px_4px_0_var(--gc-shadow)] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:border-gc-cobalt hover:bg-gc-cobalt hover:shadow-[5px_5px_0_var(--gc-shadow)] active:translate-x-0 active:translate-y-0 active:shadow-none")}
             >
               JOIN WITH A CODE
             </button>
           </motion.div>
-
-          <motion.p
-            initial={reduce ? false : { opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4, duration: 0.7 }}
-            className="mt-5 font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-muted"
-          >
-            Hosts sign in with Google · Members join with an email · Free
-          </motion.p>
         </div>
 
         {/* sticker sheet */}
@@ -278,40 +272,62 @@ export default function LandingPage() {
           initial={reduce ? false : { opacity: 0, y: 34, rotate: 3 }}
           animate={{ opacity: 1, y: 0, rotate: 1 }}
           transition={{ duration: 0.8, delay: 0.18, ease: EASE }}
-          className="relative border-4 border-gc-ink bg-paper-2 p-5 shadow-[10px_10px_0_var(--gc-shadow)]"
+          whileHover={reduce ? undefined : { rotate: -0.5 }}
+          className="group relative border-4 border-gc-ink bg-paper-2 paper-fiber px-5 pb-5 pt-7 shadow-[10px_10px_0_var(--gc-shadow)]"
         >
+          {/* peeled tab */}
           <div
             aria-hidden
-            className="absolute -right-4 -top-5 z-10 grid h-[86px] w-[68px] rotate-12 place-items-center border-3 border-gc-ink bg-paper text-[28px] font-black text-gc-cobalt shadow-[5px_5px_0_var(--gc-shadow)]"
+            className="absolute -right-4 -top-5 z-10 flex h-[86px] w-[68px] rotate-12 flex-col items-center justify-center border-3 border-gc-ink bg-paper shadow-[5px_5px_0_var(--gc-shadow)] transition-transform duration-200 group-hover:rotate-[16deg] group-hover:-translate-y-0.5"
           >
-            G_
+            <span className="text-[24px] font-black leading-none text-gc-cobalt">G_</span>
+            <span className="mt-1 font-space-mono text-[7.5px] uppercase tracking-[0.2em] text-gc-muted">peel</span>
           </div>
-          <p className="mb-4 text-center font-space-mono text-[9.5px] uppercase tracking-[0.18em] text-gc-muted">
-            Sticker sheet — Scriptorium 001
-          </p>
+
+          {/* sheet header — serial + cut line */}
+          <div className="mb-4 flex items-center justify-between font-space-mono text-[9.5px] uppercase tracking-[0.18em] text-gc-muted">
+            <span>Sticker sheet — Scriptorium 001</span>
+            <span className="tabular-nums">Nº 001 / 999</span>
+          </div>
+          <div aria-hidden className="tear-guide mb-4 text-gc-faint" />
+
           <div className="grid grid-cols-3 gap-3.5">
             {[
-              { g: "◐", tone: "bg-gc-cobalt text-paper", lid: "ROOM WS-01", nm: "CELL-04" },
-              { g: "▣", tone: "bg-gc-orange text-paper -rotate-2", lid: "ROOM WS-02", nm: "GARTH" },
-              { g: "▤", tone: "bg-gc-mint text-gc-ink-solid", lid: "ROOM WS-03", nm: "ATRIUM" },
-            ].map((s) => (
+              { label: "ROOM WS-01", nm: "CELL-04", tone: "bg-gc-cobalt text-paper", sym: "◐" },
+              { label: "ROOM WS-02", nm: "GARTH", tone: "bg-gc-orange text-paper -rotate-2", sym: "▣" },
+              { label: "ROOM WS-03", nm: "ATRIUM", tone: "bg-gc-mint text-gc-ink-solid", sym: "▤" },
+            ].map((s, i) => (
               <div
                 key={s.nm}
                 className={cn(
-                  "relative flex aspect-[4/5] flex-col justify-end rounded-[14px] border-2 border-dashed border-gc-ink p-3 transition-transform duration-200 hover:-translate-y-1",
+                  "group/sticker relative flex aspect-[4/5] flex-col justify-end overflow-hidden rounded-[14px] border-2 border-gc-ink p-3 shadow-[2px_2px_0_var(--gc-shadow)] transition-transform duration-200 hover:-translate-y-1",
                   s.tone
                 )}
               >
-                <span className="absolute left-3 top-3 text-[24px]">{s.g}</span>
-                <span className="font-space-mono text-[9px] uppercase tracking-[0.14em] opacity-75">{s.lid}</span>
+                <span aria-hidden className="absolute left-3 top-3 text-[24px] opacity-90">{s.sym}</span>
+                {i === 0 && (
+                  <span
+                    aria-hidden
+                    className="absolute right-0 top-0 h-4 w-4 border-b-2 border-l-2 border-gc-ink bg-paper-2"
+                    style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%)" }}
+                  />
+                )}
+                <span className="font-space-mono text-[9px] uppercase tracking-[0.14em] opacity-75">{s.label}</span>
                 <span className="mt-0.5 text-[15px] font-black tracking-tight">{s.nm}</span>
               </div>
             ))}
           </div>
+
+          {/* spool details */}
           <div className="mt-4 flex items-center justify-between font-space-mono text-[9.5px] uppercase tracking-[0.16em] text-gc-muted">
-            <span>Peel + pass</span>
-            <span>One code · one door</span>
+            <span className="flex items-center gap-1.5">
+              <Lightning size={11} weight="fill" className="text-gc-cobalt" /> Peel + pass
+            </span>
+            <span className="flex items-center gap-1.5">
+              <LockKey size={11} weight="fill" className="text-gc-orange" /> One code · one door
+            </span>
           </div>
+          <div aria-hidden className="tear-guide mt-4 text-gc-faint" />
         </motion.div>
       </section>
 
@@ -328,11 +344,11 @@ export default function LandingPage() {
       </div>
 
       {/* ---------- collection ---------- */}
-      <section id="collect" className="mx-auto max-w-[1180px] px-6 py-16 md:py-20">
+      <section id="collect" className="mx-auto max-w-[1180px] scroll-mt-8 px-6 py-16 md:py-20">
         <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4 border-b-4 border-gc-ink pb-4">
           <h2 className="font-black leading-[0.95] tracking-[-0.03em] text-[clamp(30px,4.2vw,50px)]">
             THE{" "}
-            <span className="inline-block bg-gc-cobalt px-[0.12em] text-paper">COLLECTION</span>
+            <span className="inline-block bg-gc-cobalt px-[0.12em] text-paper shadow-[3px_3px_0_var(--gc-shadow)]">COLLECTION</span>
             <br />
             SO FAR.
           </h2>
@@ -345,14 +361,25 @@ export default function LandingPage() {
           {ROOM_CARDS.map((room, i) => (
             <motion.article
               key={room.name}
-              initial={reduce ? false : { opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              initial={reduce ? false : { opacity: 0, y: 24, rotate: i % 2 ? 1 : -1 }}
+              whileInView={{ opacity: 1, y: 0, rotate: 0 }}
               viewport={{ once: true, amount: 0.25 }}
               transition={{ duration: 0.5, delay: i * 0.06, ease: EASE }}
-              className="group border-4 border-gc-ink bg-paper transition-all duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:rotate-[-0.6deg] hover:shadow-[7px_7px_0_var(--gc-shadow)]"
+              className="group border-4 border-gc-ink bg-paper paper-fiber transition-all duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:rotate-[-0.6deg] hover:shadow-[7px_7px_0_var(--gc-shadow)]"
             >
-              <div className={cn("grid h-[130px] place-items-center border-b-4 border-gc-ink text-[46px]", CARD_TONES[room.tone])}>
-                <span aria-hidden>{room.glyph}</span>
+              <div className={cn("relative grid h-[132px] place-items-center overflow-hidden border-b-4 border-gc-ink", CARD_TONES[room.tone])}>
+                <span
+                  aria-hidden
+                  className="absolute text-[76px] font-black leading-none tracking-[-0.04em] opacity-[0.14]"
+                >
+                  {room.mono[0]}
+                </span>
+                <span className="relative flex h-16 w-16 items-center justify-center rounded-full border-2 border-gc-ink bg-paper/10 text-[22px] font-black tracking-tight backdrop-blur-[1px]">
+                  {room.mono}
+                </span>
+                <span className="absolute bottom-1.5 right-2 font-space-mono text-[8.5px] uppercase tracking-[0.18em] opacity-60">
+                  sticker {String(i + 1).padStart(2, "0")}
+                </span>
               </div>
               <div className="px-4 pt-4">
                 <div className="flex items-baseline justify-between gap-2">
@@ -377,8 +404,10 @@ export default function LandingPage() {
                   )}
                 </div>
               </div>
-              <div className="mt-3.5 flex items-center justify-between border-t-2 border-dashed border-gc-ink px-4 py-2 font-space-mono text-[9px] uppercase tracking-[0.14em] text-gc-faint">
-                <span>TEAR HERE</span>
+              <div className="mt-3.5 flex items-center justify-between gap-2 border-t-2 border-dashed border-gc-ink px-4 py-2 font-space-mono text-[9px] uppercase tracking-[0.14em] text-gc-faint">
+                <span className="flex items-center gap-1.5">
+                  <span aria-hidden className="h-1.5 w-1.5 rounded-full border border-gc-ink" /> tear here
+                </span>
                 <span className="font-bold tracking-[0.22em] text-gc-ink">{room.zip}</span>
               </div>
             </motion.article>
@@ -386,15 +415,18 @@ export default function LandingPage() {
 
           {/* next room card */}
           <motion.article
-            initial={reduce ? false : { opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={reduce ? false : { opacity: 0, y: 24, rotate: -1 }}
+            whileInView={{ opacity: 1, y: 0, rotate: 0 }}
             viewport={{ once: true, amount: 0.25 }}
             transition={{ duration: 0.5, delay: 0.3, ease: EASE }}
-            className="border-4 border-dashed border-gc-ink bg-paper-2 transition-all duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[7px_7px_0_var(--gc-shadow)]"
+            className="group border-4 border-dashed border-gc-ink bg-paper-2 paper-fiber transition-all duration-200 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[7px_7px_0_var(--gc-shadow)]"
           >
             <button onClick={start} className="block w-full text-left">
-              <div className="grid h-[130px] place-items-center border-b-4 border-dashed border-gc-ink bg-paper-2 text-[46px] text-gc-faint">
-                <span aria-hidden>+</span>
+              <div className="relative grid h-[132px] place-items-center overflow-hidden border-b-4 border-dashed border-gc-ink bg-paper-2">
+                <span aria-hidden className="text-[56px] font-black leading-none text-gc-faint transition-transform duration-300 group-hover:rotate-90">+</span>
+                <span className="absolute bottom-1.5 right-2 font-space-mono text-[8.5px] uppercase tracking-[0.18em] text-gc-faint">
+                  blank sticker 06
+                </span>
               </div>
               <div className="px-4 pt-4">
                 <div className="flex items-baseline justify-between gap-2">
@@ -406,8 +438,10 @@ export default function LandingPage() {
                 </div>
               </div>
               <div className="mt-3.5 flex items-center justify-between border-t-2 border-dashed border-gc-ink px-4 py-2 font-space-mono text-[9px] uppercase tracking-[0.14em] text-gc-faint">
-                <span>HOST THE NEXT ONE</span>
-                <span className="font-bold text-gc-cobalt">✦</span>
+                <span className="flex items-center gap-1.5">
+                  <span aria-hidden className="h-1.5 w-1.5 rounded-full border border-gc-ink" /> host the next one
+                </span>
+                <span className="font-bold text-gc-cobalt transition-transform duration-200 group-hover:translate-x-0.5">✦</span>
               </div>
             </button>
           </motion.article>
@@ -415,7 +449,7 @@ export default function LandingPage() {
       </section>
 
       {/* ---------- rules ---------- */}
-      <section id="rules" className="border-t-4 border-gc-ink bg-paper py-16 md:py-20">
+      <section id="rules" className="scroll-mt-8 border-t-4 border-gc-ink bg-paper py-16 md:py-20">
         <div className="mx-auto max-w-[1180px] px-6">
           <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4 border-b-4 border-gc-ink pb-4">
             <h2 className="font-black leading-[0.95] tracking-[-0.03em] text-[clamp(30px,4.2vw,50px)]">
@@ -437,17 +471,23 @@ export default function LandingPage() {
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.5, delay: i * 0.06, ease: EASE }}
                 className={cn(
-                  "rounded-2xl border-2 p-5 transition-transform duration-200 hover:-rotate-1",
-                  rule.variant === "cobalt" && "border-gc-ink bg-gc-cobalt text-paper",
-                  rule.variant === "mint" && "border-gc-ink bg-gc-mint text-gc-ink-solid",
-                  rule.variant === "plain" && "border-dashed border-gc-ink bg-paper"
+                  "group rounded-2xl border-2 p-5 transition-transform duration-200 hover:-rotate-1",
+                  rule.variant === "cobalt" && "border-gc-ink bg-gc-cobalt text-paper shadow-[4px_4px_0_var(--gc-shadow)]",
+                  rule.variant === "mint" && "border-gc-ink bg-gc-mint text-gc-ink-solid shadow-[4px_4px_0_var(--gc-shadow)]",
+                  rule.variant === "plain" && "border-dashed border-gc-ink bg-paper paper-fiber"
                 )}
               >
-                <span className="font-space-mono text-[11px] font-bold text-gc-orange">{rule.num}</span>
+                <span className={cn(
+                  "font-space-mono text-[11px] font-bold",
+                  rule.variant === "plain" ? "text-gc-orange" : "text-gc-orange"
+                )}>
+                  {rule.num}
+                </span>
                 <h3 className="mt-2.5 text-lg font-black tracking-tight">{rule.title}</h3>
                 <p className={cn("mt-2 text-[13.5px] leading-relaxed", rule.variant === "cobalt" ? "text-paper/85" : rule.variant === "mint" ? "text-gc-ink-solid/70" : "text-gc-muted")}>
                   {rule.body}
                 </p>
+                {rule.variant === "plain" && <div aria-hidden className="tear-guide mt-4 text-gc-faint" />}
               </motion.div>
             ))}
           </div>
@@ -455,7 +495,7 @@ export default function LandingPage() {
       </section>
 
       {/* ---------- how to play ---------- */}
-      <section id="how" className="mx-auto max-w-[1180px] px-6 py-16 md:py-20">
+      <section id="how" className="mx-auto max-w-[1180px] scroll-mt-8 px-6 py-16 md:py-20">
         <div className="mb-8 flex flex-wrap items-baseline justify-between gap-4 border-b-4 border-gc-ink pb-4">
           <h2 className="font-black leading-[0.95] tracking-[-0.03em] text-[clamp(30px,4.2vw,50px)]">HOW TO PLAY.</h2>
           <span className="font-space-mono text-[11px] uppercase tracking-[0.12em] text-gc-muted">
@@ -471,38 +511,46 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.5, delay: i * 0.08, ease: EASE }}
-              className="relative border-4 border-gc-ink bg-paper p-5 pt-6"
+              className="group relative border-4 border-gc-ink bg-paper paper-fiber p-5 pt-6 shadow-[5px_5px_0_var(--gc-shadow)] transition-transform duration-200 hover:-translate-y-1 hover:shadow-[7px_7px_0_var(--gc-shadow)]"
             >
-              <span className="absolute -top-3.5 left-4 border-2 border-gc-ink bg-gc-orange px-2.5 py-1 font-space-mono text-[10.5px] font-bold uppercase text-paper">
+              <span className="absolute -top-3.5 left-4 flex items-center gap-1.5 border-2 border-gc-ink bg-gc-orange px-2.5 py-1 font-space-mono text-[10.5px] font-bold uppercase text-paper shadow-[2px_2px_0_var(--gc-shadow)] transition-transform duration-200 group-hover:-translate-y-0.5">
                 {step.move}
               </span>
               <h3 className="mt-2 text-lg font-black tracking-tight">{step.title}</h3>
               <p className="mt-2.5 text-[14px] leading-relaxed text-gc-muted">{step.body}</p>
+              <div aria-hidden className="tear-guide mt-4 text-gc-faint" />
             </motion.div>
           ))}
         </div>
       </section>
 
       {/* ---------- fine print ---------- */}
-      <section id="print" className="mx-auto max-w-[860px] px-6 py-16 md:py-20">
+      <section id="print" className="mx-auto max-w-[900px] scroll-mt-8 px-6 py-16 md:py-20">
         <motion.div
-          initial={reduce ? false : { opacity: 0, scale: 0.97 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          initial={reduce ? false : { opacity: 0, scale: 0.97, rotate: 0 }}
+          whileInView={{ opacity: 1, scale: 1, rotate: -1 }}
           viewport={{ once: true, amount: 0.3 }}
           transition={{ duration: 0.6, ease: EASE }}
-          className="-rotate-1 rounded-[18px] border-2 border-dashed border-gc-ink bg-gc-mint px-8 py-10 text-center text-gc-ink-solid"
+          className="corner-tick -rotate-1 rounded-[18px] border-2 border-dashed border-gc-ink bg-gc-mint paper-fiber px-8 py-10 text-center text-gc-ink-solid shadow-[8px_8px_0_var(--gc-shadow)]"
         >
-          <h2 className="font-black leading-[0.94] tracking-[-0.04em] text-[clamp(30px,4.4vw,54px)] text-balance">
+          <span
+            aria-hidden
+            className="stamp-ring mx-auto flex h-20 w-20 rotate-12 items-center justify-center border-2 font-space-mono text-[10px] font-bold uppercase tracking-[0.22em]"
+          >
+            rolled
+          </span>
+          <h2 className="mt-5 font-black leading-[0.94] tracking-[-0.04em] text-[clamp(30px,4.4vw,54px)] text-balance">
             FINE PRINT:
             <br />
             FILES LIVE IN THE HOST&apos;S DRIVE.
             <br />
-            <span className="inline-block bg-gc-cobalt px-[0.12em] text-paper">WE CAN&apos;T SEE THEM.</span>
+            <span className="inline-block bg-gc-cobalt px-[0.12em] text-paper shadow-[3px_3px_0_var(--gc-shadow)]">WE CAN&apos;T SEE THEM.</span>
           </h2>
           <p className="mx-auto mt-5 max-w-[52ch] text-[15.5px] leading-relaxed text-gc-ink-solid/75">
             No rented cloud space, no scanning of uploads, no selling of data. Revoke
             Drive access and the vault is gone. That&apos;s the whole privacy policy.
           </p>
+          <div aria-hidden className="tear-guide mx-auto mt-6 max-w-[260px] text-gc-ink-solid/40" />
         </motion.div>
       </section>
 
@@ -517,7 +565,7 @@ export default function LandingPage() {
         >
           OPEN A
           <br />
-          <span className="inline-block bg-gc-cobalt px-[0.12em] text-paper">PACK</span>
+          <span className="inline-block bg-gc-cobalt px-[0.12em] text-paper shadow-[6px_6px_0_var(--gc-shadow)]">PACK</span>
           <span className="text-gc-orange">.</span>
         </motion.h2>
         <motion.div
@@ -527,10 +575,10 @@ export default function LandingPage() {
           transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
           className="mt-10 flex flex-wrap items-center justify-center gap-3.5"
         >
-          <button onClick={start} className={cn(btnBase, "bg-gc-orange px-7 py-4 text-paper hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gc-orange-dark hover:shadow-[4px_4px_0_var(--gc-shadow)]")}>
+          <button onClick={start} className={cn(btnBase, "bg-gc-orange px-7 py-4 text-paper shadow-[4px_4px_0_var(--gc-shadow)] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:bg-gc-orange-dark hover:shadow-[5px_5px_0_var(--gc-shadow)] active:translate-x-0 active:translate-y-0 active:shadow-none")}>
             HOST A ROOM WITH GOOGLE
           </button>
-          <button onClick={start} className={cn(btnBase, "bg-gc-ink px-7 py-4 text-paper hover:border-gc-cobalt hover:bg-gc-cobalt")}>
+          <button onClick={start} className={cn(btnBase, "bg-gc-ink px-7 py-4 text-paper shadow-[4px_4px_0_var(--gc-shadow)] hover:-translate-x-0.5 hover:-translate-y-0.5 hover:border-gc-cobalt hover:bg-gc-cobalt hover:shadow-[5px_5px_0_var(--gc-shadow)] active:translate-x-0 active:translate-y-0 active:shadow-none")}>
             JOIN WITH A CODE
           </button>
         </motion.div>
@@ -548,7 +596,10 @@ export default function LandingPage() {
       {/* ---------- footer ---------- */}
       <footer className="border-t-4 border-gc-ink">
         <div className="mx-auto flex max-w-[1180px] flex-col items-center justify-between gap-4 px-6 py-5 font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-muted sm:flex-row">
-          <span>G_CLOISTER © {new Date().getFullYear()}</span>
+          <span className="flex items-center gap-1.5">
+            <span className="bg-gc-cobalt px-1.5 py-0.5 text-[9px] font-black text-paper">G_</span>
+            G_CLOISTER © {new Date().getFullYear()}
+          </span>
           <span>BUILT ON THE GOOGLE DRIVE API</span>
           <span>YOUR DRIVE · YOUR RULES</span>
         </div>

@@ -15,11 +15,13 @@ import { cn } from "@/lib/cn";
 
 export function EmptyRoom({ isHost }: { isHost: boolean }) {
   return (
-    <div className="flex flex-col items-center border-4 border-dashed border-gc-ink/50 bg-paper-2/40 px-6 py-20 text-center">
-      <span className="flex h-16 w-16 items-center justify-center border-2 border-dashed border-gc-ink bg-paper-2 text-2xl">
+    <div className="corner-tick flex flex-col items-center border-4 border-dashed border-gc-ink/50 bg-paper-2/40 paper-fiber px-6 py-20 text-center">
+      <span className="relative flex h-16 w-16 items-center justify-center border-2 border-dashed border-gc-ink bg-paper-2 text-2xl shadow-[3px_3px_0_var(--gc-shadow)]">
         <FileDashed size={30} weight="duotone" className="text-gc-faint" />
+        <span aria-hidden className="absolute -right-2 -top-2 h-4 w-4 border border-gc-ink bg-gc-cobalt text-paper" style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%)" }} />
       </span>
-      <h3 className="mt-6 text-lg font-black tracking-tight">The room is empty</h3>
+      <div aria-hidden className="tear-guide mt-6 w-40 text-gc-faint" />
+      <h3 className="mt-4 text-lg font-black tracking-tight">The room is empty</h3>
       <p className="mt-2 max-w-[40ch] font-space-mono text-[11.5px] uppercase tracking-[0.06em] leading-relaxed text-gc-muted">
         {isHost
           ? "Drop the first file above and watch the room come alive for everyone."
@@ -72,7 +74,7 @@ function FileCard({
   return (
     <div
       className={cn(
-        "group relative flex h-full flex-col border-4 border-gc-ink bg-paper p-4 shadow-[4px_4px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_var(--gc-shadow)]",
+        "group relative flex h-full flex-col border-4 border-gc-ink bg-paper paper-fiber p-4 shadow-[4px_4px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:rotate-[-0.4deg] hover:shadow-[7px_7px_0_var(--gc-shadow)]",
         ghosted && "invisible"
       )}
     >
@@ -163,6 +165,7 @@ function FileCard({
         <span className="truncate font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-muted">
           {file.uploader.name.split(" ")[0]}
         </span>
+        <span aria-hidden className="ml-auto h-1.5 w-1.5 rounded-full border border-gc-ink/60" />
       </div>
     </div>
   );
