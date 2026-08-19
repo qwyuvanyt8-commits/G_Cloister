@@ -1,8 +1,8 @@
 "use client";
 
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
-import { Copy, Check, DownloadSimple, Eye, TrashSimple, FileDashed } from "@phosphor-icons/react";
-import { useState } from "react";
+import { Copy, Check, DownloadSimple, Eye, TrashSimple, FileDashed, DotsSixVertical } from "@phosphor-icons/react";
 import type { Room, RoomFile } from "@/lib/types";
 import { timeAgo, isPreviewable } from "@/lib/format";
 import { FileIcon } from "@/components/file-icon";
@@ -10,6 +10,8 @@ import { Avatar, IconButton } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useAuth } from "@/components/auth-provider";
 import { useToast } from "@/components/toast";
+import { useRoomStore } from "@/lib/store";
+import { cn } from "@/lib/cn";
 
 export function EmptyRoom({ isHost }: { isHost: boolean }) {
   return (
@@ -32,11 +34,15 @@ function FileCard({
   roomId,
   canDelete,
   onPreview,
+  dragHandle,
+  ghosted,
 }: {
   file: RoomFile;
   roomId: string;
   canDelete: boolean;
   onPreview: (file: RoomFile) => void;
+  dragHandle?: { onPointerDown: (e: React.PointerEvent, fileId: string) => void };
+  ghosted?: boolean;
 }) {
   const { toast } = useToast();
   const [copied, setCopied] = useState(false);
@@ -64,13 +70,11 @@ function FileCard({
   };
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, scale: 0.97 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.96 }}
-      transition={{ type: "spring", stiffness: 260, damping: 26 }}
-      className="group relative flex flex-col border-4 border-gc-ink bg-paper p-4 shadow-[4px_4px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_var(--gc-shadow)]"
+    <div
+      className={cn(
+        "group relative flex h-full flex-col border-4 border-gc-ink bg-paper p-4 shadow-[4px_4px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_var(--gc-shadow)]",
+        ghosted && "invisible"
+      )}
     >
       <AnimatePresence>
         {confirmDelete && (
@@ -103,8 +107,18 @@ function FileCard({
         )}
       </AnimatePresence>
 
-      <div className="flex items-start justify-between">
-        <span className="flex h-11 w-11 items-center justify-center border-2 border-gc-ink bg-paper-2">
+      <div className="flex items-start justify-between gap-2">
+        {dragHandle && (
+          <span
+            onPointerDown={(e) => dragHandle.onPointerDown(e, file.id)}
+            title="Drag to reorder"
+            aria-label="Drag to reorder"
+            className="inline-flex shrink-0 cursor-grab touch-none select-none items-center justify-center pt-2 text-gc-faint transition-colors hover:text-gc-cobalt active:cursor-grabbing"
+          >
+            <DotsSixVertical size={18} weight="bold" />
+          </span>
+        )}
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-gc-ink bg-paper-2">
           <FileIcon name={file.name} mimeType={file.mimeType} size={22} />
         </span>
         <div className="flex items-center gap-0.5 opacity-0 transition-opacity duration-200 focus-within:opacity-100 group-hover:opacity-100">
@@ -150,7 +164,239 @@ function FileCard({
           {file.uploader.name.split(" ")[0]}
         </span>
       </div>
-    </motion.div>
+    </div>
+  );
+}
+
+const GRID = "grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4";
+
+interface Cell {
+  x: number;
+  y: number;
+}
+
+function arrayMove<T>(arr: T[], from: number, to: number): T[] {
+  const copy = [...arr];
+  const [item] = copy.splice(from, 1);
+  copy.splice(to, 0, item);
+  return copy;
+}
+
+function HostFileGrid({
+  room,
+  onPreview,
+}: {
+  room: Room;
+  onPreview: (file: RoomFile) => void;
+}) {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const reorderFiles = useRoomStore((s) => s.reorderFiles);
+
+  const gridRef = useRef<HTMLDivElement>(null);
+  const orderRef = useRef<RoomFile[]>(room.files);
+
+  const dragRef = useRef<{
+    id: string;
+    index: number;
+    startX: number;
+    startY: number;
+    originLeft: number;
+    originTop: number;
+    w: number;
+    h: number;
+    cells: Cell[];
+  } | null>(null);
+  const [dragState, setDragState] = useState<{
+    id: string;
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const debounceRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    orderRef.current = room.files;
+  });
+
+  const persist = useCallback(() => {
+    const order = orderRef.current;
+    if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
+    debounceRef.current = window.setTimeout(async () => {
+      try {
+        await api.reorderFiles(room.roomId, order.map((f) => f.id));
+      } catch (err) {
+        toast(err instanceof Error ? err.message : "Could not save the new order.", "error");
+        try {
+          const fresh = await api.getRoom(room.roomId);
+          reorderFiles(fresh.files.map((f) => f.id));
+        } catch {
+          /* ignore refetch failure */
+        }
+      } finally {
+        debounceRef.current = null;
+      }
+    }, 400);
+  }, [room.roomId, toast, reorderFiles]);
+
+  const onMove = useCallback(
+    (e: PointerEvent) => {
+      const d = dragRef.current;
+      if (!d || rafRef.current !== null) return;
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        const dx = e.clientX - d.startX;
+        const dy = e.clientY - d.startY;
+        setDragState({ id: d.id, x: d.originLeft + dx, y: d.originTop + dy, w: d.w, h: d.h });
+
+        const ghostCenterX = d.originLeft + d.w / 2 + dx;
+        const ghostCenterY = d.originTop + d.h / 2 + dy;
+        let target = d.index;
+        let best = Infinity;
+        for (let i = 0; i < d.cells.length; i++) {
+          const c = d.cells[i];
+          const dist = (c.x - ghostCenterX) ** 2 + (c.y - ghostCenterY) ** 2;
+          if (dist < best) {
+            best = dist;
+            target = i;
+          }
+        }
+        if (target !== d.index) {
+          const current = orderRef.current;
+          const moved = arrayMove(current, d.index, target);
+          orderRef.current = moved;
+          d.index = target;
+          reorderFiles(moved.map((f) => f.id));
+          persist();
+        }
+      });
+    },
+    [reorderFiles, persist]
+  );
+
+  const endDrag = useCallback(() => {
+    window.removeEventListener("pointermove", onMove);
+    dragRef.current = null;
+    setDragState(null);
+  }, [onMove]);
+
+  useEffect(() => {
+    return () => {
+      if (rafRef.current !== null) cancelAnimationFrame(rafRef.current);
+      if (debounceRef.current !== null) window.clearTimeout(debounceRef.current);
+      window.removeEventListener("pointermove", onMove);
+    };
+  }, [onMove]);
+
+  const handlePointerDown = (e: React.PointerEvent, fileId: string) => {
+    if (room.files.length < 2) return;
+    e.preventDefault();
+    const grid = gridRef.current;
+    if (!grid) return;
+    let el: HTMLElement | null = null;
+    for (const child of grid.children) {
+      if (child instanceof HTMLElement && child.dataset.fileId === fileId) {
+        el = child;
+        break;
+      }
+    }
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+
+    const lefts = new Set<number>();
+    const tops = new Set<number>();
+    let w = 0;
+    let h = 0;
+    for (const child of grid.children) {
+      if (!(child instanceof HTMLElement)) continue;
+      if (child.dataset.fileId === fileId) continue;
+      const r = child.getBoundingClientRect();
+      lefts.add(Math.round(r.left));
+      tops.add(Math.round(r.top));
+      w = Math.max(w, r.width);
+      h = Math.max(h, r.height);
+    }
+    lefts.add(Math.round(rect.left));
+    tops.add(Math.round(rect.top));
+    w = Math.max(w, rect.width);
+    h = Math.max(h, rect.height);
+    const colLefts = [...lefts].sort((a, b) => a - b);
+    const rowTops = [...tops].sort((a, b) => a - b);
+    const cells: Cell[] = [];
+    for (const top of rowTops) {
+      for (const left of colLefts) {
+        cells.push({ x: left + rect.width / 2, y: top + rect.height / 2 });
+      }
+    }
+
+    dragRef.current = {
+      id: fileId,
+      index: room.files.findIndex((f) => f.id === fileId),
+      startX: e.clientX,
+      startY: e.clientY,
+      originLeft: rect.left,
+      originTop: rect.top,
+      w: rect.width,
+      h: rect.height,
+      cells: cells.slice(0, room.files.length),
+    };
+    setDragState({ id: fileId, x: rect.left, y: rect.top, w: rect.width, h: rect.height });
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", endDrag, { once: true });
+  };
+
+  const canDelete = (file: RoomFile) => room.isHost || file.uploader.id === user?.id;
+  const isDragging = dragState !== null;
+
+  return (
+    <>
+      <div
+        ref={gridRef}
+        className={cn(GRID, isDragging && "cursor-grabbing select-none")}
+      >
+        {room.files.map((file) => (
+          <motion.div
+            layout
+            key={file.id}
+            data-file-id={file.id}
+            className="h-full min-w-0"
+            transition={{ type: "spring", stiffness: 320, damping: 28 }}
+          >
+            <FileCard
+              file={file}
+              roomId={room.roomId}
+              canDelete={canDelete(file)}
+              onPreview={onPreview}
+              ghosted={isDragging && file.id === dragState.id}
+              dragHandle={{ onPointerDown: handlePointerDown }}
+            />
+          </motion.div>
+        ))}
+      </div>
+
+      {dragState && (
+        <div
+          className="pointer-events-none fixed z-50"
+          style={{
+            left: dragState.x,
+            top: dragState.y,
+            width: dragState.w,
+            height: dragState.h,
+          }}
+        >
+          <FileCard
+            file={room.files.find((f) => f.id === dragState.id) ?? room.files[0]}
+            roomId={room.roomId}
+            canDelete={canDelete(
+              room.files.find((f) => f.id === dragState.id) ?? room.files[0]
+            )}
+            onPreview={onPreview}
+          />
+        </div>
+      )}
+    </>
   );
 }
 
@@ -162,27 +408,41 @@ export function FileGrid({
   onPreview: (file: RoomFile) => void;
 }) {
   const { user } = useAuth();
+
   const files = room.files;
+  const isHost = room.isHost;
+  const canDelete = (file: RoomFile) => room.isHost || file.uploader.id === user?.id;
+
+  if (files.length === 0) {
+    return <EmptyRoom isHost={room.isHost} />;
+  }
+
+  if (isHost) {
+    return <HostFileGrid room={room} onPreview={onPreview} />;
+  }
 
   return (
-    <>
-      {files.length === 0 ? (
-        <EmptyRoom isHost={room.isHost} />
-      ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <AnimatePresence mode="popLayout">
-            {files.map((file) => (
-              <FileCard
-                key={file.id}
-                file={file}
-                roomId={room.roomId}
-                canDelete={room.isHost || file.uploader.id === user?.id}
-                onPreview={onPreview}
-              />
-            ))}
-          </AnimatePresence>
-        </div>
-      )}
-    </>
+    <div className={GRID}>
+      <AnimatePresence mode="popLayout">
+        {files.map((file) => (
+          <motion.div
+            key={file.id}
+            layout
+            initial={{ opacity: 0, scale: 0.97 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.96 }}
+            transition={{ type: "spring", stiffness: 260, damping: 26 }}
+            className="h-full min-w-0"
+          >
+            <FileCard
+              file={file}
+              roomId={room.roomId}
+              canDelete={canDelete(file)}
+              onPreview={onPreview}
+            />
+          </motion.div>
+        ))}
+      </AnimatePresence>
+    </div>
   );
 }

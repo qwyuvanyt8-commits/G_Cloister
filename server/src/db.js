@@ -149,4 +149,10 @@ export async function initDb() {
   try {
     await db.run("ALTER TABLE users ADD COLUMN banned INTEGER NOT NULL DEFAULT 0");
   } catch { /* column already exists */ }
+
+  // Migration: add position column to files (host-controlled display order)
+  try {
+    await db.run("ALTER TABLE files ADD COLUMN position INTEGER");
+  } catch { /* column already exists */ }
+  await db.run("UPDATE files SET position = created_at WHERE position IS NULL");
 }

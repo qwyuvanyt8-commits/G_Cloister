@@ -217,6 +217,11 @@ export const api = {
     request<{ id: string; deleted: boolean }>(`/api/rooms/${roomId}/files/${fileId}`, {
       method: "DELETE",
     }),
+  reorderFiles: (roomId: string, fileIds: string[]) =>
+    request<{ ok: boolean; fileIds: string[] }>(`/api/rooms/${roomId}/files/reorder`, {
+      method: "POST",
+      body: JSON.stringify({ fileIds }),
+    }),
   renameFile: (roomId: string, fileId: string, name: string) =>
     request<{ id: string; name: string }>(`/api/rooms/${roomId}/files/${fileId}/rename`, {
       method: "POST",

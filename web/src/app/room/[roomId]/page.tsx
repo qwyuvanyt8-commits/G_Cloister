@@ -54,6 +54,7 @@ function RoomInner() {
   const addFile = useRoomStore((s) => s.addFile);
   const updateFile = useRoomStore((s) => s.updateFile);
   const removeFile = useRoomStore((s) => s.removeFile);
+  const reorderFiles = useRoomStore((s) => s.reorderFiles);
   const patchUsage = useRoomStore((s) => s.patchUsage);
   const setMembers = useRoomStore((s) => s.setMembers);
   const upsertMember = useRoomStore((s) => s.upsertMember);
@@ -139,6 +140,7 @@ function RoomInner() {
     };
     const onFileUpdated = ({ id, name }: { id: string; name: string }) => updateFile(id, { name });
     const onFileDeleted = ({ id }: { id: string }) => removeFile(id);
+    const onFilesOrdered = ({ fileIds }: { fileIds: string[] }) => reorderFiles(fileIds);
     const onUsage = ({ usedBytes }: { usedBytes: number }) => patchUsage(usedBytes);
 
     socket.on("connect", onConnect);
@@ -153,6 +155,7 @@ function RoomInner() {
     socket.on("file:added", onFileAdded);
     socket.on("file:updated", onFileUpdated);
     socket.on("file:deleted", onFileDeleted);
+    socket.on("files:ordered", onFilesOrdered);
     socket.on("usage:updated", onUsage);
 
     const handleUnload = () => {
@@ -180,9 +183,10 @@ function RoomInner() {
       socket.off("file:added", onFileAdded);
       socket.off("file:updated", onFileUpdated);
       socket.off("file:deleted", onFileDeleted);
+      socket.off("files:ordered", onFilesOrdered);
       socket.off("usage:updated", onUsage);
     };
-  }, [loadState, roomId, router, setMemberPresence, syncMemberPresence, setMembers, upsertMember, removeMember, addFile, updateFile, removeFile, patchUsage, setConnected, user?.id, toast]);
+  }, [loadState, roomId, router, setMemberPresence, syncMemberPresence, setMembers, upsertMember, removeMember, addFile, updateFile, removeFile, reorderFiles, patchUsage, setConnected, user?.id, toast]);
 
   const updateProgress = useCallback((key: string, patch: Partial<UploadItem>) => {
     setUploads((prev) => prev.map((u) => (u.key === key ? { ...u, ...patch } : u)));
@@ -553,7 +557,7 @@ function RoomInner() {
               {room.files.length} file{room.files.length === 1 ? "" : "s"}
             </h2>
             <span className="font-space-mono text-[10.5px] uppercase tracking-[0.12em] text-gc-faint">
-              sorted · newest first
+              {room.isHost ? "drag a card to arrange · order is live for everyone" : "order arranged by the host"}
             </span>
           </div>
           <FileGrid room={room} onPreview={setPreviewFile} />

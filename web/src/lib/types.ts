@@ -20,6 +20,7 @@ export interface RoomFile {
   sizeBytes: number;
   sizeFormatted: string;
   createdAt: number;
+  position?: number;
   uploader: FileUploader;
 }
 

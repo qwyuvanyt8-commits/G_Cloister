@@ -11,6 +11,7 @@ interface RoomState {
   addFile: (file: RoomFile) => void;
   updateFile: (id: string, patch: Partial<RoomFile>) => void;
   removeFile: (id: string) => void;
+  reorderFiles: (fileIds: string[]) => void;
   setMembers: (members: RoomMember[]) => void;
   upsertMember: (member: RoomMember) => void;
   removeMember: (userId: string) => void;
@@ -65,6 +66,31 @@ export const useRoomStore = create<RoomState>((set) => ({
     set((s) => {
       if (!s.room) return {};
       return { room: { ...s.room, files: s.room.files.filter((f) => f.id !== id) } };
+    }),
+  reorderFiles: (fileIds) =>
+    set((s) => {
+      if (!s.room) return {};
+      const currentFiles = s.room.files;
+      const byId = new Map(currentFiles.map((f) => [f.id, f]));
+      const used = new Set<string>();
+      const ordered: RoomFile[] = [];
+      for (const id of fileIds) {
+        const f = byId.get(id);
+        if (f && !used.has(id)) {
+          ordered.push(f);
+          used.add(id);
+        }
+      }
+      for (const f of currentFiles) {
+        if (!used.has(f.id)) ordered.push(f);
+      }
+      if (
+        ordered.length === currentFiles.length &&
+        ordered.every((f, i) => f.id === currentFiles[i].id)
+      ) {
+        return {};
+      }
+      return { room: { ...s.room, files: ordered } };
     }),
   setMembers: (members) =>
     set((s) => (s.room ? { room: { ...s.room, members } } : {})),

@@ -102,7 +102,7 @@ async function buildRoomView(room, viewerId) {
     await db.all(
       `SELECT f.*, u.google_id AS up_id, u.name AS up_name, u.avatar AS up_avatar
        FROM files f JOIN users u ON u.google_id = f.uploader_id
-       WHERE f.room_id = ? ORDER BY f.created_at DESC`,
+       WHERE f.room_id = ? ORDER BY f.position DESC, f.created_at DESC`,
       [room.room_id]
     )
   ).map((f) => ({
@@ -112,6 +112,7 @@ async function buildRoomView(room, viewerId) {
     sizeBytes: f.size_bytes,
     sizeFormatted: formatBytes(f.size_bytes),
     createdAt: f.created_at,
+    position: f.position ?? f.created_at,
     uploader: { id: f.up_id, name: f.up_name, avatar: f.up_avatar },
   }));
 
@@ -502,9 +503,9 @@ roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
     const now = Date.now();
     const fileId = crypto.randomUUID();
     await db.run(
-      `INSERT INTO files (id, room_id, drive_file_id, name, mime_type, size_bytes, uploader_id, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      [fileId, roomId, driveFile.id, name, mimeType, size, req.user.google_id, now]
+      `INSERT INTO files (id, room_id, drive_file_id, name, mime_type, size_bytes, uploader_id, created_at, position)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [fileId, roomId, driveFile.id, name, mimeType, size, req.user.google_id, now, now]
     );
 
     await db.run("UPDATE rooms SET total_bytes = total_bytes + ? WHERE room_id = ?", [
@@ -537,6 +538,7 @@ roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
       sizeBytes: size,
       sizeFormatted: formatBytes(size),
       createdAt: now,
+      position: now,
       uploader: {
         id: req.user.google_id,
         name: req.user.name,
@@ -550,6 +552,41 @@ roomsRouter.post("/:roomId/files", requireAuth, async (req, res) => {
   } catch (err) {
     handleDriveError(res, err);
   }
+});
+
+// ---- Reorder files (host only) ----
+roomsRouter.post("/:roomId/files/reorder", requireAuth, async (req, res) => {
+  const roomId = sanitizeRoomId(req.params.roomId);
+  if (!roomId) return res.status(400).json({ error: "Invalid room ID." });
+  const room = await getRoomOrNull(roomId);
+  if (!room) return res.status(404).json({ error: "Room not found." });
+  if (room.host_user_id !== req.user.google_id) {
+    return res.status(403).json({ error: "Only the room host can reorder files." });
+  }
+
+  const fileIds = req.body?.fileIds;
+  if (!Array.isArray(fileIds) || fileIds.length === 0) {
+    return res.status(400).json({ error: "fileIds must be a non-empty array." });
+  }
+
+  const rows = await db.all("SELECT id FROM files WHERE room_id = ?", [roomId]);
+  const validIds = new Set(rows.map((r) => r.id));
+  const seen = new Set();
+  for (const id of fileIds) {
+    if (typeof id !== "string" || seen.has(id) || !validIds.has(id)) {
+      return res.status(400).json({ error: "Invalid file order list." });
+    }
+    seen.add(id);
+  }
+
+  const base = Date.now() + fileIds.length * 1000;
+  const step = 1000;
+  for (let i = 0; i < fileIds.length; i++) {
+    await db.run("UPDATE files SET position = ? WHERE id = ?", [base - i * step, fileIds[i]]);
+  }
+
+  emitToRoom(roomId, "files:ordered", { fileIds });
+  res.json({ ok: true, fileIds });
 });
 
 // ---- Download ----
