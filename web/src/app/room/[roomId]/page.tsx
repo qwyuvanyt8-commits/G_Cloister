@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import {
   Check,
   LinkSimple,
@@ -41,12 +41,22 @@ interface UploadItem {
   error?: string;
 }
 
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(1)} KB`;
+  return `${(kb / 1024).toFixed(1)} MB`;
+}
+
 function RoomInner() {
   const params = useParams<{ roomId: string }>();
   const router = useRouter();
   const roomId = params?.roomId ?? "";
   const { user, hasDrive, openDriveModal } = useAuth();
   const { toast } = useToast();
+  const reduce = useReducedMotion();
 
   const room = useRoomStore((s) => s.room);
   const connected = useRoomStore((s) => s.connected);
@@ -298,47 +308,36 @@ function RoomInner() {
     }
   };
 
-  if (loadState === "loading") {
-    return (
-      <div className="flex min-h-[70vh] flex-col items-center justify-center gap-3 bg-paper">
-        <span className="animate-spin text-2xl text-gc-cobalt">◌</span>
-        <p className="font-space-mono text-[12px] uppercase tracking-[0.14em] text-gc-faint">Entering room /{roomId}…</p>
-      </div>
-    );
-  }
-
-  if (loadState === "notfound") {
-    return (
+  const loadStates = {
+    notfound: (
       <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center p-6 text-center">
-        <div className="flex h-14 w-14 items-center justify-center border-2 border-gc-ink bg-gc-orange text-paper shadow-[3px_3px_0_var(--gc-shadow)]">
-          <House size={28} />
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-gc-orange/30 bg-gc-orange/10 text-gc-orange">
+          <House size={28} weight="duotone" />
         </div>
-        <h1 className="mt-4 text-xl font-black tracking-tight">Room not found</h1>
-        <p className="mt-2 font-space-mono text-[12px] leading-relaxed text-gc-muted">
-          We couldn&apos;t find room <span className="font-bold text-gc-ink">/{roomId}</span>. Double-check the room ID or create a new room.
+        <h1 className="mt-5 text-2xl font-black tracking-tight">Room not found</h1>
+        <p className="mt-2 font-mono text-[12px] leading-relaxed text-gc-muted">
+          We couldn&apos;t find room <span className="font-bold text-gc-ink">/{roomId}</span>. Double-check the
+          room ID or create a new room.
         </p>
-        <div className="mt-6 flex items-center gap-3">
+        <div className="mt-7 flex items-center gap-3">
           <Button variant="secondary" onClick={() => router.push("/home")}>
             Go to home
           </Button>
           <Button onClick={() => router.push("/host")}>Host a room</Button>
         </div>
       </div>
-    );
-  }
-
-  if (loadState === "member") {
-    return (
+    ),
+    member: (
       <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center p-6 text-center">
-        <div className="flex h-14 w-14 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_var(--gc-shadow)]">
+        <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-gc-cobalt text-white shadow-[0_10px_36px_-10px_rgba(68,86,232,0.7)]">
           <LockKey size={28} weight="bold" />
         </div>
-        <h1 className="mt-4 text-xl font-black tracking-tight">Enter password for /{roomId}</h1>
-        <p className="mt-2 font-space-mono text-[12px] leading-relaxed text-gc-muted">
+        <h1 className="mt-5 text-2xl font-black tracking-tight">Enter password for /{roomId}</h1>
+        <p className="mt-2 font-mono text-[12px] leading-relaxed text-gc-muted">
           You are not currently inside this room. Enter the password set by the host to join.
         </p>
         <form
-          className="mt-6 w-full space-y-3"
+          className="mt-7 w-full space-y-3"
           onSubmit={async (e) => {
             e.preventDefault();
             setJoining(true);
@@ -359,7 +358,7 @@ function RoomInner() {
             placeholder="Room password"
             value={joinPw}
             onChange={(e) => setJoinPw(e.target.value)}
-            className="w-full border-2 border-gc-ink bg-paper px-4 py-2.5 text-sm font-space-mono text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none"
+            className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-sm font-mono text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none"
             autoFocus
           />
           <Button type="submit" loading={joining} className="w-full">
@@ -367,204 +366,226 @@ function RoomInner() {
           </Button>
         </form>
       </div>
-    );
-  }
-
-  if (loadState === "error" || !room) {
-    return (
+    ),
+    error: (
       <div className="mx-auto flex min-h-[70vh] max-w-md flex-col items-center justify-center p-6 text-center">
-        <h1 className="text-xl font-black tracking-tight">Something went wrong</h1>
-        <p className="mt-2 font-space-mono text-[12px] text-gc-orange">{loadError || "Unable to load room."}</p>
-        <Button variant="secondary" className="mt-6" onClick={() => router.push("/home")}>
+        <h1 className="text-2xl font-black tracking-tight">Something went wrong</h1>
+        <p className="mt-2 font-mono text-[12px] text-gc-orange">{loadError || "Unable to load room."}</p>
+        <Button variant="secondary" className="mt-7" onClick={() => router.push("/home")}>
           Return to home
         </Button>
       </div>
-    );
-  }
+    ),
+  };
 
   return (
-    <main className="min-h-[calc(100dvh-4rem)] bg-paper text-gc-ink">
-      <div className="mx-auto max-w-[1180px] px-6 pb-24 pt-8">
-        {/* Top header bar */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="flex flex-wrap items-center justify-between gap-4 border-b-4 border-gc-ink pb-6"
-        >
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_var(--gc-shadow)]">
-              <FolderOpen size={22} weight="bold" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h1 className="font-space-mono text-2xl font-bold tracking-tight">/{room.roomId}</h1>
-                {room.isHost && (
-                  <span className="flex items-center gap-1 border-2 border-gc-ink bg-gc-cobalt px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.08em] text-paper">
-                    <Crown size={10} weight="fill" />
-                    Host
-                  </span>
-                )}
-              </div>
-              <div className="mt-0.5 flex items-center gap-2">
-                <span
-                  className={cn(
-                    "border-2 px-1.5 py-0.5 font-space-mono text-[10px] font-bold uppercase tracking-[0.1em]",
-                    connected
-                      ? "border-gc-ink bg-gc-mint text-gc-ink"
-                      : "border-dashed border-gc-ink bg-paper-2 text-gc-faint"
-                  )}
-                >
-                  <span className="mr-1">{connected ? "●" : "○"}</span>
-                  {connected ? "Live" : "Reconnecting"}
-                </span>
-                <span className="font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-faint">
-                  hosted by {room.host?.name?.split(" ")[0] || "someone"}
-                </span>
-              </div>
-            </div>
-          </div>
+    <main className="min-h-[calc(100dvh-4rem)] bg-[#0b0d12] text-gc-ink">
+      {loadState === "loading" && (
+        <div className="flex min-h-[70vh] flex-col items-center justify-center gap-4">
+          <span className="h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-gc-cobalt" />
+          <p className="font-mono text-[12px] uppercase tracking-[0.14em] text-gc-faint">Entering room /{roomId}…</p>
+        </div>
+      )}
 
-          <div className="flex items-center gap-3">
-            <MembersStack members={room.members} isHost={room.isHost} roomId={room.roomId} />
-            <Button
-              size="sm"
-              variant="secondary"
-              icon={copied ? <Check size={15} /> : <LinkSimple size={15} />}
-              onClick={copyInvite}
+      {loadState !== "loading" && loadState !== "ready" && <div className="min-h-[70vh]">{loadStates[loadState ?? "error"]}</div>}
+
+      {loadState === "ready" && room && (
+        <>
+          <div className="mx-auto max-w-[1180px] px-6 pb-24 pt-8">
+            {/* Top header bar */}
+            <motion.div
+              initial={reduce ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, ease: EASE }}
+              className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6"
             >
-              {copied ? "Copied" : "Invite"}
-            </Button>
-            {room.isHost ? (
-              <Button
-                size="sm"
-                variant="secondary"
-                icon={<Check size={15} className="text-gc-cobalt" weight="bold" />}
-                onClick={() => {
-                  toast(`All room files are automatically saved in your Google Drive (G_Cloister/${room.roomId}).`, "info");
-                }}
-              >
-                Saved to Drive
-              </Button>
-            ) : hasDrive ? (
-              <Button
-                size="sm"
-                variant={savedSuccess ? "primary" : "secondary"}
-                icon={
-                  savedSuccess ? (
-                    <Check size={15} weight="bold" />
-                  ) : (
-                    <CloudArrowDown size={15} weight="duotone" />
-                  )
-                }
-                loading={savingToDrive}
-                onClick={handleSaveToDrive}
-              >
-                {savingToDrive ? "Saving to Drive…" : savedSuccess ? "Saved to Drive" : "Save to Drive"}
-              </Button>
-            ) : null}
-            <Button
-              size="sm"
-              variant="ghost"
-              icon={<SignOut size={15} />}
-              onClick={leaveRoom}
-              className="text-gc-orange hover:text-gc-orange-dark"
-            >
-              Leave
-            </Button>
-          </div>
-        </motion.div>
-
-        {/* Usage */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.06, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-6 border-4 border-gc-ink bg-paper paper-fiber px-5 py-4 shadow-[5px_5px_0_var(--gc-shadow)]"
-        >
-          <UsageBar usage={room.usage} />
-        </motion.div>
-
-        {uploads.length > 0 && (
-          <div className="mt-4 flex flex-col gap-2">
-            <AnimatePresence>
-              {uploads.map((u) => (
-                <motion.div
-                  key={u.key}
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, height: 0, marginTop: 0 }}
-                  className="flex items-center gap-3 border-2 border-gc-ink bg-paper px-4 py-2.5 shadow-[3px_3px_0_var(--gc-shadow)]"
-                >
-                  <span
-                    className={cn(
-                      "shrink-0",
-                      u.status === "done" && "text-gc-cobalt",
-                      u.status === "error" && "text-gc-orange",
-                      u.status === "uploading" && "text-gc-faint"
-                    )}
-                  >
-                    {u.status === "done" ? (
-                      <CheckCircle size={18} weight="fill" />
-                    ) : u.status === "error" ? (
-                      <XCircle size={18} weight="fill" />
-                    ) : (
-                      <SpinnerGap size={18} className="animate-spin" />
-                    )}
-                  </span>
-                  <p className="min-w-0 flex-1 truncate text-[13px] font-bold text-gc-ink">{u.name}</p>
-                  {u.status === "error" ? (
-                    <p className="font-space-mono text-[11px] text-gc-orange">{u.error}</p>
-                  ) : (
-                    <div className="flex items-center gap-2">
-                      <div className="h-2.5 w-28 border-2 border-gc-ink bg-paper-2">
-                        <motion.div
-                          className="h-full bg-gc-cobalt"
-                          animate={{ width: `${u.progress}%` }}
-                        />
-                      </div>
-                      <span className="w-9 text-right font-space-mono text-[11px] tabular-nums text-gc-faint">
-                        {u.progress}%
+              <div className="flex items-center gap-3">
+                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-gc-cobalt text-white shadow-[0_8px_24px_-8px_rgba(68,86,232,0.8)]">
+                  <FolderOpen size={22} weight="bold" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h1 className="font-mono text-2xl font-bold tracking-tight">/{room.roomId}</h1>
+                    {room.isHost && (
+                      <span className="flex items-center gap-1 rounded-full border border-gc-cobalt/40 bg-gc-cobalt/10 px-2 py-0.5 font-mono text-[9.5px] font-bold uppercase tracking-[0.08em] text-[#7c8bff]">
+                        <Crown size={10} weight="fill" />
+                        Host
                       </span>
-                    </div>
-                  )}
-                </motion.div>
-              ))}
+                    )}
+                  </div>
+                  <div className="mt-1 flex items-center gap-2.5">
+                    <span
+                      className={cn(
+                        "flex items-center gap-1.5 rounded-full px-2 py-0.5 font-mono text-[10px] font-bold uppercase tracking-[0.1em]",
+                        connected
+                          ? "border border-gc-cobalt/40 bg-gc-cobalt/10 text-[#7c8bff]"
+                          : "border border-dashed border-white/20 bg-white/[0.03] text-gc-faint"
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "h-1.5 w-1.5 rounded-full",
+                          connected ? "bg-gc-cobalt shadow-[0_0_8px_rgba(68,86,232,0.9)]" : "bg-gc-faint"
+                        )}
+                      />
+                      {connected ? "Live" : "Reconnecting"}
+                    </span>
+                    <span className="font-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-faint">
+                      hosted by {room.host?.name?.split(" ")[0] || "someone"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2.5">
+                <MembersStack members={room.members} isHost={room.isHost} roomId={room.roomId} />
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon={copied ? <Check size={15} /> : <LinkSimple size={15} />}
+                  onClick={copyInvite}
+                >
+                  {copied ? "Copied" : "Invite"}
+                </Button>
+                {room.isHost ? (
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    icon={<Check size={15} className="text-gc-cobalt" weight="bold" />}
+                    onClick={() => {
+                      toast(`All room files are automatically saved in your Google Drive (G_Cloister/${room.roomId}).`, "info");
+                    }}
+                  >
+                    Saved to Drive
+                  </Button>
+                ) : hasDrive ? (
+                  <Button
+                    size="sm"
+                    variant={savedSuccess ? "primary" : "secondary"}
+                    icon={
+                      savedSuccess ? (
+                        <Check size={15} weight="bold" />
+                      ) : (
+                        <CloudArrowDown size={15} weight="duotone" />
+                      )
+                    }
+                    loading={savingToDrive}
+                    onClick={handleSaveToDrive}
+                  >
+                    {savingToDrive ? "Saving to Drive…" : savedSuccess ? "Saved to Drive" : "Save to Drive"}
+                  </Button>
+                ) : null}
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  icon={<SignOut size={15} />}
+                  onClick={leaveRoom}
+                  className="text-gc-orange hover:text-gc-orange-dark"
+                >
+                  Leave
+                </Button>
+              </div>
+            </motion.div>
+
+            {/* Usage */}
+            <motion.div
+              initial={reduce ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.06, duration: 0.5, ease: EASE }}
+              className="mt-6 rounded-2xl border border-white/10 bg-[#12151c] px-5 py-4"
+            >
+              <UsageBar usage={room.usage} />
+            </motion.div>
+
+            {/* Uploads in flight */}
+            <AnimatePresence>
+              {uploads.length > 0 && (
+                <div className="mt-4 flex flex-col gap-2">
+                  {uploads.map((u) => (
+                    <motion.div
+                      key={u.key}
+                      layout
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, height: 0, marginTop: 0 }}
+                      className="flex items-center gap-3 rounded-xl border border-white/10 bg-[#12151c] px-4 py-3"
+                    >
+                      <span
+                        className={cn(
+                          "shrink-0",
+                          u.status === "done" && "text-gc-cobalt",
+                          u.status === "error" && "text-gc-orange",
+                          u.status === "uploading" && "text-gc-faint"
+                        )}
+                      >
+                        {u.status === "done" ? (
+                          <CheckCircle size={18} weight="fill" />
+                        ) : u.status === "error" ? (
+                          <XCircle size={18} weight="fill" />
+                        ) : (
+                          <SpinnerGap size={18} className="animate-spin" />
+                        )}
+                      </span>
+                      <p className="min-w-0 flex-1 truncate font-mono text-[12.5px] font-bold text-gc-ink">{u.name}</p>
+                      {u.status === "error" ? (
+                        <p className="font-mono text-[11px] text-gc-orange">{u.error}</p>
+                      ) : (
+                        <div className="flex items-center gap-2">
+                          <div className="h-2 w-28 overflow-hidden rounded-full bg-white/[0.06]">
+                            <motion.div className="h-full bg-gc-cobalt" animate={{ width: `${u.progress}%` }} />
+                          </div>
+                          <span className="w-9 text-right font-mono text-[11px] tabular-nums text-gc-faint">
+                            {u.progress}%
+                          </span>
+                        </div>
+                      )}
+                    </motion.div>
+                  ))}
+                </div>
+              )}
             </AnimatePresence>
+
+            {/* Dropzone */}
+            <motion.div
+              initial={reduce ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.12, duration: 0.5, ease: EASE }}
+              className="mt-6"
+            >
+              <UploadDropzone onFiles={handleFiles} />
+            </motion.div>
+
+            {/* Files */}
+            <motion.div
+              initial={reduce ? false : { opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.18, duration: 0.5, ease: EASE }}
+              className="mt-8"
+            >
+              <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3 border-b border-white/10 pb-3">
+                <h2 className="text-lg font-black tracking-tight">
+                  {room.files.length} file{room.files.length === 1 ? "" : "s"}
+                </h2>
+                <span className="font-mono text-[10.5px] uppercase tracking-[0.12em] text-gc-faint">
+                  {room.isHost ? "drag a card to arrange · order is live for everyone" : "order arranged by the host"}
+                </span>
+              </div>
+              <FileGrid room={room} onPreview={setPreviewFile} />
+            </motion.div>
+
+            <motion.p
+              initial={reduce ? false : { opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+              className="mt-10 flex items-center justify-center gap-1.5 font-mono text-[10px] uppercase tracking-[0.12em] text-gc-faint"
+            >
+              total {formatBytes(room.usage.usedBytes)} of {room.usage.limitFormatted} · synced with the host&apos;s Google Drive
+            </motion.p>
           </div>
-        )}
 
-        {/* Dropzone */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-6"
-        >
-          <UploadDropzone onFiles={handleFiles} />
-        </motion.div>
-
-        {/* Files */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.18, duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-          className="mt-8"
-        >
-          <div className="mb-5 flex flex-wrap items-baseline justify-between gap-3 border-b-4 border-gc-ink pb-3">
-            <h2 className="text-lg font-black tracking-tight">
-              {room.files.length} file{room.files.length === 1 ? "" : "s"}
-            </h2>
-            <span className="font-space-mono text-[10.5px] uppercase tracking-[0.12em] text-gc-faint">
-              {room.isHost ? "drag a card to arrange · order is live for everyone" : "order arranged by the host"}
-            </span>
-          </div>
-          <FileGrid room={room} onPreview={setPreviewFile} />
-        </motion.div>
-      </div>
-
-      <PreviewModal roomId={room.roomId} file={previewFile} onClose={() => setPreviewFile(null)} />
+          <PreviewModal roomId={room.roomId} file={previewFile} onClose={() => setPreviewFile(null)} />
+        </>
+      )}
     </main>
   );
 }

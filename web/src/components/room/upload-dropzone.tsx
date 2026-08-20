@@ -33,10 +33,10 @@ export function UploadDropzone({ onFiles }: { onFiles: (files: File[]) => void }
         if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
       }}
       className={cn(
-        "group relative cursor-pointer border-4 border-dashed px-6 py-10 text-center transition-all duration-150",
+        "group relative cursor-pointer rounded-2xl border border-dashed px-6 py-10 text-center transition-all duration-150",
         drag
-          ? "border-gc-ink bg-paper-2 scale-[1.005] shadow-[6px_6px_0_var(--gc-shadow)]"
-          : "border-gc-ink/40 hover:border-gc-cobalt hover:bg-paper-2/60"
+          ? "scale-[1.005] border-gc-cobalt bg-gc-cobalt/[0.06]"
+          : "border-white/15 bg-white/[0.02] hover:border-gc-cobalt/60 hover:bg-white/[0.04]"
       )}
     >
       <input
@@ -52,16 +52,18 @@ export function UploadDropzone({ onFiles }: { onFiles: (files: File[]) => void }
       />
       <span
         className={cn(
-          "relative mx-auto flex h-14 w-14 items-center justify-center border-2 transition-all duration-150",
-          drag ? "border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_var(--gc-shadow)]" : "border-dashed border-gc-ink bg-paper-2 text-gc-cobalt group-hover:scale-105"
+          "relative mx-auto flex h-14 w-14 items-center justify-center rounded-2xl transition-all duration-150",
+          drag ? "bg-gc-cobalt text-white" : "bg-[#161a23] text-[#7c8bff] group-hover:scale-105"
         )}
       >
         <CloudArrowUp size={28} weight="duotone" />
       </span>
-      <p className="relative mt-4 text-[16px] font-black tracking-tight">{drag ? "Drop to add files" : "Drag & drop files here"}</p>
-      <p className="relative mt-1 font-space-mono text-[11px] uppercase tracking-[0.1em] text-gc-muted">
+      <p className="relative mt-4 text-[16px] font-black tracking-tight">
+        {drag ? "Drop to add files" : "Drag & drop files here"}
+      </p>
+      <p className="relative mt-1 font-mono text-[11px] uppercase tracking-[0.1em] text-gc-muted">
         or{" "}
-        <span className="font-bold text-gc-cobalt underline-offset-4 group-hover:underline">
+        <span className="font-bold text-[#7c8bff] underline-offset-4 group-hover:underline">
           browse your device
         </span>{" "}
         — drop as many as you like

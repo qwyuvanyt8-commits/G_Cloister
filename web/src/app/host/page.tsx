@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import {
   ArrowRight,
   Copy,
@@ -10,13 +10,17 @@ import {
   DotsThree,
   HardDrives,
   LockKey,
+  Key,
+  Hash,
+  Sparkle,
 } from "@phosphor-icons/react";
 import { AppNav } from "@/components/app-nav";
 import { RequireAuth } from "@/components/require-auth";
-import { Button, Input, MonoChip } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 import { api } from "@/lib/api";
 import { useToast } from "@/components/toast";
 import { useAuth } from "@/components/auth-provider";
+import { cn } from "@/lib/cn";
 
 const WORDS = [
   "vault", "atrium", "quarry", "cipher", "haven", "loft", "obelisk", "reef",
@@ -36,10 +40,56 @@ function randomRoomId() {
   return `${word}-${Math.floor(100 + Math.random() * 900)}`;
 }
 
+const EASE = [0.16, 1, 0.3, 1] as const;
+
+function CredentialRow({
+  label,
+  icon,
+  value,
+  mono,
+  copied,
+  onCopy,
+}: {
+  label: string;
+  icon: React.ReactNode;
+  value: string;
+  mono: boolean;
+  copied: boolean;
+  onCopy: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+      <div className="flex items-center justify-between">
+        <p className="flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-gc-muted">
+          {icon}
+          {label}
+        </p>
+        <button
+          type="button"
+          onClick={onCopy}
+          className="flex items-center gap-1.5 rounded-md px-2 py-1 font-mono text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#7c8bff] transition-colors hover:bg-gc-cobalt/10"
+        >
+          {copied ? <Check size={13} /> : <Copy size={13} />}
+          {copied ? "Copied" : "Copy"}
+        </button>
+      </div>
+      <p
+        className={cn(
+          "mt-2 break-all font-mono text-[15px] font-bold tracking-tight text-gc-ink",
+          mono && "tracking-[0.16em]"
+        )}
+      >
+        {value}
+      </p>
+    </div>
+  );
+}
+
 function HostInner() {
   const router = useRouter();
   const { toast } = useToast();
   const { hasDrive, openDriveModal } = useAuth();
+  const reduce = useReducedMotion();
   const [roomId, setRoomId] = useState("");
   const [password, setPassword] = useState(() => randomPassword());
   const [copied, setCopied] = useState<"id" | "pw" | "all" | null>(null);
@@ -106,68 +156,69 @@ function HostInner() {
   if (created) {
     const inviteUrl = `${window.location.origin}/join?room=${created.roomId}&pw=${encodeURIComponent(created.password)}`;
     return (
-      <main className="min-h-[calc(100dvh-4rem)] bg-paper text-gc-ink">
+      <main className="min-h-[calc(100dvh-4rem)] bg-[#0b0d12] text-gc-ink">
         <div className="mx-auto max-w-[560px] px-6 pb-24 pt-14">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={reduce ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.6, ease: EASE }}
             className="text-center"
           >
-            <span className="mx-auto flex h-14 w-14 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_var(--gc-shadow)]">
+            <motion.span
+              initial={reduce ? false : { scale: 0.6 }}
+              animate={{ scale: 1 }}
+              transition={{ type: "spring", stiffness: 300, damping: 18 }}
+              className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-gc-cobalt text-white shadow-[0_10px_36px_-10px_rgba(68,86,232,0.9)]"
+            >
               <Check size={30} weight="bold" />
-            </span>
-            <h1 className="mt-6 font-black tracking-[-0.03em] text-[clamp(28px,4.5vw,44px)]">Room created</h1>
-            <p className="mt-2 text-[15px] font-space-mono uppercase tracking-[0.08em] text-gc-muted">
-              Your vault is live at <span className="text-gc-cobalt">G_Cloister/{created.roomId}</span>.
+            </motion.span>
+            <h1 className="mt-6 text-[clamp(28px,4.5vw,44px)] font-black leading-[0.95] tracking-[-0.04em]">
+              Room created
+            </h1>
+            <p className="mt-2 font-mono text-[12px] uppercase tracking-[0.1em] text-gc-muted">
+              Your vault is live at <span className="font-bold text-[#7c8bff]">G_Cloister/{created.roomId}</span>.
             </p>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={reduce ? false : { opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-            className="corner-tick mt-8 border-4 border-gc-ink bg-paper paper-fiber p-6 shadow-[8px_8px_0_var(--gc-shadow)]"
+            transition={{ delay: 0.1, duration: 0.6, ease: EASE }}
+            className="mt-8 space-y-3 rounded-2xl border border-white/10 bg-[#12151c] p-6"
           >
-            <div className="space-y-5">
-              <div>
-                <p className="font-space-mono text-[10.5px] font-bold uppercase tracking-[0.16em] text-gc-muted">Room ID</p>
-                <div className="mt-2 flex items-center gap-2">
-                  <MonoChip className="flex-1 justify-between px-3 py-2.5 text-[15px]">
-                    {created.roomId}
-                  </MonoChip>
-                  <Button size="sm" variant="secondary" icon={copied === "id" ? <Check size={15} /> : <Copy size={15} />} onClick={() => copy(created.roomId, "id")}>
-                    {copied === "id" ? "Copied" : "Copy"}
-                  </Button>
-                </div>
-              </div>
+            <CredentialRow
+              label="Room ID"
+              icon={<Hash size={12} weight="bold" />}
+              value={created.roomId}
+              mono={false}
+              copied={copied === "id"}
+              onCopy={() => copy(created.roomId, "id")}
+            />
+            <CredentialRow
+              label="Password"
+              icon={<LockKey size={12} weight="bold" />}
+              value={created.password}
+              mono
+              copied={copied === "pw"}
+              onCopy={() => copy(created.password, "pw")}
+            />
+            <p className="flex items-center gap-1.5 pl-4 font-mono text-[10px] uppercase tracking-[0.1em] text-gc-faint">
+              <Sparkle size={11} className="text-gc-orange" />
+              This is the only time the password is shown in full.
+            </p>
 
-              <div>
-                <p className="font-space-mono text-[10.5px] font-bold uppercase tracking-[0.16em] text-gc-muted">Password</p>
-                <div className="mt-2 flex items-center gap-2">
-                  <MonoChip className="flex-1 justify-between px-3 py-2.5 text-[15px] tracking-[0.18em]">
-                    <span className="flex items-center gap-2"><LockKey size={15} className="text-gc-cobalt" />{created.password}</span>
-                  </MonoChip>
-                  <Button size="sm" variant="secondary" icon={copied === "pw" ? <Check size={15} /> : <Copy size={15} />} onClick={() => copy(created.password, "pw")}>
-                    {copied === "pw" ? "Copied" : "Copy"}
-                  </Button>
-                </div>
-                <p className="mt-2 font-space-mono text-[11px] uppercase tracking-[0.08em] text-gc-faint">This is the only time the password is shown in full.</p>
-              </div>
-
-              <Button
-                className="w-full"
-                icon={copied === "all" ? <Check size={18} /> : <Copy size={18} />}
-                variant="secondary"
-                onClick={() => copy(inviteUrl, "all")}
-              >
-                {copied === "all" ? "Invite link copied" : "Copy invite link"}
-              </Button>
-            </div>
+            <Button
+              className="w-full"
+              icon={copied === "all" ? <Check size={18} /> : <Copy size={18} />}
+              variant="secondary"
+              onClick={() => copy(inviteUrl, "all")}
+            >
+              {copied === "all" ? "Invite link copied" : "Copy invite link"}
+            </Button>
           </motion.div>
 
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}
             className="mt-6"
@@ -187,25 +238,31 @@ function HostInner() {
   }
 
   return (
-    <main className="min-h-[calc(100dvh-4rem)] bg-paper text-gc-ink">
+    <main className="min-h-[calc(100dvh-4rem)] bg-[#0b0d12] text-gc-ink">
       <div className="mx-auto max-w-[560px] px-6 pb-24 pt-14">
         <motion.div
-          initial={{ opacity: 0, y: 18 }}
+          initial={reduce ? false : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.7, ease: EASE }}
         >
-          <p className="font-space-mono text-[11px] font-bold uppercase tracking-[0.16em] text-gc-cobalt">Host</p>
-          <h1 className="mt-4 font-black tracking-[-0.03em] text-[clamp(28px,4.5vw,44px)]">Claim a room name</h1>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-[#7c8bff]">
+            Host
+          </p>
+          <h1 className="mt-4 text-[clamp(28px,4.5vw,44px)] font-black leading-[0.95] tracking-[-0.04em]">
+            Claim a room name
+          </h1>
           <p className="mt-3 max-w-[50ch] text-[15px] leading-relaxed text-gc-muted">
-            Pick an ID people will remember. We&apos;ll cut a <span className="font-space-mono font-bold text-gc-cobalt">G_Cloister</span> folder into your Drive and hand you a password.
+            Pick an ID people will remember. We&apos;ll cut a{" "}
+            <span className="font-mono font-bold text-[#7c8bff]">G_Cloister</span> folder into your Drive and hand
+            you a password.
           </p>
         </motion.div>
 
         <motion.div
-          initial={{ opacity: 0, y: 24 }}
+          initial={reduce ? false : { opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.12, duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-          className="corner-tick mt-10 border-4 border-gc-ink bg-paper paper-fiber p-6 shadow-[8px_8px_0_var(--gc-shadow)] sm:p-8"
+          transition={{ delay: 0.12, duration: 0.7, ease: EASE }}
+          className="mt-10 rounded-2xl border border-white/10 bg-[#12151c] p-6 sm:p-8"
         >
           <div className="flex flex-col gap-6">
             <Input
@@ -224,7 +281,7 @@ function HostInner() {
                 <button
                   type="button"
                   onClick={() => setRoomId(randomRoomId())}
-                  className="flex items-center gap-1 px-2 py-1 font-space-mono text-[11px] font-bold uppercase tracking-[0.08em] text-gc-muted transition-colors hover:text-gc-cobalt"
+                  className="flex items-center gap-1 px-2 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-gc-muted transition-colors hover:text-[#7c8bff]"
                   aria-label="Suggest a room ID"
                 >
                   <DotsThree size={18} weight="bold" /> suggest
@@ -233,31 +290,38 @@ function HostInner() {
             />
 
             <div>
-              <p className="font-space-mono text-[11px] font-bold uppercase tracking-[0.14em] text-gc-muted">Room password</p>
-              <div className="mt-2 flex items-center gap-2">
-                <MonoChip className="flex-1 justify-between px-3 py-2.5 text-[15px] tracking-[0.18em]">
-                  <span className="flex items-center gap-2"><LockKey size={15} className="text-gc-cobalt" />{password}</span>
-                </MonoChip>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  icon={copied === "pw" ? <Check size={15} /> : <Copy size={15} />}
-                  onClick={() => copy(password, "pw")}
-                  aria-label="Copy password"
-                >
-                  {copied === "pw" ? "Copied" : "Copy"}
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  onClick={() => setPassword(randomPassword())}
-                  aria-label="Regenerate password"
-                >
-                  <DotsThree size={18} weight="bold" />
-                </Button>
+              <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-gc-muted">
+                Room password
+              </p>
+              <div className="mt-2 rounded-xl border border-white/10 bg-white/[0.03] p-3.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="flex min-w-0 items-center gap-2 font-mono text-[15px] font-bold tracking-[0.16em] text-gc-ink">
+                    <LockKey size={15} className="shrink-0 text-[#7c8bff]" />
+                    {password}
+                  </span>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <button
+                      type="button"
+                      onClick={() => copy(password, "pw")}
+                      aria-label="Copy password"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-[#7c8bff] transition-colors hover:bg-gc-cobalt/10"
+                    >
+                      {copied === "pw" ? <Check size={15} /> : <Copy size={15} />}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setPassword(randomPassword())}
+                      aria-label="Regenerate password"
+                      className="flex h-8 w-8 items-center justify-center rounded-lg text-gc-muted transition-colors hover:bg-white/[0.06] hover:text-gc-ink"
+                    >
+                      <DotsThree size={18} weight="bold" />
+                    </button>
+                  </div>
+                </div>
               </div>
-              <p className="mt-2 font-space-mono text-[11px] uppercase tracking-[0.08em] text-gc-faint">
-                Auto-generated. You can keep it or regenerate until you&apos;re happy.
+              <p className="mt-2 flex items-center gap-1.5 pl-1 font-mono text-[10px] uppercase tracking-[0.1em] text-gc-faint">
+                <Key size={11} className="text-gc-orange" />
+                Auto-generated. Regenerate until you&apos;re happy.
               </p>
             </div>
 
@@ -272,9 +336,9 @@ function HostInner() {
               Create the room
             </Button>
 
-            <div className="flex items-center gap-3 border-2 border-dashed border-gc-ink bg-paper-2 px-4 py-3">
+            <div className="flex items-center gap-3 rounded-xl border border-dashed border-white/15 bg-white/[0.02] px-4 py-3">
               <HardDrives size={18} weight="duotone" className="shrink-0 text-gc-cobalt" />
-              <p className="font-space-mono text-[11.5px] leading-snug uppercase tracking-[0.06em] text-gc-muted">
+              <p className="font-mono text-[11.5px] uppercase leading-snug tracking-[0.06em] text-gc-muted">
                 <span className="font-bold text-gc-ink">5 GB</span> of fresh space carved out of{" "}
                 <span className="font-bold text-gc-ink">your Google Drive</span>.
               </p>

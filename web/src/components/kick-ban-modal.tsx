@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, AnimatePresence } from "motion/react";
-import { ShieldWarning, Door, ArrowRight } from "@phosphor-icons/react";
+import { ShieldWarning, Door, ArrowRight, SignOut } from "@phosphor-icons/react";
 import { Button } from "./ui";
 
 export interface KickInfo {
@@ -41,21 +41,19 @@ export function KickBanModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-md overflow-hidden border-4 border-gc-orange bg-paper p-7 shadow-[8px_8px_0_var(--gc-shadow)]"
+            className="relative z-10 w-full max-w-md rounded-2xl border border-gc-orange/40 bg-[#10131a] p-7 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)]"
           >
-            <div className="flex h-12 w-12 items-center justify-center border-2 border-gc-orange bg-gc-orange/10 text-gc-orange">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-gc-orange/30 bg-gc-orange/10 text-gc-orange">
               <ShieldWarning size={28} />
             </div>
 
-            <h3 className="mt-4 text-xl font-black tracking-tight uppercase">
-              Account Banned by Administrator
-            </h3>
+            <h3 className="mt-4 text-xl font-black tracking-tight">Account Banned</h3>
 
             <p className="mt-2 text-[14px] leading-relaxed text-gc-muted">
               {bannedReason || "Your account has been banned by an administrator."}
             </p>
 
-            <div className="mt-4 border-2 border-gc-orange bg-gc-orange/10 p-3.5 text-[12.5px] leading-snug text-gc-orange">
+            <div className="mt-4 rounded-xl border border-gc-orange/30 bg-gc-orange/10 p-3.5 text-[12.5px] leading-snug text-gc-orange">
               Your active sessions and WebSocket connections have been terminated immediately. Access to hosted and joined rooms is suspended.
             </div>
 
@@ -65,9 +63,9 @@ export function KickBanModal({
                 variant="danger"
                 className="w-full"
                 onClick={onDismissBan}
-                icon={<ArrowRight size={17} />}
+                icon={<SignOut size={17} />}
               >
-                Acknowledge & Exit
+                Acknowledge &amp; Exit
               </Button>
             </div>
           </motion.div>
@@ -89,25 +87,23 @@ export function KickBanModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-md overflow-hidden border-4 border-gc-ink bg-paper p-7 shadow-[8px_8px_0_var(--gc-shadow)]"
+            className="relative z-10 w-full max-w-md rounded-2xl border border-white/10 bg-[#10131a] p-7 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)]"
           >
-            <div className="flex h-12 w-12 items-center justify-center border-2 border-gc-ink bg-gc-mint text-gc-ink">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-gc-cobalt/15 text-[#7c8bff]">
               <Door size={28} />
             </div>
 
-            <h3 className="mt-4 text-xl font-black tracking-tight uppercase">
-              You Have Been Kicked
-            </h3>
+            <h3 className="mt-4 text-xl font-black tracking-tight">You&apos;ve been kicked</h3>
 
-            <div className="mt-3 border-2 border-dashed border-gc-ink bg-paper-2 p-4 text-[13.5px]">
-              <div className="flex justify-between border-b-2 border-dashed border-gc-ink/40 pb-2 font-space-mono text-[11px] uppercase tracking-[0.06em] text-gc-muted">
+            <div className="mt-3 rounded-xl border border-white/10 bg-white/[0.03] p-4 text-[13.5px]">
+              <div className="flex justify-between gap-4 border-b border-white/10 pb-2 font-mono text-[11px] uppercase tracking-[0.06em] text-gc-muted">
                 <span>Room ID</span>
-                <span className="font-space-mono font-bold text-gc-ink">{kickInfo.roomId}</span>
+                <span className="font-bold text-gc-ink">{kickInfo.roomId}</span>
               </div>
-              <div className="flex justify-between pt-2 font-space-mono text-[11px] uppercase tracking-[0.06em] text-gc-muted">
-                <span>Kicked By</span>
-                <span className="font-medium text-ink">
-                  {kickInfo.kickerName} {kickInfo.isHostKicker ? "(Room Owner)" : "(Administrator)"}
+              <div className="flex justify-between gap-4 pt-2 font-mono text-[11px] uppercase tracking-[0.06em] text-gc-muted">
+                <span>Kicked by</span>
+                <span className="text-gc-ink">
+                  {kickInfo.kickerName} {kickInfo.isHostKicker ? "(Room owner)" : "(Administrator)"}
                 </span>
               </div>
             </div>
@@ -115,11 +111,13 @@ export function KickBanModal({
             <p className="mt-4 text-[13.5px] leading-relaxed text-gc-muted">
               {kickInfo.isHostKicker ? (
                 <>
-                  You have been kicked from room <span className="font-space-mono font-bold text-gc-ink">{kickInfo.roomId}</span> by the room owner (<span className="font-medium text-ink">{kickInfo.kickerName}</span>).
+                  The room owner (<span className="font-mono font-bold text-gc-ink">{kickInfo.kickerName}</span>) removed you from{" "}
+                  <span className="font-mono font-bold text-gc-ink">{kickInfo.roomId}</span>.
                 </>
               ) : (
                 <>
-                  You have been kicked from room <span className="font-space-mono font-bold text-gc-ink">{kickInfo.roomId}</span> by an <span className="font-medium text-ink">Administrator</span>.
+                  An administrator removed you from{" "}
+                  <span className="font-mono font-bold text-gc-ink">{kickInfo.roomId}</span>.
                 </>
               )}
             </p>
@@ -132,7 +130,7 @@ export function KickBanModal({
                 onClick={onDismissKick}
                 icon={<ArrowRight size={17} />}
               >
-                Acknowledge & Return to Dashboard
+                Acknowledge &amp; Return to Dashboard
               </Button>
             </div>
           </motion.div>

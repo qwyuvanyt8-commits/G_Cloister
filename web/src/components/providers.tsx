@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { AuthProvider, useAuth } from "@/components/auth-provider";
-import { ThemeProvider } from "@/components/theme-provider";
 import { ToastProvider, useToast } from "@/components/toast";
 import { KickBanModal, KickInfo } from "@/components/kick-ban-modal";
 import { getSocket, closeSocket } from "@/lib/socket";
@@ -84,12 +83,10 @@ function GlobalSocketListener({ children }: { children: React.ReactNode }) {
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <ToastProvider>
-          <GlobalSocketListener>{children}</GlobalSocketListener>
-        </ToastProvider>
-      </AuthProvider>
-    </ThemeProvider>
+    <AuthProvider>
+      <ToastProvider>
+        <GlobalSocketListener>{children}</GlobalSocketListener>
+      </ToastProvider>
+    </AuthProvider>
   );
 }

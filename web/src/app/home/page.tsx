@@ -2,7 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { motion, AnimatePresence } from "motion/react";
+import { motion, AnimatePresence, useReducedMotion } from "motion/react";
 import {
   PlusCircle,
   SignIn,
@@ -13,6 +13,8 @@ import {
   HardDrive,
   FolderOpen,
   TrashSimple,
+  X,
+  Sparkle,
 } from "@phosphor-icons/react";
 import { AppNav } from "@/components/app-nav";
 import { RequireAuth } from "@/components/require-auth";
@@ -44,6 +46,8 @@ function timeAgo(ts: number): string {
   if (days < 30) return `${days}d ago`;
   return `${Math.floor(days / 30)}mo ago`;
 }
+
+const EASE = [0.16, 1, 0.3, 1] as const;
 
 function RoomCardItem({
   room,
@@ -86,24 +90,24 @@ function RoomCardItem({
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
-      transition={{ duration: 0.5, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={{ duration: 0.5, delay, ease: EASE }}
       onClick={() => router.push(`/room/${room.roomId}`)}
-      className="group relative flex cursor-pointer flex-col border-4 border-gc-ink bg-paper paper-fiber p-4 text-left shadow-[5px_5px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0_var(--gc-shadow)] active:scale-[0.99]"
+      className="group relative flex cursor-pointer flex-col rounded-2xl border border-white/10 bg-[#12151c] p-5 text-left transition-all duration-150 hover:-translate-y-1 hover:border-gc-cobalt/60 hover:shadow-[0_24px_50px_-28px_rgba(0,0,0,0.9)]"
     >
       <AnimatePresence>
         {confirmDelete && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.97 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: 0.97 }}
             onClick={(e) => e.stopPropagation()}
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-paper p-4 text-center border-4 border-gc-ink shadow-[6px_6px_0_var(--gc-shadow)]"
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl bg-[#12151c] p-5 text-center"
           >
-            <span className="text-2xl text-gc-orange">✕</span>
-            <p className="mt-2 text-[13.5px] font-extrabold uppercase tracking-tight text-gc-ink">
-              {isHosted ? `DELETE /${room.roomId}?` : `REMOVE /${room.roomId}?`}
+            <X size={22} weight="bold" className="text-gc-orange" />
+            <p className="mt-2 text-[13.5px] font-extrabold tracking-tight text-gc-ink">
+              {isHosted ? `Delete /${room.roomId}?` : `Remove /${room.roomId}?`}
             </p>
-            <p className="mt-0.5 max-w-[90%] text-[11.5px] font-space-mono text-gc-muted leading-tight">
+            <p className="mt-0.5 max-w-[90%] font-mono text-[11.5px] leading-tight text-gc-muted">
               {isHosted
                 ? "This permanently deletes the room for all members."
                 : "Remove this room from your joined list."}
@@ -116,7 +120,7 @@ function RoomCardItem({
                   setConfirmDelete(false);
                 }}
                 disabled={deleting}
-                className="h-8 border-2 border-gc-ink bg-paper-2 px-2.5 font-space-mono text-[11px] font-bold uppercase text-gc-muted transition-colors hover:text-gc-ink disabled:opacity-50"
+                className="h-9 rounded-full border border-white/15 px-3 font-mono text-[11px] font-bold uppercase text-gc-muted transition-colors hover:text-gc-ink disabled:opacity-50"
               >
                 Cancel
               </button>
@@ -124,43 +128,45 @@ function RoomCardItem({
                 type="button"
                 onClick={handleDelete}
                 disabled={deleting}
-                className="h-8 border-2 border-gc-ink bg-gc-orange px-3 font-space-mono text-[11px] font-bold uppercase text-paper shadow-[2px_2px_0_var(--gc-shadow)] transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="h-9 rounded-full bg-gc-orange px-3.5 font-mono text-[11px] font-bold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
-                {deleting ? "…" : isHosted ? "Delete Room" : "Remove"}
+                {deleting ? "…" : isHosted ? "Delete room" : "Remove"}
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="flex items-center justify-between gap-2 border-b-2 border-dashed border-gc-ink/40 pb-3">
-        <span className="flex min-w-0 items-center gap-2.5">
+      <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3.5">
+        <span className="flex min-w-0 items-center gap-3">
           <span
             aria-hidden
             className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center border-2 border-gc-ink text-[15px] font-black tracking-tight shadow-[2px_2px_0_var(--gc-shadow)]",
-              isHosted ? "bg-gc-cobalt text-paper" : "bg-gc-orange text-paper"
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-[16px] font-black tracking-tight",
+              isHosted
+                ? "bg-gc-cobalt text-white"
+                : "border border-white/10 bg-white/[0.04] text-[#7c8bff]"
             )}
           >
             {room.roomId[0]?.toUpperCase() || "G_"}
           </span>
           <span className="min-w-0">
-            <span className="block truncate font-space-mono text-[15px] font-bold tracking-tight text-gc-ink">
+            <span className="block truncate font-mono text-[15px] font-bold tracking-tight text-gc-ink">
               /{room.roomId}
             </span>
-            <span className="block font-space-mono text-[8.5px] uppercase tracking-[0.18em] text-gc-faint">
-              {isHosted ? "room you host" : "room you joined"} · {room.roomId.slice(0, 4)}
+            <span className="block font-mono text-[9px] uppercase tracking-[0.18em] text-gc-faint">
+              {isHosted ? "room you host" : "room you joined"}
             </span>
           </span>
         </span>
         <div className="flex items-center gap-2">
           {isHosted ? (
-            <span className="flex items-center gap-1 border-2 border-gc-ink bg-gc-cobalt px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.08em] text-paper">
+            <span className="flex items-center gap-1 rounded-full border border-gc-cobalt/40 bg-gc-cobalt/10 px-2 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.1em] text-[#7c8bff]">
               <Crown size={10} weight="fill" />
               {room.isMember === false ? "Host · Left" : "Host"}
             </span>
           ) : room.isMember === false ? (
-            <span className="border-2 border-gc-ink bg-paper-2 px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.08em] text-gc-muted">
+            <span className="rounded-full border border-white/10 bg-white/[0.04] px-2 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.1em] text-gc-muted">
               Left
             </span>
           ) : null}
@@ -171,7 +177,7 @@ function RoomCardItem({
               e.stopPropagation();
               setConfirmDelete(true);
             }}
-            className="relative z-10 flex h-8 w-8 items-center justify-center border-2 border-transparent text-gc-faint transition-all hover:border-gc-ink hover:bg-gc-orange hover:text-paper"
+            className="relative z-10 flex h-8 w-8 items-center justify-center rounded-lg text-gc-faint transition-colors hover:bg-gc-orange/15 hover:text-gc-orange"
           >
             <TrashSimple size={14} />
           </button>
@@ -179,26 +185,25 @@ function RoomCardItem({
       </div>
 
       {!isHosted && room.hostName && (
-        <p className="mt-3 font-space-mono text-[11px] uppercase tracking-[0.08em] text-gc-muted">
+        <p className="mt-3 font-mono text-[11px] uppercase tracking-[0.1em] text-gc-muted">
           hosted by <span className="font-bold text-gc-ink">{room.hostName.split(" ")[0]}</span>
         </p>
       )}
 
-      <div className="mt-3 flex flex-wrap items-center gap-3 font-space-mono text-[11px] uppercase tracking-[0.04em] text-gc-faint">
-        <span className="flex items-center gap-1">
-          <Users size={13} weight="fill" /> {room.memberCount}
+      <div className="mt-3 flex flex-wrap items-center gap-4 font-mono text-[11px] tabular-nums tracking-[0.04em] text-gc-faint">
+        <span className="flex items-center gap-1.5">
+          <Users size={13} weight="fill" className="text-[#565e6b]" /> {room.memberCount}
         </span>
-        <span className="flex items-center gap-1">
-          <HardDrive size={13} weight="fill" /> {room.usedFormatted} / {room.limitFormatted}
+        <span className="flex items-center gap-1.5">
+          <HardDrive size={13} weight="fill" className="text-[#565e6b]" /> {room.usedFormatted} /{" "}
+          {room.limitFormatted}
         </span>
         <span className="ml-auto">{timeAgo(room.createdAt)}</span>
       </div>
 
-      <div className="mt-3.5 flex items-center justify-between border-t-2 border-dashed border-gc-ink pt-2.5 font-space-mono text-[9px] uppercase tracking-[0.14em] text-gc-faint">
-        <span className="flex items-center gap-1.5">
-          <span aria-hidden className="h-1.5 w-1.5 rounded-full border border-gc-ink" /> tear here
-        </span>
-        <span className="font-bold tracking-[0.22em] text-gc-ink">G_ · {room.roomId.slice(0, 4)}</span>
+      <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 font-mono text-[9px] uppercase tracking-[0.16em] text-gc-faint">
+        <span>Room {room.roomId[0]?.toUpperCase() || "G"}</span>
+        <span className="font-bold tracking-[0.24em] text-gc-muted">G_ · {room.roomId.slice(0, 4)}</span>
       </div>
     </motion.div>
   );
@@ -209,6 +214,7 @@ function HomeInner() {
   const params = useSearchParams();
   const { toast } = useToast();
   const { user } = useAuth();
+  const reduce = useReducedMotion();
 
   const [hosted, setHosted] = useState<RoomCard[]>(() => {
     if (typeof window === "undefined") return [];
@@ -277,68 +283,72 @@ function HomeInner() {
   const hasRooms = hosted.length > 0 || joined.length > 0;
 
   return (
-    <main className="min-h-[calc(100dvh-4rem)] bg-paper text-gc-ink">
-      <div className="mx-auto max-w-[1180px] px-6 pb-24 pt-12 lg:pt-16">
+    <main className="min-h-[calc(100dvh-4rem)] bg-[#0b0d12] text-gc-ink">
+      <div className="mx-auto max-w-[1240px] px-6 pb-24 pt-12 lg:pt-16">
         <motion.div
-          initial={{ opacity: 0, y: 18 }}
+          initial={reduce ? false : { opacity: 0, y: 18 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.7, ease: EASE }}
         >
-          <p className="font-space-mono text-[11px] font-bold uppercase tracking-[0.16em] text-gc-cobalt">
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.18em] text-[#7c8bff]">
             Welcome{user ? `, ${user.name.split(" ")[0]}` : ""}
           </p>
-          <h1 className="mt-4 text-balance text-[clamp(34px,5vw,58px)] font-black leading-[0.95] tracking-[-0.03em]">
+          <h1 className="mt-4 text-balance text-[clamp(32px,4.6vw,56px)] font-black leading-[0.95] tracking-[-0.04em]">
             What will you open{" "}
-            <span className="inline-block bg-gc-cobalt px-[0.12em] text-paper">
+            <span className="inline-block -rotate-1 rounded-lg bg-gc-cobalt px-[0.1em] text-white">
               today
             </span>
-            <span className="text-gc-orange">?</span>
+            <span className="text-[#7c8bff]">?</span>
           </h1>
         </motion.div>
 
-        <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
+        <div className="mt-12 grid grid-cols-1 gap-4 md:grid-cols-2">
           {/* Host */}
           <motion.button
-            initial={{ opacity: 0, y: 24 }}
+            initial={reduce ? false : { opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.08, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.7, delay: 0.08, ease: EASE }}
             onClick={() => router.push("/host")}
-            className="group relative border-4 border-gc-ink bg-paper paper-fiber p-7 text-left shadow-[7px_7px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_var(--gc-shadow)] active:translate-x-0 active:translate-y-0 active:shadow-none active:scale-[0.99]"
+            className="group rounded-2xl border border-white/10 bg-[#12151c] p-7 text-left transition-colors duration-150 hover:border-gc-cobalt/60 active:scale-[0.99]"
           >
-            <span className="absolute right-4 top-4 border-2 border-gc-ink bg-gc-mint px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.1em] text-gc-ink">
-              step 01
-            </span>
-            <span className="flex h-12 w-12 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper shadow-[3px_3px_0_var(--gc-shadow)]">
-              <PlusCircle size={24} weight="bold" />
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl bg-gc-cobalt text-white shadow-[0_6px_20px_-6px_rgba(68,86,232,0.7)]">
+                <PlusCircle size={24} weight="bold" />
+              </span>
+              <span className="rounded-full border border-gc-cobalt/40 bg-gc-cobalt/10 px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.12em] text-[#7c8bff]">
+                step 01
+              </span>
+            </div>
             <h2 className="mt-6 text-2xl font-black tracking-tight">Host a room</h2>
             <p className="mt-2 max-w-[42ch] text-[15px] leading-relaxed text-gc-muted">
               Pick a room ID. Your Google Drive becomes the vault with a fresh 5&nbsp;GB to fill.
             </p>
-            <span className="mt-6 inline-flex items-center gap-2 font-space-mono text-[11px] font-bold uppercase tracking-[0.14em] text-gc-cobalt transition-transform group-hover:translate-x-1">
+            <span className="mt-6 inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-[#7c8bff] transition-transform duration-200 group-hover:translate-x-1">
               Create a room <ArrowRight size={14} weight="bold" />
             </span>
           </motion.button>
 
           {/* Join */}
           <motion.button
-            initial={{ opacity: 0, y: 24 }}
+            initial={reduce ? false : { opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.16, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.7, delay: 0.16, ease: EASE }}
             onClick={() => router.push("/join")}
-            className="group relative border-4 border-gc-ink bg-paper paper-fiber p-7 text-left shadow-[7px_7px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[10px_10px_0_var(--gc-shadow)] active:translate-x-0 active:translate-y-0 active:shadow-none active:scale-[0.99]"
+            className="group rounded-2xl border border-white/10 bg-[#12151c] p-7 text-left transition-colors duration-150 hover:border-[#7c8bff]/50 active:scale-[0.99]"
           >
-            <span className="absolute right-4 top-4 border-2 border-gc-ink bg-gc-orange px-1.5 py-0.5 font-space-mono text-[9.5px] font-bold uppercase tracking-[0.1em] text-paper">
-              step 02
-            </span>
-            <span className="flex h-12 w-12 items-center justify-center border-2 border-gc-ink bg-gc-orange text-paper shadow-[3px_3px_0_var(--gc-shadow)]">
-              <SignIn size={24} weight="bold" />
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/[0.05] text-[#7c8bff]">
+                <SignIn size={24} weight="bold" />
+              </span>
+              <span className="rounded-full border border-white/15 bg-white/[0.04] px-2.5 py-1 font-mono text-[9.5px] font-bold uppercase tracking-[0.12em] text-gc-muted">
+                step 02
+              </span>
+            </div>
             <h2 className="mt-6 text-2xl font-black tracking-tight">Join a room</h2>
             <p className="mt-2 max-w-[42ch] text-[15px] leading-relaxed text-gc-muted">
               Got a code and a password from a host? Step inside and see their files appear live.
             </p>
-            <span className="mt-6 inline-flex items-center gap-2 font-space-mono text-[11px] font-bold uppercase tracking-[0.14em] text-gc-muted transition-colors group-hover:text-gc-orange">
+            <span className="mt-6 inline-flex items-center gap-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-gc-muted transition-all duration-200 group-hover:translate-x-1 group-hover:text-[#7c8bff]">
               Enter with a code <ArrowRight size={14} weight="bold" />
             </span>
           </motion.button>
@@ -346,11 +356,11 @@ function HomeInner() {
 
         {/* Skeleton while first load */}
         {loading && hosted.length === 0 && joined.length === 0 && (
-          <div className="mt-14 space-y-6 animate-pulse">
-            <div className="h-6 w-32 border-2 border-dashed border-gc-ink bg-paper-2" />
+          <div className="mt-14 space-y-6" aria-hidden>
+            <div className="h-6 w-40 animate-pulse rounded-lg bg-white/[0.06]" />
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="h-28 border-4 border-dashed border-gc-ink bg-paper-2/60" />
-              <div className="h-28 border-4 border-dashed border-gc-ink bg-paper-2/60" />
+              <div className="h-32 animate-pulse rounded-2xl bg-white/[0.05]" />
+              <div className="h-32 animate-pulse rounded-2xl bg-white/[0.05]" />
             </div>
           </div>
         )}
@@ -358,23 +368,23 @@ function HomeInner() {
         {/* My Hosted Rooms */}
         {hosted.length > 0 && (
           <motion.section
-            initial={{ opacity: 0, y: 20 }}
+            initial={reduce ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
             className="mt-14"
           >
-            <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3 border-b-4 border-gc-ink pb-3">
+            <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3 border-b border-white/10 pb-3">
               <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center border-2 border-gc-ink bg-gc-cobalt text-paper">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gc-cobalt text-white">
                   <Crown size={15} weight="fill" />
                 </span>
                 <h2 className="text-xl font-black tracking-tight">Your rooms</h2>
               </div>
-              <span className="font-space-mono text-[11px] font-bold uppercase tracking-[0.12em] text-gc-faint">
+              <span className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-gc-faint">
                 ({hosted.length})
               </span>
             </div>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {hosted.map((r, i) => (
                 <RoomCardItem
                   key={r.roomId}
@@ -391,23 +401,23 @@ function HomeInner() {
         {/* Joined Rooms */}
         {joined.length > 0 && (
           <motion.section
-            initial={{ opacity: 0, y: 20 }}
+            initial={reduce ? false : { opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.6, delay: 0.15, ease: EASE }}
             className="mt-14"
           >
-            <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3 border-b-4 border-gc-ink pb-3">
+            <div className="mb-6 flex flex-wrap items-baseline justify-between gap-3 border-b border-white/10 pb-3">
               <div className="flex items-center gap-3">
-                <span className="flex h-8 w-8 items-center justify-center border-2 border-gc-ink bg-gc-orange text-paper">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 bg-white/[0.05] text-[#7c8bff]">
                   <FolderOpen size={15} weight="duotone" />
                 </span>
                 <h2 className="text-xl font-black tracking-tight">Joined rooms</h2>
               </div>
-              <span className="font-space-mono text-[11px] font-bold uppercase tracking-[0.12em] text-gc-faint">
+              <span className="font-mono text-[11px] font-bold uppercase tracking-[0.14em] text-gc-faint">
                 ({joined.length})
               </span>
             </div>
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {joined.map((r, i) => (
                 <RoomCardItem
                   key={r.roomId}
@@ -424,28 +434,28 @@ function HomeInner() {
         {/* Empty state */}
         {!loading && !hasRooms && (
           <motion.div
-            initial={{ opacity: 0 }}
+            initial={reduce ? false : { opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.1, duration: 0.6 }}
-            className="corner-tick mt-14 flex flex-col items-center border-4 border-dashed border-gc-ink bg-paper-2 paper-fiber px-6 py-16 text-center"
+            className="mt-14 flex flex-col items-center rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-16 text-center"
           >
-            <span className="relative flex h-16 w-16 items-center justify-center border-2 border-dashed border-gc-ink bg-paper text-gc-faint shadow-[3px_3px_0_var(--gc-shadow)]">
-              <span aria-hidden className="text-2xl transition-transform duration-300 hover:rotate-90">✦</span>
+            <span className="flex h-16 w-16 items-center justify-center rounded-2xl border border-dashed border-white/20 bg-[#12151c] text-[#7c8bff]">
+              <Sparkle size={30} weight="duotone" />
             </span>
-            <p className="mt-5 font-space-mono text-[12px] uppercase tracking-[0.12em] text-gc-muted">
+            <p className="mt-5 font-mono text-[12px] uppercase tracking-[0.14em] text-gc-muted">
               No rooms yet. Host one or join with a code to get started.
             </p>
-            <p className="mt-1.5 flex items-center gap-1.5 font-space-mono text-[10px] uppercase tracking-[0.14em] text-gc-faint">
-              <span aria-hidden>▸</span> blank sticker sheet ready <span aria-hidden>◂</span>
+            <p className="mt-1.5 font-mono text-[10px] uppercase tracking-[0.14em] text-gc-faint">
+              your drive is empty, your first room is one click away
             </p>
           </motion.div>
         )}
 
         <motion.p
-          initial={{ opacity: 0 }}
+          initial={reduce ? false : { opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4, duration: 0.8 }}
-          className="mt-10 flex items-center gap-2 font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-muted"
+          className="mt-10 flex items-center gap-2 font-mono text-[10.5px] uppercase tracking-[0.1em] text-gc-muted"
         >
           <GoogleLogo size={14} />
           All rooms run on your own Google Drive — nothing is hosted on third-party servers.

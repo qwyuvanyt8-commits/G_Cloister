@@ -48,14 +48,14 @@ export function MembersStack({
     <div className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center -space-x-2 border-2 border-gc-ink bg-paper p-0.5 shadow-[2px_2px_0_var(--gc-shadow)] transition-transform hover:scale-105 active:scale-95"
+        className="flex items-center rounded-2xl border border-white/10 bg-[#12151c] p-1.5 transition-all hover:border-gc-cobalt/50 active:scale-95"
         aria-label="Room members"
       >
         {visible.map((m) => (
-          <Avatar key={m.id} name={m.name} src={m.avatar} size={30} online={m.left || m.kicked ? false : m.online} ring />
+          <Avatar key={m.id} name={m.name} src={m.avatar} size={28} online={m.left || m.kicked ? false : m.online} ring />
         ))}
         {overflow > 0 && (
-          <span className="flex h-[30px] w-[30px] items-center justify-center border-2 border-gc-ink bg-paper-2 font-space-mono text-[11px] font-bold text-gc-muted ring-2 ring-paper">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white/[0.06] font-mono text-[11px] font-bold text-gc-muted ring-2 ring-[#12151c]">
             +{overflow}
           </span>
         )}
@@ -74,48 +74,51 @@ export function MembersStack({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 6, scale: 0.98 }}
               transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              className="absolute right-0 top-12 z-50 w-80 border-4 border-gc-ink bg-paper p-3 shadow-[6px_6px_0_var(--gc-shadow)]"
+              className="absolute right-0 top-12 z-50 w-80 rounded-2xl border border-white/10 bg-[#12151c] p-3 shadow-[0_30px_70px_-30px_rgba(0,0,0,0.9)]"
             >
-              <div className="flex items-center justify-between border-b-2 border-dashed border-gc-ink/40 px-1 pb-2.5 mb-2">
-                <p className="font-space-mono text-[11px] font-bold uppercase tracking-[0.12em]">
+              <div className="mb-2 flex items-center justify-between border-b border-white/10 px-1 pb-2.5">
+                <p className="font-mono text-[11px] font-bold uppercase tracking-[0.12em]">
                   Members <span className="text-gc-faint">({members.length})</span>
                 </p>
-                <span className="font-space-mono text-[10.5px] font-bold uppercase tracking-[0.1em] text-gc-cobalt">
+                <span className="font-mono text-[10.5px] font-bold uppercase tracking-[0.1em] text-[#7c8bff]">
                   {onlineCount} online
                 </span>
               </div>
               <ul className="flex max-h-80 flex-col gap-1 overflow-auto">
                 {members.map((m) => (
-                  <li key={m.id} className="flex items-center gap-2.5 border-2 border-transparent px-2.5 py-2 transition-colors hover:border-dashed hover:border-gc-ink/40 hover:bg-paper-2">
+                  <li
+                    key={m.id}
+                    className="flex items-center gap-2.5 rounded-xl px-2.5 py-2 transition-colors hover:bg-white/[0.04]"
+                  >
                     <Avatar name={m.name} src={m.avatar} size={32} online={m.left || m.kicked ? false : m.online} />
                     <div className="min-w-0 flex-1">
-                      <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+                      <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                         <p className="truncate text-[13px] font-bold text-gc-ink">{m.name}</p>
                         {m.role === "host" ? (
-                          <span className="flex shrink-0 items-center gap-0.5 border border-gc-ink bg-gc-cobalt px-1.5 py-0.5 font-space-mono text-[9px] font-bold uppercase tracking-[0.06em] text-paper">
+                          <span className="flex shrink-0 items-center gap-0.5 rounded-full border border-gc-cobalt/40 bg-gc-cobalt/10 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.06em] text-[#7c8bff]">
                             <Crown size={9} weight="fill" />
                             Host
                           </span>
                         ) : (
-                          <span className="shrink-0 border border-gc-ink bg-paper-2 px-1.5 py-0.5 font-space-mono text-[9px] font-bold uppercase tracking-[0.06em] text-gc-muted">
+                          <span className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.06em] text-gc-muted">
                             Member
                           </span>
                         )}
                         {m.kicked ? (
-                          <span className="shrink-0 border border-gc-ink bg-gc-orange px-1.5 py-0.5 font-space-mono text-[9px] font-bold uppercase tracking-[0.06em] text-paper">
+                          <span className="shrink-0 rounded-full border border-gc-orange/40 bg-gc-orange/10 px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.06em] text-gc-orange">
                             Kicked
                           </span>
                         ) : m.left ? (
-                          <span className="shrink-0 border border-gc-ink bg-gc-orange/70 px-1.5 py-0.5 font-space-mono text-[9px] font-bold uppercase tracking-[0.06em] text-paper">
+                          <span className="shrink-0 rounded-full border border-gc-orange/30 bg-gc-orange/[0.07] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.06em] text-gc-orange">
                             Left
                           </span>
                         ) : !m.online ? (
-                          <span className="shrink-0 border border-gc-ink bg-paper-2 px-1.5 py-0.5 font-space-mono text-[9px] font-bold uppercase tracking-[0.06em] text-gc-faint">
+                          <span className="shrink-0 rounded-full border border-white/10 bg-white/[0.03] px-1.5 py-0.5 font-mono text-[9px] font-bold uppercase tracking-[0.06em] text-gc-faint">
                             Offline
                           </span>
                         ) : null}
                       </div>
-                      <p className="truncate font-space-mono text-[10px] text-gc-faint">{m.email}</p>
+                      <p className="truncate font-mono text-[10px] text-gc-faint">{m.email}</p>
                     </div>
 
                     {isHost && m.role !== "host" && (
@@ -124,10 +127,10 @@ export function MembersStack({
                         onClick={() => handleToggleKick(m)}
                         disabled={actingId === m.id}
                         className={cn(
-                          "shrink-0 border-2 px-2 py-1 font-space-mono text-[10px] font-bold uppercase tracking-[0.06em] transition-colors disabled:opacity-50",
+                          "shrink-0 rounded-full px-2.5 py-1 font-mono text-[10px] font-bold uppercase tracking-[0.06em] transition-colors disabled:opacity-50",
                           m.kicked
-                            ? "border-gc-ink bg-gc-cobalt text-paper hover:bg-gc-cobalt-dark"
-                            : "border-gc-ink bg-gc-orange text-paper hover:bg-gc-orange-dark"
+                            ? "border border-gc-cobalt/40 bg-gc-cobalt/15 text-[#7c8bff] hover:bg-gc-cobalt/25"
+                            : "border border-gc-orange/40 bg-gc-orange/10 text-gc-orange hover:bg-gc-orange/20"
                         )}
                       >
                         {actingId === m.id ? "…" : m.kicked ? "Unkick" : "Kick"}

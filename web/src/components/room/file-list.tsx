@@ -15,14 +15,18 @@ import { cn } from "@/lib/cn";
 
 export function EmptyRoom({ isHost }: { isHost: boolean }) {
   return (
-    <div className="corner-tick flex flex-col items-center border-4 border-dashed border-gc-ink/50 bg-paper-2/40 paper-fiber px-6 py-20 text-center">
-      <span className="relative flex h-16 w-16 items-center justify-center border-2 border-dashed border-gc-ink bg-paper-2 text-2xl shadow-[3px_3px_0_var(--gc-shadow)]">
-        <FileDashed size={30} weight="duotone" className="text-gc-faint" />
-        <span aria-hidden className="absolute -right-2 -top-2 h-4 w-4 border border-gc-ink bg-gc-cobalt text-paper" style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%)" }} />
+    <div className="flex flex-col items-center rounded-2xl border border-dashed border-white/15 bg-white/[0.02] px-6 py-20 text-center">
+      <span className="relative flex h-16 w-16 items-center justify-center rounded-2xl border border-dashed border-white/20 bg-[#161a23] text-[#565e6b]">
+        <FileDashed size={30} weight="duotone" />
+        <span
+          aria-hidden
+          className="absolute -right-1.5 -top-1.5 h-4 w-4 rounded-md bg-gc-cobalt"
+          style={{ clipPath: "polygon(0 0, 100% 0, 100% 100%)" }}
+        />
       </span>
       <div aria-hidden className="tear-guide mt-6 w-40 text-gc-faint" />
       <h3 className="mt-4 text-lg font-black tracking-tight">The room is empty</h3>
-      <p className="mt-2 max-w-[40ch] font-space-mono text-[11.5px] uppercase tracking-[0.06em] leading-relaxed text-gc-muted">
+      <p className="mt-2 max-w-[40ch] font-mono text-[11.5px] uppercase tracking-[0.06em] leading-relaxed text-gc-muted">
         {isHost
           ? "Drop the first file above and watch the room come alive for everyone."
           : "Drop a file above, or wait — the next upload lands here in real time."}
@@ -74,33 +78,33 @@ function FileCard({
   return (
     <div
       className={cn(
-        "group relative flex h-full flex-col border-4 border-gc-ink bg-paper paper-fiber p-4 shadow-[4px_4px_0_var(--gc-shadow)] transition-all duration-150 hover:-translate-x-0.5 hover:-translate-y-0.5 hover:rotate-[-0.4deg] hover:shadow-[7px_7px_0_var(--gc-shadow)]",
+        "group relative flex h-full flex-col rounded-2xl border border-white/10 bg-[#12151c] p-4 transition-all duration-150 hover:border-gc-cobalt/50 hover:-translate-y-0.5",
         ghosted && "invisible"
       )}
     >
       <AnimatePresence>
         {confirmDelete && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-paper p-4 text-center border-4 border-gc-ink"
+            exit={{ opacity: 0, scale: 0.96 }}
+            className="absolute inset-0 z-20 flex flex-col items-center justify-center rounded-2xl bg-[#12151c] p-4 text-center"
           >
             <TrashSimple size={24} className="text-gc-orange" />
             <p className="mt-2 text-[13px] font-extrabold uppercase tracking-tight">Delete this file?</p>
-            <p className="mt-0.5 max-w-[90%] truncate font-space-mono text-[10.5px] text-gc-muted">{file.name}</p>
+            <p className="mt-0.5 max-w-[90%] truncate font-mono text-[10.5px] text-gc-muted">{file.name}</p>
             <div className="mt-3 flex items-center gap-2">
               <button
                 onClick={() => setConfirmDelete(false)}
                 disabled={deleting}
-                className="h-8 border-2 border-gc-ink bg-paper-2 px-2.5 font-space-mono text-[11px] font-bold uppercase text-gc-muted transition-colors hover:text-gc-ink disabled:opacity-50"
+                className="h-8 rounded-full border border-white/15 px-3 font-mono text-[11px] font-bold uppercase text-gc-muted transition-colors hover:text-gc-ink disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={del}
                 disabled={deleting}
-                className="h-8 border-2 border-gc-ink bg-gc-orange px-3 font-space-mono text-[11px] font-bold uppercase text-paper shadow-[2px_2px_0_var(--gc-shadow)] transition-opacity hover:opacity-90 disabled:opacity-50"
+                className="h-8 rounded-full bg-gc-orange px-3.5 font-mono text-[11px] font-bold uppercase text-white transition-opacity hover:opacity-90 disabled:opacity-50"
               >
                 {deleting ? "…" : "Delete"}
               </button>
@@ -115,12 +119,12 @@ function FileCard({
             onPointerDown={(e) => dragHandle.onPointerDown(e, file.id)}
             title="Drag to reorder"
             aria-label="Drag to reorder"
-            className="inline-flex shrink-0 cursor-grab touch-none select-none items-center justify-center pt-2 text-gc-faint transition-colors hover:text-gc-cobalt active:cursor-grabbing"
+            className="inline-flex shrink-0 cursor-grab touch-none select-none items-center justify-center pt-2 text-gc-faint transition-colors hover:text-[#7c8bff] active:cursor-grabbing"
           >
             <DotsSixVertical size={18} weight="bold" />
           </span>
         )}
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center border-2 border-gc-ink bg-paper-2">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04]">
           <FileIcon name={file.name} mimeType={file.mimeType} size={22} />
         </span>
         <div className="flex items-center gap-0.5 opacity-0 transition-opacity duration-200 focus-within:opacity-100 group-hover:opacity-100">
@@ -133,7 +137,7 @@ function FileCard({
             href={api.downloadUrl(roomId, file.id)}
             download
             aria-label="Download"
-            className="inline-flex h-9 w-9 items-center justify-center border-2 border-transparent text-gc-muted transition-colors hover:border-gc-ink hover:bg-paper-2 hover:text-gc-ink active:scale-95"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-gc-muted transition-colors hover:bg-white/[0.06] hover:text-gc-ink active:scale-95"
           >
             <DownloadSimple size={17} />
           </a>
@@ -148,24 +152,21 @@ function FileCard({
         </div>
       </div>
 
-      <button
-        onClick={() => previewable && onPreview(file)}
-        className="mt-3.5 min-w-0 text-left"
-      >
+      <button onClick={() => previewable && onPreview(file)} className="mt-3.5 min-w-0 text-left">
         <p className="truncate text-[14px] font-bold tracking-tight" title={file.name}>
           {file.name}
         </p>
       </button>
-      <p className="mt-0.5 font-space-mono text-[11px] tabular-nums text-gc-faint">
+      <p className="mt-0.5 font-mono text-[11px] tabular-nums text-gc-faint">
         {file.sizeFormatted} · {timeAgo(file.createdAt)}
       </p>
 
-      <div className="mt-3.5 flex items-center gap-2 border-t-2 border-dashed border-gc-ink/40 pt-2.5">
+      <div className="mt-3.5 flex items-center gap-2 border-t border-white/10 pt-2.5">
         <Avatar name={file.uploader.name} src={file.uploader.avatar} size={20} />
-        <span className="truncate font-space-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-muted">
+        <span className="truncate font-mono text-[10.5px] uppercase tracking-[0.08em] text-gc-muted">
           {file.uploader.name.split(" ")[0]}
         </span>
-        <span aria-hidden className="ml-auto h-1.5 w-1.5 rounded-full border border-gc-ink/60" />
+        <span aria-hidden className="ml-auto h-1.5 w-1.5 rounded-full bg-white/[0.08]" />
       </div>
     </div>
   );

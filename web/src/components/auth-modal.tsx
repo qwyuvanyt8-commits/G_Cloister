@@ -90,7 +90,7 @@ export function AuthModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md"
           />
 
           <motion.div
@@ -98,29 +98,22 @@ export function AuthModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-md overflow-hidden border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_var(--gc-shadow)] sm:p-7"
+            className="relative z-10 w-full max-w-md overflow-hidden rounded-2xl border border-white/10 bg-[#10131a] p-6 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)] sm:p-7"
           >
             <button
               onClick={onClose}
-              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center border-2 border-gc-ink bg-paper text-gc-muted transition-colors hover:bg-gc-ink hover:text-paper"
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-lg text-gc-muted transition-colors hover:bg-white/[0.05] hover:text-gc-ink"
               aria-label="Close dialog"
             >
               <X size={18} />
             </button>
 
-            <div className="flex items-center gap-2.5">
-              <Logo size={30} withWordmark={false} />
-              <span className="flex items-center">
-                <span className="bg-gc-cobalt px-2 py-1 text-[14px] font-black leading-none text-paper">G_</span>
-                <span className="hidden border-2 border-gc-ink px-2 py-0.5 text-[14px] font-black leading-none sm:block">
-                  CLOISTER
-                </span>
-              </span>
-            </div>
-            <h3 className="mt-4 text-xl font-black tracking-tight uppercase">
+            <Logo size={30} />
+
+            <h3 className="mt-5 text-xl font-black tracking-tight">
               {mode === "register" ? "Create your account" : "Welcome back"}
             </h3>
-            <p className="mt-1 text-[13.5px] leading-relaxed text-gc-muted">
+            <p className="mt-1.5 text-[13.5px] leading-relaxed text-gc-muted">
               Hosts sign in with Google to store room files in their Drive. Members can
               join with just an email — no Google account needed.
             </p>
@@ -129,7 +122,6 @@ export function AuthModal({
               <Button
                 size="lg"
                 className="w-full"
-                variant="secondary"
                 loading={googleLoading}
                 onClick={handleGoogle}
                 icon={!googleLoading && <GoogleLogo size={18} weight="bold" />}
@@ -138,23 +130,23 @@ export function AuthModal({
               </Button>
 
               <div className="flex items-center gap-3">
-                <span className="h-px flex-1 bg-gc-ink/20" />
-                <span className="font-space-mono text-[10.5px] font-bold uppercase tracking-[0.14em] text-gc-faint">
+                <span className="h-px flex-1 bg-white/10" />
+                <span className="font-mono text-[10.5px] font-semibold uppercase tracking-[0.16em] text-gc-faint">
                   or use email
                 </span>
-                <span className="h-px flex-1 bg-gc-ink/20" />
+                <span className="h-px flex-1 bg-white/10" />
               </div>
 
-              <div className="flex rounded-none border-2 border-gc-ink bg-paper p-1">
+              <div className="flex rounded-full bg-white/[0.05] p-1">
                 {(["signin", "register"] as const).map((m) => (
                   <button
                     key={m}
                     type="button"
                     onClick={() => switchMode(m)}
                     className={cn(
-                      "flex-1 px-3 py-1.5 font-space-mono text-[12px] font-bold uppercase tracking-[0.08em] transition-colors",
+                      "flex-1 rounded-full px-3 py-1.5 font-mono text-[12px] font-bold uppercase tracking-[0.1em] transition-colors",
                       mode === m
-                        ? "bg-gc-cobalt text-paper"
+                        ? "bg-gc-cobalt text-white"
                         : "text-gc-muted hover:text-gc-ink"
                     )}
                   >
@@ -169,7 +161,7 @@ export function AuthModal({
                     label="Name"
                     name="name"
                     autoComplete="name"
-                    icon={<UserCircle size={18} className="text-faint" />}
+                    icon={<UserCircle size={18} />}
                     placeholder="Ada Lovelace"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
@@ -181,7 +173,7 @@ export function AuthModal({
                   name="email"
                   type="email"
                   autoComplete="email"
-                  icon={<Envelope size={18} className="text-faint" />}
+                  icon={<Envelope size={18} />}
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -193,19 +185,19 @@ export function AuthModal({
                     name="password"
                     type="password"
                     autoComplete={mode === "register" ? "new-password" : "current-password"}
-                    icon={<LockKey size={18} className="text-faint" />}
+                    icon={<LockKey size={18} />}
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
                   />
                   {mode === "register" && (
-                    <p className="mt-1.5 text-[12px] text-faint">At least 6 characters.</p>
+                    <p className="mt-1.5 text-[12px] text-gc-faint">At least 6 characters.</p>
                   )}
                 </div>
 
                 {error && (
-                  <div className="border-2 border-gc-orange bg-gc-orange/10 px-3.5 py-2.5 font-space-mono text-[12px] uppercase tracking-[0.04em] text-gc-orange">
+                  <div className="rounded-lg border border-gc-orange/30 bg-gc-orange/10 px-3.5 py-2.5 font-mono text-[12px] uppercase tracking-[0.04em] text-gc-orange">
                     {error}
                   </div>
                 )}
@@ -215,10 +207,10 @@ export function AuthModal({
                 </Button>
               </form>
 
-              <div className="flex items-start gap-2.5 border-2 border-dashed border-gc-ink bg-paper-2 px-3.5 py-3">
+              <div className="flex items-start gap-2.5 rounded-xl border border-white/10 bg-white/[0.03] px-3.5 py-3">
                 <GoogleDriveLogo size={17} weight="duotone" className="mt-0.5 shrink-0 text-gc-cobalt" />
-                <p className="font-space-mono text-[11px] uppercase leading-relaxed tracking-[0.04em] text-gc-muted">
-                  A Google account is only required to <span className="font-bold text-gc-ink">host</span> a
+                <p className="font-mono text-[11px] uppercase leading-relaxed tracking-[0.04em] text-gc-muted">
+                  A Google account is only required to <span className="font-semibold text-gc-ink">host</span> a
                   room — the vault lives in the host&apos;s Drive. Joining and uploading works with any account.
                 </p>
               </div>

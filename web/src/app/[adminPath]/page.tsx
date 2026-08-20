@@ -27,7 +27,6 @@ import {
   Sparkle,
 } from "@phosphor-icons/react";
 import { Button, Input, Logo, Spinner } from "@/components/ui";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { useToast } from "@/components/toast";
 import {
   api,
@@ -310,7 +309,7 @@ export default function AdminPage({
   if (checkingAuth) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-gc-muted">
-        <div className="flex flex-col items-center gap-3 border-4 border-dashed border-gc-ink bg-paper paper-fiber px-8 py-10 shadow-[6px_6px_0_var(--gc-shadow)]">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-white/15 bg-[#12151c] px-8 py-10">
           <Spinner size={26} className="text-gc-cobalt" />
           <span className="font-space-mono text-[11px] font-bold uppercase tracking-[0.14em]">
             Verifying admin authorization…
@@ -324,8 +323,8 @@ export default function AdminPage({
   if (!authenticated) {
     return (
       <div className="relative flex min-h-screen flex-col items-center justify-center p-4 bg-background">
-        <div className="w-full max-w-md border-4 border-gc-ink bg-paper paper-fiber p-7 shadow-[8px_8px_0_var(--gc-shadow)]">
-          <div className="flex items-center justify-between border-b-4 border-dashed border-gc-ink/50 pb-4">
+        <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#12151c] p-7 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)]">
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <div className="flex items-center gap-2.5">
               <Link href="/" aria-label="G_Cloister home">
               <Logo size={28} withWordmark={false} />
@@ -334,7 +333,7 @@ export default function AdminPage({
                 G<span className="text-gc-cobalt">_</span>Cloister
               </span>
             </div>
-            <span className="border-2 border-gc-cobalt bg-gc-cobalt/10 px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-gc-cobalt">
+            <span className="rounded-full border border-gc-cobalt/40 bg-gc-cobalt/10 px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.1em] text-[#7c8bff]">
               ADMIN GATEWAY
             </span>
           </div>
@@ -370,7 +369,7 @@ export default function AdminPage({
             />
 
             {loginError && (
-              <div className="flex items-center gap-2 border-2 border-gc-orange bg-gc-orange/10 px-3.5 py-2.5 text-[13px] text-gc-orange">
+              <div className="flex items-center gap-2 rounded-lg border border-gc-orange/30 bg-gc-orange/10 px-3.5 py-2.5 text-[13px] text-gc-orange">
                 <Warning size={18} className="shrink-0" />
                 <span>{loginError}</span>
               </div>
@@ -381,7 +380,7 @@ export default function AdminPage({
             </Button>
           </form>
 
-          <div className="mt-6 border-2 border-dashed border-gc-ink bg-paper-2 p-3.5 text-[12px] leading-relaxed text-gc-muted">
+          <div className="mt-6 rounded-xl border border-dashed border-white/15 bg-white/[0.02] p-3.5 text-[12px] leading-relaxed text-gc-muted">
             <div className="flex items-center gap-2 font-extrabold uppercase tracking-tight text-gc-ink">
               <EyeClosed size={16} className="text-gc-cobalt" />
               <span>Strict Privacy Policy Active</span>
@@ -399,21 +398,20 @@ export default function AdminPage({
   return (
     <div className="min-h-screen bg-background text-gc-ink">
       {/* Top Header Bar */}
-      <header className="sticky top-0 z-30 border-b-4 border-gc-ink bg-paper">
+      <header className="sticky top-0 z-30 border-b border-white/10 bg-[#0b0d12]/85 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
           <div className="flex items-center gap-3">
             <Logo size={28} withWordmark={false} />
             <span className="font-mono text-[16px] font-semibold text-gc-ink">
               G<span className="text-gc-cobalt">_</span>Cloister
             </span>
-            <span className="flex items-center gap-1 border-2 border-gc-ink bg-gc-cobalt px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-paper shadow-[2px_2px_0_var(--gc-shadow)]">
+            <span className="flex items-center gap-1 rounded-full border border-gc-cobalt/40 bg-gc-cobalt/15 px-2 py-0.5 font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-[#7c8bff]">
               <Sparkle size={12} weight="bold" />
               SUPER ADMIN CONSOLE
             </span>
           </div>
 
           <div className="flex items-center gap-2.5">
-            <ThemeToggle />
             <Button
               size="sm"
               variant="secondary"
@@ -447,7 +445,7 @@ export default function AdminPage({
 
       <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
         {/* Privacy Notice Banner */}
-        <div className="mb-6 flex items-center justify-between border-2 border-gc-cobalt bg-gc-cobalt/5 paper-fiber p-4 text-[13px]">
+        <div className="mb-6 flex items-center justify-between rounded-2xl border border-gc-cobalt/40 bg-gc-cobalt/10 p-4 text-[13px]">
           <div className="flex items-center gap-3">
             <EyeClosed size={22} className="shrink-0 text-gc-cobalt" />
             <div>
@@ -457,14 +455,14 @@ export default function AdminPage({
               </p>
             </div>
           </div>
-          <span className="hidden border-2 border-dashed border-gc-ink bg-paper px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-gc-muted sm:inline-block">
+          <span className="hidden rounded-full border border-dashed border-white/20 bg-white/[0.02] px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.08em] text-gc-muted sm:inline-block">
             ZERO_FILE_ACCESS
           </span>
         </div>
 
         {/* Stats Grid */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-6">
-          <div className="border-2 border-gc-ink bg-paper p-4 shadow-[3px_3px_0_var(--gc-shadow)]">
+          <div className="rounded-2xl border border-white/10 bg-[#12151c] p-4">
             <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Total Users</span>
               <Users size={18} className="text-gc-cobalt" />
@@ -472,7 +470,7 @@ export default function AdminPage({
             <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.total}</p>
           </div>
 
-          <div className="border-2 border-gc-ink bg-paper p-4 shadow-[3px_3px_0_var(--gc-shadow)]">
+          <div className="rounded-2xl border border-white/10 bg-[#12151c] p-4">
             <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Google Auth</span>
               <GoogleLogo size={18} className="text-gc-cobalt" />
@@ -480,7 +478,7 @@ export default function AdminPage({
             <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.googleCount}</p>
           </div>
 
-          <div className="border-2 border-gc-ink bg-paper p-4 shadow-[3px_3px_0_var(--gc-shadow)]">
+          <div className="rounded-2xl border border-white/10 bg-[#12151c] p-4">
             <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Email Auth</span>
               <Envelope size={18} className="text-gc-orange" />
@@ -488,7 +486,7 @@ export default function AdminPage({
             <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.emailCount}</p>
           </div>
 
-          <div className="border-2 border-gc-ink bg-paper p-4 shadow-[3px_3px_0_var(--gc-shadow)]">
+          <div className="rounded-2xl border border-white/10 bg-[#12151c] p-4">
             <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Banned Users</span>
               <ShieldWarning size={18} className="text-gc-orange" />
@@ -496,7 +494,7 @@ export default function AdminPage({
             <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.bannedCount}</p>
           </div>
 
-          <div className="border-2 border-gc-ink bg-paper p-4 shadow-[3px_3px_0_var(--gc-shadow)]">
+          <div className="rounded-2xl border border-white/10 bg-[#12151c] p-4">
             <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Active Rooms</span>
               <Door size={18} className="text-gc-cobalt" />
@@ -504,7 +502,7 @@ export default function AdminPage({
             <p className="mt-2 text-2xl font-bold text-gc-ink">{stats.roomsCount}</p>
           </div>
 
-          <div className="border-2 border-gc-ink bg-paper p-4 shadow-[3px_3px_0_var(--gc-shadow)]">
+          <div className="rounded-2xl border border-white/10 bg-[#12151c] p-4">
             <div className="flex items-center justify-between text-gc-muted">
               <span className="text-[12.5px] font-medium">Vault Storage</span>
               <HardDrives size={18} className="text-gc-cobalt" />
@@ -514,14 +512,14 @@ export default function AdminPage({
         </div>
 
         {/* Navigation Tabs */}
-        <div className="mt-6 flex items-center justify-between border-b-4 border-gc-ink pb-4">
+        <div className="mt-6 flex items-center justify-between border-b border-white/10 pb-4">
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab("users")}
-              className={`flex items-center gap-2 border-2 px-4 py-2 text-[13.5px] font-extrabold uppercase tracking-tight transition-all ${
+              className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-[13.5px] font-extrabold uppercase tracking-tight transition-all ${
                 activeTab === "users"
-                  ? "border-gc-ink bg-gc-ink text-paper shadow-[3px_3px_0_var(--gc-shadow)]"
-                  : "border-transparent text-gc-muted hover:text-gc-ink hover:border-gc-ink/40"
+                  ? "border-gc-cobalt bg-gc-cobalt text-white"
+                  : "border-transparent text-gc-muted hover:text-white hover:border-white/30"
               }`}
             >
               <Users size={16} weight={activeTab === "users" ? "fill" : "regular"} />
@@ -530,10 +528,10 @@ export default function AdminPage({
 
             <button
               onClick={() => setActiveTab("rooms")}
-              className={`flex items-center gap-2 border-2 px-4 py-2 text-[13.5px] font-extrabold uppercase tracking-tight transition-all ${
+              className={`flex items-center gap-2 rounded-xl border px-4 py-2 text-[13.5px] font-extrabold uppercase tracking-tight transition-all ${
                 activeTab === "rooms"
-                  ? "border-gc-ink bg-gc-ink text-paper shadow-[3px_3px_0_var(--gc-shadow)]"
-                  : "border-transparent text-gc-muted hover:text-gc-ink hover:border-gc-ink/40"
+                  ? "border-gc-cobalt bg-gc-cobalt text-white"
+                  : "border-transparent text-gc-muted hover:text-white hover:border-white/30"
               }`}
             >
               <Door size={16} weight={activeTab === "rooms" ? "fill" : "regular"} />
@@ -565,18 +563,18 @@ export default function AdminPage({
                   placeholder="Search by name, email, or ID…"
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full border-2 border-gc-ink bg-paper py-2 pl-9 pr-4 text-[13.5px] text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none focus:ring-2 focus:ring-gc-cobalt/25"
+                  className="w-full rounded-xl border border-white/15 bg-[#0f1218] py-2 pl-9 pr-4 text-[13.5px] text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none focus:ring-2 focus:ring-gc-cobalt/25"
                 />
               </div>
 
               <div className="flex items-center gap-2">
-                <div className="flex border-2 border-gc-ink bg-paper p-1">
+                <div className="flex rounded-full border border-white/10 bg-white/[0.05] p-1">
                   {(["all", "google", "email"] as const).map((m) => (
                     <button
                       key={m}
                       onClick={() => setAuthFilter(m)}
                       className={`px-3 py-1 text-[12.5px] font-bold uppercase tracking-tight transition-colors ${
-                        authFilter === m ? "bg-gc-cobalt text-paper" : "text-gc-muted hover:text-gc-ink"
+                        authFilter === m ? "bg-gc-cobalt text-white" : "text-gc-muted hover:text-gc-ink"
                       }`}
                     >
                       {m === "all" ? "All Auth" : m}
@@ -584,13 +582,13 @@ export default function AdminPage({
                   ))}
                 </div>
 
-                <div className="flex border-2 border-gc-ink bg-paper p-1">
+                <div className="flex rounded-full border border-white/10 bg-white/[0.05] p-1">
                   {(["all", "active", "banned"] as const).map((s) => (
                     <button
                       key={s}
                       onClick={() => setStatusFilter(s)}
                       className={`px-3 py-1 text-[12.5px] font-bold uppercase tracking-tight transition-colors ${
-                        statusFilter === s ? "bg-gc-ink text-paper" : "text-gc-muted hover:text-gc-ink"
+                        statusFilter === s ? "bg-gc-cobalt text-white" : "text-gc-muted hover:text-gc-ink"
                       }`}
                     >
                       {s}
@@ -600,10 +598,10 @@ export default function AdminPage({
               </div>
             </div>
 
-            <div className="overflow-hidden border-4 border-gc-ink bg-paper paper-fiber shadow-[5px_5px_0_var(--gc-shadow)]">
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#12151c]">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[13.5px]">
-                  <thead className="border-b-4 border-gc-ink bg-paper-2 text-[12px] font-bold text-gc-muted uppercase tracking-wider">
+                  <thead className="border-b border-white/10 bg-white/[0.03] text-[12px] font-bold text-gc-muted uppercase tracking-wider">
                     <tr>
                       <th className="px-5 py-3">User Identity</th>
                       <th className="px-5 py-3">Login Method</th>
@@ -613,7 +611,7 @@ export default function AdminPage({
                       <th className="px-5 py-3 text-right">Actions & Moderation</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y-2 divide-dashed divide-gc-ink/20">
+                  <tbody className="divide-y divide-white/[0.06]">
                     {filteredUsers.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="px-5 py-8 text-center text-gc-muted">
@@ -622,7 +620,7 @@ export default function AdminPage({
                       </tr>
                     ) : (
                       filteredUsers.map((u) => (
-                        <tr key={u.id} className="transition-colors hover:bg-paper-2/50">
+                        <tr key={u.id} className="transition-colors hover:bg-white/[0.03]">
                           <td className="px-5 py-3.5">
                             <div className="flex items-center gap-3">
                               {u.avatar ? (
@@ -630,7 +628,7 @@ export default function AdminPage({
                                 <img
                                   src={u.avatar}
                                   alt=""
-                                  className="h-8 w-8 rounded-full object-cover border-2 border-gc-ink"
+                                  className="h-8 w-8 rounded-full border border-white/10 object-cover"
                                 />
                               ) : (
                                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-paper-2 font-mono text-[13px] font-semibold text-gc-cobalt">
@@ -646,12 +644,12 @@ export default function AdminPage({
 
                           <td className="px-5 py-3.5">
                             {u.authType === "google" ? (
-                              <span className="inline-flex items-center gap-1.5 border-2 border-gc-cobalt bg-gc-cobalt/10 px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-tight text-gc-cobalt">
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-gc-cobalt/40 bg-gc-cobalt/10 px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-tight text-[#7c8bff]">
                                 <GoogleLogo size={14} />
                                 Google OAuth
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1.5 border-2 border-gc-orange bg-gc-orange/10 px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-tight text-gc-orange">
+                              <span className="inline-flex items-center gap-1.5 rounded-full border border-gc-orange/40 bg-gc-orange/10 px-2.5 py-1 text-[11.5px] font-bold uppercase tracking-tight text-gc-orange">
                                 <Envelope size={14} />
                                 Email / Password
                               </span>
@@ -665,7 +663,7 @@ export default function AdminPage({
                           <td className="px-5 py-3.5">
                             <button
                               onClick={() => setSelectedUser(u)}
-                              className="inline-flex items-center gap-1.5 border-2 border-gc-ink bg-paper-2 px-2.5 py-1 text-[12px] font-bold uppercase tracking-tight text-gc-ink transition-colors hover:border-gc-cobalt hover:text-gc-cobalt"
+                              className="inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.03] px-2.5 py-1 text-[12px] font-bold uppercase tracking-tight text-gc-ink transition-colors hover:border-gc-cobalt hover:text-[#7c8bff]"
                             >
                               <Door size={14} />
                               <span>{u.joinedRooms.length} Room{u.joinedRooms.length !== 1 ? "s" : ""}</span>
@@ -674,12 +672,12 @@ export default function AdminPage({
 
                           <td className="px-5 py-3.5">
                             {u.banned ? (
-                              <span className="inline-flex items-center gap-1 border-2 border-gc-orange bg-gc-orange/10 px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-tight text-gc-orange">
+                              <span className="inline-flex items-center gap-1 rounded-full border border-gc-orange/40 bg-gc-orange/10 px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-tight text-gc-orange">
                                 <ShieldWarning size={13} />
                                 Banned
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1 border-2 border-gc-cobalt bg-gc-cobalt/10 px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-tight text-gc-cobalt">
+                              <span className="inline-flex items-center gap-1 rounded-full border border-gc-cobalt/40 bg-gc-cobalt/10 px-2.5 py-0.5 text-[11.5px] font-bold uppercase tracking-tight text-[#7c8bff]">
                                 <CheckCircle size={13} />
                                 Active
                               </span>
@@ -722,10 +720,10 @@ export default function AdminPage({
         {/* ---- TAB 2: ACTIVE ROOMS ---- */}
         {activeTab === "rooms" && (
           <div className="mt-4 space-y-4">
-            <div className="overflow-hidden border-4 border-gc-ink bg-paper paper-fiber shadow-[5px_5px_0_var(--gc-shadow)]">
+            <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#12151c]">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-[13.5px]">
-                  <thead className="border-b-4 border-gc-ink bg-paper-2 text-[12px] font-bold text-gc-muted uppercase tracking-wider">
+                  <thead className="border-b border-white/10 bg-white/[0.03] text-[12px] font-bold text-gc-muted uppercase tracking-wider">
                     <tr>
                       <th className="px-5 py-3">Room Identifier</th>
                       <th className="px-5 py-3">Room Host</th>
@@ -735,7 +733,7 @@ export default function AdminPage({
                       <th className="px-5 py-3 text-right">Force Evacuate</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y-2 divide-dashed divide-gc-ink/20">
+                  <tbody className="divide-y divide-white/[0.06]">
                     {rooms.length === 0 ? (
                       <tr>
                         <td colSpan={6} className="px-5 py-8 text-center text-gc-muted">
@@ -744,7 +742,7 @@ export default function AdminPage({
                       </tr>
                     ) : (
                       rooms.map((r) => (
-                        <tr key={r.roomId} className="transition-colors hover:bg-paper-2/50">
+                        <tr key={r.roomId} className="transition-colors hover:bg-white/[0.03]">
                           <td className="px-5 py-3.5">
                             <div className="flex items-center gap-2">
                               <Door size={16} className="text-gc-cobalt shrink-0" />
@@ -764,7 +762,7 @@ export default function AdminPage({
                           </td>
 
                           <td className="px-5 py-3.5">
-                            <span className="inline-flex items-center gap-1 border-2 border-dashed border-gc-ink bg-paper-2 px-2.5 py-0.5 text-[12px] font-bold uppercase tracking-tight text-gc-ink">
+                            <span className="inline-flex items-center gap-1 rounded-full border border-dashed border-white/20 bg-white/[0.03] px-2.5 py-0.5 text-[12px] font-bold uppercase tracking-tight text-gc-ink">
                               <Users size={13} />
                               {r.memberCount} member{r.memberCount !== 1 ? "s" : ""}
                             </span>
@@ -803,15 +801,15 @@ export default function AdminPage({
             className="fixed inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setSelectedUser(null)}
           />
-          <div className="relative z-10 w-full max-w-lg overflow-hidden border-4 border-gc-ink bg-paper paper-fiber p-6 shadow-[8px_8px_0_var(--gc-shadow)] max-h-[90dvh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b-2 border-dashed border-gc-ink/50 pb-4">
+          <div className="relative z-10 w-full max-h-[90dvh] overflow-y-auto rounded-2xl border border-white/10 bg-[#10131a] p-6 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)]">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <h3 className="text-lg font-semibold text-gc-ink">Joined Rooms Overview</h3>
                 <p className="text-[12.5px] text-gc-muted">{selectedUser.email}</p>
               </div>
               <button
                 onClick={() => setSelectedUser(null)}
-                className="rounded-none p-2 text-gc-muted hover:bg-paper-2 hover:text-gc-ink"
+                className="rounded-lg p-2 text-gc-muted transition-colors hover:bg-white/[0.05] hover:text-gc-ink"
               >
                 <X size={18} />
               </button>
@@ -828,7 +826,7 @@ export default function AdminPage({
                   return (
                     <div
                       key={r.roomId}
-                      className="flex items-center justify-between border-2 border-gc-ink bg-paper-2 p-3"
+                      className="flex items-center justify-between rounded-xl border border-white/10 bg-white/[0.03] p-3"
                     >
                       <div>
                         <div className="flex items-center gap-2">
@@ -836,10 +834,10 @@ export default function AdminPage({
                             {r.roomId}
                           </span>
                           <span
-                            className={`border-2 px-2 py-0.5 font-mono text-[10.5px] font-bold uppercase tracking-tight ${
+                            className={`rounded-full border px-2 py-0.5 font-mono text-[10.5px] font-bold uppercase tracking-tight ${
                               r.isHost
-                                ? "border-gc-ink bg-gc-cobalt text-paper"
-                                : "border-gc-ink bg-paper text-gc-muted"
+                                ? "border-gc-cobalt bg-gc-cobalt text-white"
+                                : "border-white/15 bg-white/[0.03] text-gc-muted"
                             }`}
                           >
                             {r.isHost ? "Host" : "Member"}
@@ -869,7 +867,7 @@ export default function AdminPage({
               )}
             </div>
 
-            <div className="mt-5 border-t-2 border-dashed border-gc-ink/40 pt-4 text-right">
+            <div className="mt-5 border-t border-dashed border-white/10 pt-4 text-right">
               <Button variant="secondary" size="sm" onClick={() => setSelectedUser(null)}>
                 Close Window
               </Button>
@@ -885,15 +883,15 @@ export default function AdminPage({
             className="fixed inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setShowBroadcastModal(false)}
           />
-          <div className="relative z-10 w-full max-w-md overflow-hidden border-4 border-gc-ink bg-paper paper-fiber p-6 shadow-[8px_8px_0_var(--gc-shadow)] max-h-[90dvh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b-2 border-dashed border-gc-ink/50 pb-4">
+          <div className="relative z-10 w-full max-h-[90dvh] overflow-y-auto rounded-2xl border border-white/10 bg-[#10131a] p-6 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)]">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
                 <Megaphone size={20} className="text-gc-cobalt" />
                 <h3 className="text-lg font-semibold text-gc-ink">Global System Broadcast</h3>
               </div>
               <button
                 onClick={() => setShowBroadcastModal(false)}
-                className="rounded-none p-2 text-gc-muted hover:bg-paper-2 hover:text-gc-ink"
+                className="rounded-lg p-2 text-gc-muted transition-colors hover:bg-white/[0.05] hover:text-gc-ink"
               >
                 <X size={18} />
               </button>
@@ -908,7 +906,7 @@ export default function AdminPage({
                   onChange={(e) => setBroadcastMessage(e.target.value)}
                   required
                   rows={3}
-                  className="mt-1.5 w-full border-2 border-gc-ink bg-paper p-3 text-[13.5px] text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none focus:ring-2 focus:ring-gc-cobalt/25"
+                  className="mt-1.5 w-full rounded-xl border border-white/15 bg-[#0f1218] p-3 text-[13.5px] text-gc-ink placeholder:text-gc-faint focus:border-gc-cobalt focus:outline-none focus:ring-2 focus:ring-gc-cobalt/25"
                 />
               </div>
 
@@ -918,10 +916,10 @@ export default function AdminPage({
                   <button
                     type="button"
                     onClick={() => setBroadcastLevel("info")}
-                    className={`flex-1 border-2 p-2 text-[12.5px] font-bold uppercase tracking-tight transition-colors ${
+                    className={`flex-1 rounded-xl border p-2 text-[12.5px] font-bold uppercase tracking-tight transition-colors ${
                       broadcastLevel === "info"
-                        ? "border-gc-ink bg-gc-cobalt text-paper"
-                        : "border-gc-ink bg-paper text-gc-muted hover:text-gc-ink"
+                        ? "border-gc-cobalt bg-gc-cobalt text-white"
+                        : "border-white/15 bg-white/[0.03] text-gc-muted hover:text-gc-ink"
                     }`}
                   >
                     Information (Green)
@@ -929,10 +927,10 @@ export default function AdminPage({
                   <button
                     type="button"
                     onClick={() => setBroadcastLevel("error")}
-                    className={`flex-1 border-2 p-2 text-[12.5px] font-bold uppercase tracking-tight transition-colors ${
+                    className={`flex-1 rounded-xl border p-2 text-[12.5px] font-bold uppercase tracking-tight transition-colors ${
                       broadcastLevel === "error"
-                        ? "border-gc-ink bg-gc-orange text-paper"
-                        : "border-gc-ink bg-paper text-gc-muted hover:text-gc-ink"
+                        ? "border-gc-orange bg-gc-orange text-white"
+                        : "border-white/15 bg-white/[0.03] text-gc-muted hover:text-gc-ink"
                     }`}
                   >
                     Alert Warning (Red)
@@ -965,22 +963,22 @@ export default function AdminPage({
             className="fixed inset-0 bg-black/60 backdrop-blur-md"
             onClick={() => setResetPasswordUser(null)}
           />
-          <div className="relative z-10 w-full max-w-md overflow-hidden border-4 border-gc-ink bg-paper paper-fiber p-6 shadow-[8px_8px_0_var(--gc-shadow)] max-h-[90dvh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b-2 border-dashed border-gc-ink/50 pb-4">
+          <div className="relative z-10 w-full max-h-[90dvh] overflow-y-auto rounded-2xl border border-white/10 bg-[#10131a] p-6 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)]">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div className="flex items-center gap-2">
                 <Key size={20} className="text-gc-cobalt" />
                 <h3 className="text-lg font-semibold text-gc-ink">Reset User Password</h3>
               </div>
               <button
                 onClick={() => setResetPasswordUser(null)}
-                className="rounded-none p-2 text-gc-muted hover:bg-paper-2 hover:text-gc-ink"
+                className="rounded-lg p-2 text-gc-muted transition-colors hover:bg-white/[0.05] hover:text-gc-ink"
               >
                 <X size={18} />
               </button>
             </div>
 
             <form onSubmit={handleResetPassword} className="mt-4 space-y-4">
-              <div className="border-2 border-dashed border-gc-ink bg-paper-2 p-3 text-[12.5px] text-gc-muted">
+              <div className="rounded-xl border border-dashed border-white/15 bg-white/[0.02] p-3 text-[12.5px] text-gc-muted">
                 Resetting password for: <span className="font-semibold text-gc-ink">{resetPasswordUser.email}</span>
               </div>
 

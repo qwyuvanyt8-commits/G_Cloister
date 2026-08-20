@@ -1,58 +1,45 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:where(.dark, .dark *));
-
 :root {
-  --bg: #f5f1e6;
-  --bg-2: #efe9da;
-  --surface: #fffdf7;
-  --surface-2: #f1ecdd;
-  --border: rgba(22, 19, 13, 0.14);
-  --border-strong: rgba(22, 19, 13, 0.26);
-  --text: #16130d;
-  --muted: #5a5448;
-  --faint: #9a927f;
-  --accent: #1e3bf3;
-  --accent-strong: #1629b5;
-  --accent-soft: rgba(30, 59, 243, 0.12);
-  --accent-border: rgba(30, 59, 243, 0.35);
-  --danger: #d92f1f;
-  --danger-soft: rgba(217, 47, 31, 0.1);
-  --shadow: 0 18px 44px -18px rgba(22, 19, 13, 0.28);
+  /* F world — dark cobalt "graphic studio". Dark-only; the light theme is removed. */
 
-  /* gc sticker-palette — light */
-  --gc-paper: #f5f1e6;
-  --gc-paper-2: #efe9da;
-  --gc-ink: #16130d;
-  --gc-muted: #5a5448;
-  --gc-faint: #9a927f;
-  --gc-cobalt: #1e3bf3;
-  --gc-cobalt-dark: #1629b5;
-  --gc-orange: #ff5b1f;
-  --gc-orange-dark: #e0440c;
-  --gc-mint: #bfe8c8;
-  --gc-shadow: #16130d;
-  --gc-shadow-hard: #16130d;
-  --gc-ring: rgba(30, 59, 243, 0.35);
-  --gc-stamp: rgba(224, 68, 12, 0.7);
-}
+  --bg: #0b0d12;
+  --bg-2: #12151c;
+  --surface: #12151c;
+  --surface-2: #171b24;
+  --border: rgba(244, 246, 249, 0.09);
+  --border-strong: rgba(244, 246, 249, 0.22);
+  --text: #f4f6f9;
+  --muted: #8b93a1;
+  --faint: #565e6b;
+  --accent: #4456e8;
+  --accent-strong: #3345d6;
+  --accent-soft: rgba(68, 86, 232, 0.14);
+  --accent-border: rgba(68, 86, 232, 0.4);
+  --highlight: #7c8bff;
+  --danger: #ff5f56;
+  --danger-soft: rgba(255, 95, 86, 0.12);
+  --shadow: 0 18px 44px -18px rgba(0, 0, 0, 0.65);
 
-/* dark — warm near-black paper, cream ink, bright accents */
-.dark {
-  --gc-paper: #14110d;
-  --gc-paper-2: #1f1a13;
-  --gc-ink: #f1ead9;
-  --gc-muted: #b7ab94;
-  --gc-faint: #756b58;
-  --gc-cobalt: #7b8cff;
-  --gc-cobalt-dark: #5f71ff;
-  --gc-orange: #ff6b33;
-  --gc-orange-dark: #f0581f;
-  --gc-mint: #b5ecc3;
-  --gc-shadow: #2e2619;
-  --gc-shadow-hard: #0c0906;
-  --gc-ring: rgba(123, 140, 255, 0.35);
-  --gc-stamp: rgba(255, 107, 51, 0.85);
+  /* gc aliases — kept as the app-wide names, now bound to the F world */
+  --gc-paper: #0b0d12;
+  --gc-paper-2: #12151c;
+  --gc-ink: #f4f6f9;
+  --gc-muted: #8b93a1;
+  --gc-faint: #565e6b;
+  --gc-cobalt: #4456e8;
+  --gc-cobalt-dark: #3345d6;
+  --gc-orange: #ff5f56;
+  --gc-orange-dark: #eb4b43;
+  --gc-mint: #6fe3a7;
+  --gc-mint-ink: #06120b;
+  --gc-shadow: rgba(0, 0, 0, 0);
+  --gc-ring: rgba(124, 139, 255, 0.4);
+
+  /* prototype accent (retained name; F is now the product) */
+  --proto-accent: #4456e8;
+  --proto-accent-strong: #3345d6;
+  --proto-highlight: #7c8bff;
 }
 
 @theme inline {
@@ -69,6 +56,7 @@
   --color-accent-strong: var(--accent-strong);
   --color-accent-soft: var(--accent-soft);
   --color-accent-border: var(--accent-border);
+  --color-highlight: var(--highlight);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --font-sans: var(--font-archivo);
@@ -80,7 +68,6 @@
   --color-paper: var(--gc-paper);
   --color-paper-2: var(--gc-paper-2);
   --color-gc-ink: var(--gc-ink);
-  --color-gc-ink-solid: #16130d;
   --color-gc-muted: var(--gc-muted);
   --color-gc-faint: var(--gc-faint);
   --color-gc-cobalt: var(--gc-cobalt);
@@ -88,7 +75,11 @@
   --color-gc-orange: var(--gc-orange);
   --color-gc-orange-dark: var(--gc-orange-dark);
   --color-gc-mint: var(--gc-mint);
-  --color-gc-stamp: var(--gc-stamp);
+  --color-gc-mint-ink: var(--gc-mint-ink);
+
+  --color-proto-accent: var(--proto-accent);
+  --color-proto-accent-strong: var(--proto-accent-strong);
+  --color-proto-highlight: var(--proto-highlight);
 }
 
 html {
@@ -103,43 +94,49 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* Subtle film grain — fixed, pointer-events-none, never on scroll content */
-.grain::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 50;
-  pointer-events: none;
-  opacity: 0.5;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
-}
-.dark .grain::before {
-  opacity: 0.3;
-}
-
-/* Aurora backdrop for hero — sticker-washed */
-.aurora {
-  background:
-    radial-gradient(60% 55% at 12% 8%, rgba(30, 59, 243, 0.11) 0%, transparent 60%),
-    radial-gradient(50% 45% at 88% 12%, rgba(255, 91, 31, 0.08) 0%, transparent 60%),
-    radial-gradient(70% 60% at 55% 100%, rgba(191, 232, 200, 0.35) 0%, transparent 55%);
-}
-
-/* Focus ring consistency */
+/* Focus ring — cobalt, crisp */
 :focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 6px;
 }
 
-/* Scrollbar */
+/* Selection — cobalt fill, dark text */
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+/* Text caret + native form accents — the surfaces the UI did not draw */
+input,
+textarea,
+select {
+  caret-color: var(--accent);
+}
+
+* {
+  accent-color: var(--accent);
+}
+
+/* Tabular figures on demand for measurement + data */
+.tabular,
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Scrollbar — quiet F chrome */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border-strong);
+  background: #262b36;
   border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #333a48;
   border: 3px solid transparent;
   background-clip: content-box;
 }
@@ -159,11 +156,7 @@ body {
   }
 }
 
-::selection {
-  background: var(--accent);
-  color: var(--bg);
-}
-
+/* Marquee — landing signature, paused on hover, disabled under reduced motion */
 @keyframes marquee-x {
   from {
     transform: translateX(0);
@@ -176,90 +169,11 @@ body {
 .marquee-track {
   animation: marquee-x 40s linear infinite;
 }
-@media (prefers-reduced-motion: reduce) {
-  .marquee-track {
-    animation: none;
-  }
-}
-
-/* ---------- sticker / paper craft utilities ---------- */
-
-/* Perforation guide — a row of "scissor" dots (horizontal). Uses currentColor so it follows ink */
-.tear-guide {
-  background-image: radial-gradient(currentColor 1.3px, transparent 1.5px);
-  background-size: 9px 3.2px;
-  background-repeat: repeat-x;
-  background-position: 0 50%;
-  height: 3px;
-  width: 100%;
-}
-
-/* Faint fibre weave for big paper panels — layered under content, never on scrolling containers */
-.paper-fiber {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='6' height='6'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
-}
-.dark .paper-fiber {
-  opacity: 0.35;
-}
-
-/* Dashed rubber-stamp ring (rotated circle) for "ROLLED" stamps */
-.stamp-ring {
-  border: 2px dashed var(--gc-stamp);
-  color: var(--gc-stamp);
-  border-radius: 9999px;
-}
-
-/* Ink corner ticks for framed panels */
-.corner-tick {
-  position: relative;
-}
-.corner-tick::before,
-.corner-tick::after {
-  content: "";
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border-color: var(--gc-ink);
-  border-style: solid;
-  border-width: 0;
-  pointer-events: none;
-}
-.corner-tick::before {
-  top: -3px;
-  left: -3px;
-  border-top-width: 2px;
-  border-left-width: 2px;
-}
-.corner-tick::after {
-  bottom: -3px;
-  right: -3px;
-  border-bottom-width: 2px;
-  border-right-width: 2px;
-}
-
-/* Side "unpeeled" tab — a vertical notched margin for sticker edges */
-.peel-edge {
-  position: relative;
-}
-.peel-edge::after {
-  content: "";
-  position: absolute;
-  inset-inline-end: 12px;
-  bottom: 0;
-  width: calc(100% - 24px);
-  height: 10px;
-  background-image: radial-gradient(circle at 50% 100%, transparent 4px, var(--gc-paper-2) 4.5px);
-  background-size: 14px 10px;
-  background-repeat: repeat-x;
-  pointer-events: none;
-}
-
-/* Marquee slows on hover so the room tags stay readable */
 .marquee-track:hover {
   animation-play-state: paused;
 }
 @media (prefers-reduced-motion: reduce) {
-  .marquee-track:hover {
-    animation-play-state: initial;
+  .marquee-track {
+    animation: none;
   }
 }

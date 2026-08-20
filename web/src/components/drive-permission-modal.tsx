@@ -35,7 +35,7 @@ export function DrivePermissionModal({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={onClose}
-            className="fixed inset-0 bg-black/60 backdrop-blur-md"
+            className="fixed inset-0 bg-black/70 backdrop-blur-md"
           />
 
           {/* Modal Card */}
@@ -44,12 +44,12 @@ export function DrivePermissionModal({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 12 }}
             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-            className="relative z-10 w-full max-w-lg overflow-hidden border-4 border-gc-ink bg-paper p-6 shadow-[8px_8px_0_var(--gc-shadow)]"
+            className="relative z-10 w-full max-w-lg overflow-hidden rounded-2xl border border-white/10 bg-[#10131a] p-6 shadow-[0_40px_90px_-30px_rgba(0,0,0,0.85)]"
           >
             {/* Close button */}
             <button
               onClick={onClose}
-              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center border-2 border-gc-ink bg-paper text-gc-muted transition-colors hover:bg-gc-ink hover:text-paper"
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-lg text-gc-muted transition-colors hover:bg-white/[0.05] hover:text-gc-ink"
               aria-label="Close dialog"
             >
               <X size={18} />
@@ -57,32 +57,44 @@ export function DrivePermissionModal({
 
             {/* Header with Icon */}
             <div className="flex items-start gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center border-2 border-gc-orange bg-gc-orange/10 text-gc-orange">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-gc-orange/30 bg-gc-orange/10 text-gc-orange">
                 <Warning size={26} weight="duotone" />
               </div>
               <div className="pr-6">
-                <h3 className="text-xl font-black tracking-tight uppercase">{title}</h3>
+                <h3 className="text-xl font-black tracking-tight">{title}</h3>
                 <p className="mt-1.5 text-[14px] leading-relaxed text-gc-muted">{description}</p>
               </div>
             </div>
 
             {/* Instruction Steps Box */}
-            <div className="mt-5 border-2 border-dashed border-gc-ink bg-paper-2 p-4 space-y-3">
-              <p className="font-space-mono text-[11px] font-bold uppercase tracking-[0.12em] text-gc-ink">How to resolve this:</p>
-              
+            <div className="mt-5 space-y-3 rounded-xl border border-white/10 bg-white/[0.03] p-4">
+              <p className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-gc-ink">
+                How to resolve this:
+              </p>
+
               <div className="flex items-start gap-2.5 text-[13.5px] text-gc-muted">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center border border-gc-ink bg-gc-cobalt text-paper font-space-mono text-[11px] font-bold">1</span>
-                <span>Click <strong>Sign Out & Fix Permissions</strong> below.</span>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-gc-cobalt font-mono text-[11px] font-bold text-white">
+                  1
+                </span>
+                <span>
+                  Click <strong className="text-gc-ink">Sign Out &amp; Fix Permissions</strong> below.
+                </span>
               </div>
 
               <div className="flex items-start gap-2.5 text-[13.5px] text-gc-muted">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center border border-gc-ink bg-gc-cobalt text-paper font-space-mono text-[11px] font-bold">2</span>
-                <span>On the Google sign-in screen, ensure you <strong>check the permission box</strong>:</span>
+                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-gc-cobalt font-mono text-[11px] font-bold text-white">
+                  2
+                </span>
+                <span>
+                  On the Google sign-in screen, ensure you <strong className="text-gc-ink">check the permission box</strong>:
+                </span>
               </div>
 
-              <div className="ml-7 border-2 border-gc-cobalt bg-gc-cobalt/5 p-3 text-[12.5px] text-gc-ink flex items-start gap-2">
-                <CheckCircle size={16} className="text-gc-cobalt shrink-0 mt-0.5" weight="fill" />
-                <span><em>"See, edit, create, and delete only the specific Google Drive files you use with this app"</em></span>
+              <div className="ml-7 flex items-start gap-2 rounded-lg border border-gc-cobalt/40 bg-gc-cobalt/10 p-3 text-[12.5px] text-gc-ink">
+                <CheckCircle size={16} className="mt-0.5 shrink-0 text-[#7c8bff]" weight="fill" />
+                <span>
+                  <em>"See, edit, create, and delete only the specific Google Drive files you use with this app"</em>
+                </span>
               </div>
             </div>
 
@@ -92,11 +104,10 @@ export function DrivePermissionModal({
                 Cancel
               </Button>
               <Button
-                variant="primary"
                 onClick={handleFixPermissions}
                 icon={<ArrowSquareOut size={18} weight="bold" />}
               >
-                Sign Out & Fix Permissions
+                Sign Out &amp; Fix Permissions
               </Button>
             </div>
           </motion.div>

@@ -1,13 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import type { CSSProperties } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "motion/react";
 import { ArrowRight, GithubLogo } from "@phosphor-icons/react";
 import { RoomPreview } from "@/components/room-preview";
-import { AuthModal } from "@/components/auth-modal";
-import { useAuth } from "@/components/auth-provider";
+import { ProtoCtas, useProtoStart } from "@/components/proto/proto-cta";
+import { ProtoSwitcher } from "@/components/proto/proto-switcher";
 
 const EASE = [0.16, 1, 0.3, 1] as const;
 
@@ -61,31 +60,20 @@ const STEPS = [
   },
 ];
 
-const GUARD = [
-  ["drive.file scope", "The app can only read and write the folder it creates."],
-  ["AES-256-GCM", "Tokens are encrypted before they touch disk."],
-  ["bcrypt", "Room passwords are hashed, never plaintext."],
-  ["15-min previews", "Share links expire and revoke themselves."],
-] as const;
-
-export default function LandingPage() {
+export default function PrototypeFPage() {
   const reduce = useReducedMotion();
-  const { user, loading } = useAuth();
-  const router = useRouter();
-  const [showAuth, setShowAuth] = useState(false);
-
-  const start = () => {
-    if (user) router.push("/home");
-    else setShowAuth(true);
-  };
+  const { start, hostLabel } = useProtoStart();
 
   return (
-    <div className="bg-[#0b0d12] text-[#f4f6f9] antialiased">
+    <div
+      className="bg-[#0b0d12] text-[#f4f6f9] antialiased"
+      style={{ "--proto-accent": "#4456e8", "--proto-accent-strong": "#3345d6" } as CSSProperties}
+    >
       {/* nav */}
       <header className="border-b border-white/10">
         <div className="mx-auto flex h-16 max-w-[1360px] items-center justify-between gap-6 px-6">
-          <Link href="/" className="flex items-center gap-1.5" aria-label="G_Cloister home">
-            <span className="inline-flex -rotate-2 items-center justify-center rounded-lg bg-gc-cobalt px-1.5 py-1 text-[13px] font-black tracking-tight text-white">
+          <Link href="/" className="flex items-baseline gap-1.5" aria-label="G_Cloister home">
+            <span className="inline-flex -rotate-3 items-center justify-center rounded-lg bg-proto-accent px-1.5 py-1 text-[13px] font-black tracking-tight text-white">
               G_
             </span>
             <span className="text-[17px] font-black tracking-tight">CLOISTER</span>
@@ -114,9 +102,9 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={start}
-              className="inline-flex h-9 items-center justify-center rounded-full bg-gc-cobalt px-5 text-[13.5px] font-semibold text-white transition-colors hover:bg-gc-cobalt-dark"
+              className="inline-flex h-9 items-center justify-center rounded-full bg-proto-accent px-5 text-[13.5px] font-semibold text-white transition-colors hover:bg-proto-accent-strong"
             >
-              {loading ? "Opening door" : user ? "Go to rooms" : "Host a room"}
+              {hostLabel}
             </button>
           </div>
         </div>
@@ -125,20 +113,26 @@ export default function LandingPage() {
       <main>
         {/* hero */}
         <section className="mx-auto max-w-[1360px] px-6 pb-16 pt-20 md:pt-24">
-          <motion.h1
-            initial={reduce ? false : { opacity: 0, y: 28, filter: "blur(14px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{ duration: 0.9, ease: EASE }}
-            className="max-w-6xl font-black leading-[0.9] tracking-[-0.04em] text-[clamp(52px,9vw,96px)]"
+          <motion.p
+            initial={reduce ? false : { opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, ease: EASE }}
+            className="font-mono text-[11px] font-semibold uppercase tracking-[0.2em] text-[#7c8bff]"
           >
-            <span className="block">
-              YOUR FILES.
-            </span>
-            <span className="inline-flex flex-wrap items-baseline gap-x-[0.22em]">
-              <span className="text-[#8b93a1]">YOUR</span>{" "}
-              <span className="-rotate-1 rounded-2xl bg-gc-cobalt px-[0.08em] py-[0.03em] text-white">
-                DRIVE.
-              </span>
+            Private file rooms on your drive
+          </motion.p>
+
+          <motion.h1
+            initial={reduce ? false : { opacity: 0, y: 34 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.85, delay: 0.08, ease: EASE }}
+            className="mt-6 font-black leading-[0.9] tracking-[-0.05em] text-[clamp(52px,9vw,120px)]"
+          >
+            YOUR FILES.
+            <br />
+            <span className="text-[#8b93a1]">YOUR</span>{" "}
+            <span className="inline-block -rotate-1 rounded-2xl bg-proto-accent px-[0.08em] py-[0.03em] text-white">
+              DRIVE.
             </span>
           </motion.h1>
 
@@ -146,34 +140,21 @@ export default function LandingPage() {
             <motion.div
               initial={reduce ? false : { opacity: 0, y: 18 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.35, ease: EASE }}
+              transition={{ duration: 0.7, delay: 0.18, ease: EASE }}
             >
               <p className="max-w-[44ch] text-[16px] leading-relaxed text-[#8b93a1]">
-                Private file rooms on your drive. Password-locked rooms that stream every upload in
-                real time — stored on the host&apos;s own Google Drive.
+                Password-locked rooms that stream every upload in real time,
+                stored on the host's own Google Drive.
               </p>
-              <div className="mt-8 flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={start}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gc-cobalt px-7 text-[15px] font-semibold text-white transition-all duration-150 hover:bg-gc-cobalt-dark active:scale-[0.98]"
-                >
-                  {loading ? "Opening door" : user ? "Go to your rooms" : "Host a room"}
-                </button>
-                <button
-                  type="button"
-                  onClick={start}
-                  className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/20 px-7 text-[15px] font-semibold text-white/90 transition-all duration-150 hover:border-white/40 hover:text-white active:scale-[0.98]"
-                >
-                  Join with a code <ArrowRight size={16} weight="bold" />
-                </button>
+              <div className="mt-8">
+                <ProtoCtas mode="dark" />
               </div>
             </motion.div>
 
             <motion.div
-              initial={reduce ? false : { opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.42, ease: EASE }}
+              initial={reduce ? false : { opacity: 0, y: 30, rotate: 1 }}
+              animate={{ opacity: 1, y: 0, rotate: 0 }}
+              transition={{ duration: 0.8, delay: 0.24, ease: EASE }}
               className="relative"
             >
               <span
@@ -198,7 +179,7 @@ export default function LandingPage() {
                 {m.split(" - ").map((w, j) => (
                   <span key={j} className="flex items-center gap-6">
                     {w}
-                    <span className="text-gc-cobalt">/</span>
+                    <span className="text-proto-accent">/</span>
                   </span>
                 ))}
               </span>
@@ -207,7 +188,7 @@ export default function LandingPage() {
         </div>
 
         {/* cobalt band */}
-        <section className="bg-gc-cobalt text-white">
+        <section className="bg-proto-accent text-white">
           <div className="mx-auto grid max-w-[1360px] grid-cols-1 gap-px md:grid-cols-3">
             {BAND.map((b) => (
               <motion.div
@@ -243,7 +224,7 @@ export default function LandingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, amount: 0.3 }}
                 transition={{ duration: 0.55, delay: i * 0.05, ease: EASE }}
-                className="group grid grid-cols-1 items-baseline gap-2 border-t border-white/10 py-8 transition-colors hover:border-[#4456e8] sm:grid-cols-[200px_1fr_auto] sm:gap-10"
+                className="group grid grid-cols-1 items-baseline gap-2 border-t border-white/12 py-8 transition-colors hover:border-proto-accent sm:grid-cols-[200px_1fr_auto] sm:gap-10"
               >
                 <h3 className="text-[clamp(30px,4vw,46px)] font-black tracking-[-0.03em] transition-transform duration-200 group-hover:translate-x-1.5">
                   {r.word}
@@ -267,15 +248,17 @@ export default function LandingPage() {
               {STEPS.map((s, i) => (
                 <motion.div
                   key={s.n}
-                  initial={reduce ? false : { opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
+                  initial={reduce ? false : { opacity: 0, y: 22 }}
+                  whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.3 }}
-                  transition={{ duration: 0.6, delay: i * 0.08, ease: EASE }}
+                  transition={{ duration: 0.55, delay: i * 0.08, ease: EASE }}
                   className="rounded-2xl border border-white/10 p-6"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-[13px] font-bold text-gc-cobalt">{s.n}</span>
-                    {i < 2 && <ArrowRight size={18} className="text-[#565e6b]" />}
+                    <span className="font-mono text-[13px] font-bold text-proto-accent">{s.n}</span>
+                    {i < 2 && (
+                      <ArrowRight size={18} className="text-[#565e6b]" />
+                    )}
                   </div>
                   <h3 className="mt-8 text-[24px] font-black tracking-[-0.02em]">{s.title}</h3>
                   <p className="mt-2 text-[14.5px] leading-relaxed text-[#8b93a1]">{s.body}</p>
@@ -285,21 +268,26 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* security */}
+        {/* security - mono strip */}
         <section id="security" className="mx-auto max-w-[1360px] scroll-mt-20 px-6 py-16 md:py-20">
           <div className="grid grid-cols-1 gap-10 md:grid-cols-[0.8fr_1.2fr]">
             <h2 className="text-[clamp(28px,3.6vw,44px)] font-black tracking-[-0.03em]">
               Built locked.
             </h2>
             <div className="flex flex-col">
-              {GUARD.map(([title, body], i) => (
+              {[
+                ["drive.file scope", "The app can only read and write the folder it creates."],
+                ["AES-256-GCM", "Tokens are encrypted before they touch disk."],
+                ["bcrypt", "Room passwords are hashed, never plaintext."],
+                ["15-min previews", "Share links expire and revoke themselves."],
+              ].map(([title, body], i) => (
                 <motion.div
                   key={title}
                   initial={reduce ? false : { opacity: 0, y: 12 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true, amount: 0.4 }}
                   transition={{ duration: 0.5, delay: i * 0.04, ease: EASE }}
-                  className="grid grid-cols-1 gap-1 border-t border-white/10 py-4 sm:grid-cols-[220px_1fr] sm:gap-6"
+                  className="grid grid-cols-1 gap-1 border-t border-white/12 py-4 sm:grid-cols-[220px_1fr] sm:gap-6"
                 >
                   <span className="font-mono text-[11.5px] font-semibold uppercase tracking-[0.16em] text-[#7c8bff]">
                     {title}
@@ -307,7 +295,7 @@ export default function LandingPage() {
                   <p className="text-[14px] leading-relaxed text-[#8b93a1]">{body}</p>
                 </motion.div>
               ))}
-              <div className="border-t border-white/10" />
+              <div className="border-t border-white/12" />
             </div>
           </div>
         </section>
@@ -320,11 +308,11 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 0.7, ease: EASE }}
-              className="text-balance font-black leading-[0.9] tracking-[-0.04em] text-[clamp(46px,7.6vw,96px)]"
+              className="text-balance font-black leading-[0.92] tracking-[-0.05em] text-[clamp(46px,7.6vw,104px)]"
             >
               OPEN A ROOM.
               <br />
-              <span className="inline-block -rotate-1 rounded-3xl bg-gc-cobalt px-[0.12em] text-white">
+              <span className="inline-block -rotate-1 rounded-3xl bg-proto-accent px-[0.12em] text-white">
                 KEEP THE FILES.
               </span>
             </motion.h2>
@@ -333,22 +321,9 @@ export default function LandingPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.4 }}
               transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
-              className="mt-10 flex flex-wrap items-center justify-center gap-3"
+              className="mt-10"
             >
-              <button
-                type="button"
-                onClick={start}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full bg-gc-cobalt px-7 text-[15px] font-semibold text-white transition-all duration-150 hover:bg-gc-cobalt-dark active:scale-[0.98]"
-              >
-                {loading ? "Opening door" : user ? "Go to your rooms" : "Host a room"}
-              </button>
-              <button
-                type="button"
-                onClick={start}
-                className="inline-flex h-12 items-center justify-center gap-2 rounded-full border border-white/20 px-7 text-[15px] font-semibold text-white/90 transition-all duration-150 hover:border-white/40 hover:text-white active:scale-[0.98]"
-              >
-                Join with a code <ArrowRight size={16} weight="bold" />
-              </button>
+              <ProtoCtas mode="dark" />
             </motion.div>
             <motion.p
               initial={reduce ? false : { opacity: 0 }}
@@ -367,7 +342,7 @@ export default function LandingPage() {
       <footer className="border-t border-white/10">
         <div className="mx-auto flex max-w-[1360px] flex-col items-center justify-between gap-4 px-6 py-7 font-mono text-[11px] uppercase tracking-[0.12em] text-[#565e6b] md:flex-row">
           <span className="flex items-center gap-2">
-            <span className="inline-flex h-5 w-5 -rotate-3 items-center justify-center rounded bg-gc-cobalt text-[8px] font-black text-white">
+            <span className="inline-flex h-5 w-5 -rotate-3 items-center justify-center rounded bg-proto-accent text-[8px] font-black text-white">
               G_
             </span>
             G_CLOISTER © {new Date().getFullYear()}
@@ -384,7 +359,7 @@ export default function LandingPage() {
         </div>
       </footer>
 
-      <AuthModal isOpen={showAuth} onClose={() => setShowAuth(false)} />
+      <ProtoSwitcher />
     </div>
   );
 }
