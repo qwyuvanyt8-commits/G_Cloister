@@ -19,6 +19,7 @@ import { RequireAuth } from "@/components/require-auth";
 import { useAuth } from "@/components/auth-provider";
 import { useToast } from "@/components/toast";
 import { api } from "@/lib/api";
+import { cn } from "@/lib/cn";
 
 interface RoomCard {
   roomId: string;
