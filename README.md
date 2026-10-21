@@ -189,6 +189,18 @@ npm run dev
 
 Deploy G_Cloister in production using **Render** for the Express backend API and **Vercel** for the Next.js frontend web app.
 
+### Live deployment
+
+| Piece | URL |
+|-------|-----|
+| Web app (canonical) | https://gcloister.is-a.dev |
+| Web app (fallback) | https://g-cloister-sage.vercel.app |
+| API | https://gcloister-server.onrender.com |
+| Health check | https://gcloister-server.onrender.com/api/health |
+| Database | Turso (LibSQL) — `gcloister-yuvanreddy404.aws-ap-northeast-1.turso.io` |
+
+The API accepts a comma-separated `FRONTEND_URL`, so several frontend origins can be allowed at once. The first entry is the canonical frontend used for post-login redirects; every entry is accepted by CORS and by the Socket.IO handshake.
+
 ---
 
 ### Step 1: Deploy Backend API to Render

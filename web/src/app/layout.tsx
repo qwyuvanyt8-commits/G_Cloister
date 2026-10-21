@@ -18,6 +18,10 @@ export const metadata: Metadata = {
   title: "G_Cloister — Private file rooms on your Google Drive",
   description:
     "Host a private room on your Google Drive, share a code, and move up to 5 GB of files in real time with your people.",
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_SITE_URL || "https://g-cloister-sage.vercel.app"
+  ),
+  alternates: { canonical: "/" },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
