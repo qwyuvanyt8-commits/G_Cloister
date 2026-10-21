@@ -28,7 +28,4 @@ services:
         sync: false
       - key: TURSO_AUTH_TOKEN
         sync: false
-    disk:
-      name: gcloister_data
-      mountPath: /var/data
-      sizeGB: 1
+    healthCheckPath: /api/health
