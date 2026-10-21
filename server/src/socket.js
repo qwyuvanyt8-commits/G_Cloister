@@ -10,7 +10,7 @@ let ioRef = null;
 export function setupSocket(httpServer) {
   const io = new Server(httpServer, {
     cors: {
-      origin: config.frontendUrl,
+      origin: config.frontendUrls,
       credentials: true,
     },
     pingInterval: 5000,

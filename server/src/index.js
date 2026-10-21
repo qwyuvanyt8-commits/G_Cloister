@@ -31,11 +31,12 @@ app.use(
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);
       const cleanOrigin = origin.replace(/\/+$/, "");
-      const cleanTarget = config.frontendUrl.replace(/\/+$/, "");
-      if (cleanOrigin === cleanTarget) {
+      if (config.frontendUrls.includes(cleanOrigin)) {
         return callback(null, true);
       }
-      console.warn(`[cors] Rejected origin: "${origin}", expected: "${config.frontendUrl}"`);
+      console.warn(
+        `[cors] Rejected origin: "${origin}", expected one of: "${config.frontendUrls.join('", "')}"`
+      );
       callback(null, false);
     },
     credentials: true,

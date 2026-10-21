@@ -22,9 +22,17 @@ for (const key of required) {
   if (!env[key]) missing.push(key);
 }
 
+// FRONTEND_URL may list several allowed origins, comma separated.
+// The first one is the canonical frontend (used for post-OAuth redirects).
+const frontendUrls = (env.FRONTEND_URL || "http://localhost:3000")
+  .split(",")
+  .map((u) => u.trim().replace(/\/+$/, ""))
+  .filter(Boolean);
+
 export const config = {
   port: Number(env.PORT || 4000),
-  frontendUrl: (env.FRONTEND_URL || "http://localhost:3000").replace(/\/+$/, ""),
+  frontendUrl: frontendUrls[0] || "http://localhost:3000",
+  frontendUrls,
   databasePath: path.isAbsolute(env.DATABASE_PATH || "")
     ? env.DATABASE_PATH
     : path.resolve(root, env.DATABASE_PATH || "./data/gcloister.db"),
