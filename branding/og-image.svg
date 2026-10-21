@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#12151c"/>
+      <stop offset="1" stop-color="#0b0d12"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.18" cy="0.15" r="0.85">
+      <stop offset="0" stop-color="#4456e8" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#4456e8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="arch" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#8b97ff"/>
+      <stop offset="1" stop-color="#4456e8"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect x="0.5" y="0.5" width="1199" height="629" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+
+  <!-- arcade mark -->
+  <g transform="translate(96,196) scale(1.35)">
+    <g fill="url(#arch)">
+      <path d="M22 90 V54 a10 10 0 0 1 20 0 V90 Z"/>
+      <path d="M50 90 V54 a10 10 0 0 1 20 0 V90 Z"/>
+      <path d="M78 90 V54 a10 10 0 0 1 20 0 V90 Z"/>
+    </g>
+    <rect x="16" y="90" width="88" height="6" rx="3" fill="#7c8bff"/>
+  </g>
+
+  <text x="96" y="330" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="88" font-weight="900" fill="#f4f6f9" letter-spacing="-3">G_CLOISTER</text>
+  <text x="96" y="396" font-family="Space Mono, monospace" font-size="27" fill="#7c8bff" letter-spacing="2">PRIVATE FILE ROOMS ON YOUR GOOGLE DRIVE</text>
+  <text x="96" y="452" font-family="Archivo, Helvetica, Arial, sans-serif" font-size="28" fill="#8b93a1">Open source · MIT licence · Files stay in the host's own Drive</text>
+  <text x="96" y="500" font-family="Space Mono, monospace" font-size="22" fill="#565e6b" letter-spacing="1">gcloister.vercel.app</text>
+</svg>

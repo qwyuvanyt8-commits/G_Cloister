@@ -374,6 +374,18 @@ export default function LandingPage() {
           </span>
           <span className="flex items-center gap-4">
             <Link
+              href="/about"
+              className="transition-colors hover:text-[#7c8bff]"
+            >
+              About
+            </Link>
+            <Link
+              href="/contact"
+              className="transition-colors hover:text-[#7c8bff]"
+            >
+              Contact
+            </Link>
+            <Link
               href="/privacy"
               className="transition-colors hover:text-[#7c8bff]"
             >
