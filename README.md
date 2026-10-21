@@ -193,7 +193,8 @@ Deploy G_Cloister in production using **Render** for the Express backend API and
 
 | Piece | URL |
 |-------|-----|
-| Web app (canonical) | https://gcloister.is-a.dev |
+| Web app (canonical) | https://gcloister.vercel.app |
+| Web app (custom domain) | https://gcloister.is-a.dev — pending is-a.dev PR approval |
 | Web app (fallback) | https://g-cloister-sage.vercel.app |
 | API | https://gcloister-server.onrender.com |
 | Health check | https://gcloister-server.onrender.com/api/health |
