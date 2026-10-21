@@ -185,6 +185,18 @@ npm run dev
 
 ---
 
+## 🩺 Troubleshooting
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Chrome shows a red **"Dangerous site" / "This site is potentially dangerous"** page | Google Safe Browsing's *real-time* verdict for a brand-new domain. A subdomain created minutes ago (especially on a shared host like `*.vercel.app`) can be flagged before it has any reputation, even though the public Safe Browsing report shows nothing. | Open the site in a **Guest/Incognito window** to confirm it is not a stale local verdict, then use the interstitial's **Details → Report this site** to file a false-positive. Verdict expiry normally takes a few hours. Moving to a domain with history (e.g. `gcloister.is-a.dev`) removes the class of problem. |
+| "Access blocked: … has not completed the Google verification process" | The OAuth consent screen is in **Testing** status and the signed-in account is not on the test-user list. | Google Auth Platform → Audience → add the account under **Test users**, or switch **Publishing status** to *In production* and submit the verification request (see `docs/google-oauth-verification.md`). |
+| "Google hasn't verified this app" + an *(unsafe)* link on the consent screen | The app is in production but not yet verified. | Complete the verification request — it is the only way to remove the notice. |
+| Sign-in returns to the app but the session is rejected | `FRONTEND_URL` on the server does not list the origin the browser is using. | `FRONTEND_URL` accepts a comma-separated list; the first entry is the canonical frontend used for post-login redirects, and every entry is allowed by CORS and by the Socket.IO handshake. |
+| First request after a pause takes 30–50 seconds | The Render free instance sleeps after 15 minutes of inactivity. | Expected on the free plan. Use a paid instance, or add a keep-alive ping. |
+
+---
+
 ## 📦 Production Deployment Guide
 
 Deploy G_Cloister in production using **Render** for the Express backend API and **Vercel** for the Next.js frontend web app.
