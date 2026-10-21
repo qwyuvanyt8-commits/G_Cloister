@@ -372,14 +372,28 @@ export default function LandingPage() {
             </span>
             G_CLOISTER © {new Date().getFullYear()}
           </span>
-          <a
-            href="https://github.com/qwyuvanyt8-commits/G_Cloister"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[#7c8bff] transition-colors hover:text-white"
-          >
-            MIT · GitHub source
-          </a>
+          <span className="flex items-center gap-4">
+            <Link
+              href="/privacy"
+              className="transition-colors hover:text-[#7c8bff]"
+            >
+              Privacy
+            </Link>
+            <Link
+              href="/terms"
+              className="transition-colors hover:text-[#7c8bff]"
+            >
+              Terms
+            </Link>
+            <a
+              href="https://github.com/qwyuvanyt8-commits/G_Cloister"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#7c8bff] transition-colors hover:text-white"
+            >
+              MIT · GitHub source
+            </a>
+          </span>
           <span>Built on the Google Drive API</span>
         </div>
       </footer>
